@@ -11,7 +11,7 @@ module.exports = async function handler(req, res) {
 
   try {
     let infoAstro = '';
-    let mandalaUrl = '';
+    let planetasReais = [];
 
     if (dados && dados.lat && dados.lon && dados.data) {
       const dt = new Date(dados.data + 'T' + (dados.hora || '12:00') + ':00');
@@ -32,13 +32,11 @@ module.exports = async function handler(req, res) {
         const planetasRes = await fetch('https://json.freeastrologyapi.com/western/planets', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.FREEASTROLOGY_API_KEY },
-          body: JSON.stringify({
-            ...body,
-            config: { observation_point: 'topocentric', ayanamsha: 'tropical', language: 'pt' }
-          })
+          body: JSON.stringify({ ...body, config: { observation_point: 'topocentric', ayanamsha: 'tropical', language: 'pt' } })
         });
         const planetasData = await planetasRes.json();
         if (planetasData && planetasData.output && Array.isArray(planetasData.output)) {
+          planetasReais = planetasData.output;
           infoAstro += '\n\nPosições REAIS dos planetas:\n';
           planetasData.output.forEach(item => {
             const nome = item.planet?.en || '';
@@ -55,10 +53,7 @@ module.exports = async function handler(req, res) {
         const casasRes = await fetch('https://json.freeastrologyapi.com/western/houses', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.FREEASTROLOGY_API_KEY },
-          body: JSON.stringify({
-            ...body,
-            config: { observation_point: 'topocentric', ayanamsha: 'tropical', house_system: 'Placidus', language: 'pt' }
-          })
+          body: JSON.stringify({ ...body, config: { observation_point: 'topocentric', ayanamsha: 'tropical', house_system: 'Placidus', language: 'pt' } })
         });
         const casasData = await casasRes.json();
         if (casasData && casasData.output && casasData.output.Houses) {
@@ -98,44 +93,29 @@ module.exports = async function handler(req, res) {
           });
         }
       } catch(e) { console.log('Aspectos erro:', e.message); }
+    }
 
-      // 4. Mandala
+    // 4. Salva cliente no Google Sheets
+    if (dados && dados.nome) {
       try {
-        const mandalaRes = await fetch('https://json.freeastrologyapi.com/western/natal-wheel-chart', {
+        await fetch(process.env.SHEETDB_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.FREEASTROLOGY_API_KEY },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            ...body,
-            config: {
-              observation_point: 'topocentric',
-              ayanamsha: 'tropical',
-              house_system: 'Placidus',
-              language: 'pt',
-              exclude_planets: [],
-              allowed_aspects: ['Conjunction', 'Opposition', 'Trine', 'Square', 'Sextile'],
-              aspect_line_colors: {
-                Conjunction: '#c9a84c',
-                Opposition: '#a07fff',
-                Trine: '#7a5ea0',
-                Square: '#e09090',
-                Sextile: '#90c0e0'
-              },
-              wheel_chart_colors: {
-                zodiac_sign_background_color: '#0d0620',
-                chart_background_color: '#06030e',
-                zodiac_signs_text_color: '#c9a84c',
-                dotted_line_color: '#2a1650',
-                planets_icon_color: '#e5d0ff'
-              },
-              orb_values: { Conjunction: 8, Opposition: 8, Trine: 8, Square: 8, Sextile: 6 }
-            }
+            data: [{
+              Data: new Date().toLocaleString('pt-BR'),
+              Nome: dados.nome || '',
+              WhatsApp: dados.whatsapp || '',
+              Email: dados.email || '',
+              Cidade: dados.cidade || '',
+              Nascimento: dados.data || '',
+              Hora: dados.hora || '',
+              Tipo: dados.tipo || '',
+              Valor: dados.preco || ''
+            }]
           })
         });
-        const mandalaData = await mandalaRes.json();
-        if (mandalaData && mandalaData.output) {
-          mandalaUrl = mandalaData.output;
-        }
-      } catch(e) { console.log('Mandala erro:', e.message); }
+      } catch(e) { console.log('SheetDB erro:', e.message); }
     }
 
     // 5. Gera leitura com Claude
@@ -155,12 +135,7 @@ module.exports = async function handler(req, res) {
     });
 
     const data = await response.json();
-
-    // Adiciona mandala na resposta
-    if (mandalaUrl) {
-      data.mandalaUrl = mandalaUrl;
-    }
-
+    if (planetasReais.length > 0) data.planetas = planetasReais;
     return res.status(200).json(data);
 
   } catch (error) {
