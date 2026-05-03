@@ -10,7 +10,6 @@ export default async function handler(req, res) {
   if (!prompt) return res.status(400).json({ error: 'Prompt obrigatório' });
 
   try {
-    // Chama Claude diretamente
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -19,7 +18,7 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: model: 'claude-haiku-4-5-20251001',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 1000,
         messages: [{ role: 'user', content: prompt }]
       })
