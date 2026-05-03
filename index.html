@@ -339,6 +339,28 @@ function selecionarCidade(nome,lat,lon,inputId,listaId,latId,lonId){
   document.getElementById(listaId).style.display='none';
 }
 
+// Detecta retorno do Mercado Pago
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('pago') === 'sim'){
+    const dados = JSON.parse(sessionStorage.getItem('dadosForm') || 'null');
+    if(dados){
+      dadosForm = dados;
+      setTimeout(()=>confirmarPagamento(), 500);
+    }
+  }
+})();
+  (function(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('pago') === 'sim'){
+    const dados = JSON.parse(sessionStorage.getItem('dadosForm') || 'null');
+    if(dados){
+      dadosForm = dados;
+      setTimeout(()=>confirmarPagamento(), 500);
+    }
+  }
+})();
+
 function goPage(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.npg').forEach(b=>b.classList.remove('on'));
@@ -396,6 +418,7 @@ function irPagar(){
   const nomes={'mapa-astral':'Mapa Astral','revolucao-solar':'Revolução Solar','mapa-profissional':'Mapa Profissional','sinastria':'Sinastria','mapa-karmico':'Mapa Kármico','personalizada':'Leitura Personalizada'};
   document.getElementById('pay-desc').textContent=nomes[tipoAtual]+' — R$ '+precoAtual.toFixed(2).replace('.',',');
   document.getElementById('link-pagamento').href=tipoAtual==='personalizada'?LINK_197:LINK_49;
+  sessionStorage.setItem('dadosForm', JSON.stringify(dadosForm));
   goPage('pay',null);
 }
 
