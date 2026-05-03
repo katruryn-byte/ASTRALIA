@@ -190,7 +190,10 @@ footer{border-top:1px solid #1c0e40;padding:2rem 1.5rem;text-align:center}
       <div class="fbox-title">✧ Dados de Nascimento ✧</div>
       <div class="fd"><label>Nome Completo</label><input type="text" id="f-nome" placeholder="Seu nome"/></div>
       <div class="r2"><div class="fd"><label>Data de Nascimento</label><input type="date" id="f-data"/></div><div class="fd"><label>Hora (opcional)</label><input type="time" id="f-hora"/></div></div>
-      <div class="fd"><label>Cidade de Nascimento</label><input type="text" id="f-cidade" placeholder="Ex: Fortaleza, CE"/></div>
+      <div class="fd"><label>Cidade de Nascimento</label><input type="text" id="f-cidade" placeholder="Digite sua cidade..." autocomplete="off" oninput="buscarCidade(this,'f-cidade-resultado','f-lat','f-lon')"/>
+<div id="f-cidade-resultado" style="display:none;position:absolute;background:#110830;border:1px solid #2a1650;border-radius:8px;width:100%;z-index:100;max-height:200px;overflow-y:auto"></div>
+<input type="hidden" id="f-lat"/>
+<input type="hidden" id="f-lon"/>
       <div id="extra-sinastria" style="display:none"><div class="sep"><div class="fbox-title" style="margin-bottom:.9rem">✧ Dados do Parceiro(a) ✧</div><div class="fd"><label>Nome</label><input type="text" id="f-nome2" placeholder="Nome do parceiro(a)"/></div><div class="r2"><div class="fd"><label>Data</label><input type="date" id="f-data2"/></div><div class="fd"><label>Hora</label><input type="time" id="f-hora2"/></div></div><div class="fd"><label>Cidade</label><input type="text" id="f-cidade2" placeholder="Cidade de nascimento"/></div></div></div>
       <div id="extra-rs" style="display:none"><div class="sep"><div class="fd"><label>Cidade no Aniversário</label><input type="text" id="f-cidaders" placeholder="Onde passará o aniversário"/></div><div class="fd"><label>Ano da Revolução Solar</label><select id="f-anors"></select></div></div></div>
       <div id="extra-personalizada" style="display:none"><div class="sep"><div class="fd"><label>O que você quer saber?</label><textarea id="f-pergunta" rows="4" placeholder="Descreva sua situação ou o que gostaria que a leitura focasse..."></textarea></div></div></div>
@@ -241,7 +244,26 @@ let tipoAtual='mapa-astral',precoAtual=49.90,dadosForm={};
 
 (()=>{const s=document.getElementById('f-anors'),y=new Date().getFullYear();for(let i=y;i<=y+4;i++){const o=document.createElement('option');o.value=i;o.textContent=i+(i===y?' (atual)':'');s.appendChild(o);}})();
 
-function goPage(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.npg').forEach(b=>b.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');if(btn)btn.classList.add('on');window.scrollTo({top:0,behavior:'smooth'});}
+async function buscarCidade(input,resultId,latId,lonId){
+  const q=input.value.trim();
+  if(q.length<3){document.getElementById(resultId).style.display='none';return;}
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&accept-language=pt`);
+    const data=await r.json();
+    const div=document.getElementById(resultId);
+    if(!data.length){div.style.display='none';return;}
+    div.innerHTML=data.map(d=>`<div onclick="selecionarCidade('${d.display_name.replace(/'/g,"\\'")}','${d.lat}','${d.lon}','${input.id}','${resultId}','${latId}','${lonId}')" style="padding:.6rem .9rem;cursor:pointer;font-size:.88rem;color:#e5d0ff;border-bottom:1px solid #1c0e40" onmouseover="this.style.background='#1c0e40'" onmouseout="this.style.background=''">${d.display_name}</div>`).join('');
+    div.style.display='block';
+  }catch(e){console.log(e);}
+}
+
+function selecionarCidade(nome,lat,lon,inputId,resultId,latId,lonId){
+  document.getElementById(inputId).value=nome;
+  document.getElementById(latId).value=lat;
+  document.getElementById(lonId).value=lon;
+  document.getElementById(resultId).style.display='none';
+}
+  (id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.npg').forEach(b=>b.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');if(btn)btn.classList.add('on');window.scrollTo({top:0,behavior:'smooth'});}
 
 function selecionarTipo(tipo){
   tipoAtual=tipo;
@@ -275,7 +297,10 @@ function irPagar(){
   dadosForm={nome,data,hora:document.getElementById('f-hora').value,cidade,tipo:tipoAtual,preco:precoAtual,
     nome2:document.getElementById('f-nome2').value,data2:document.getElementById('f-data2').value,
     hora2:document.getElementById('f-hora2').value,cidade2:document.getElementById('f-cidade2').value,
-    cidadeRS:document.getElementById('f-cidaders').value||cidade,anoRS:document.getElementById('f-anors').value,
+    cidadeRS:document.getElementById('f-cidaders').value||cidade,
+lat:document.getElementById('f-lat').value,
+lon:document.getElementById('f-lon').value,
+timezone:-3,anoRS:document.getElementById('f-anors').value,
     pergunta:document.getElementById('f-pergunta').value};
   const nomes={'mapa-astral':'Mapa Astral','revolucao-solar':'Revolução Solar','mapa-profissional':'Mapa Profissional','sinastria':'Sinastria','mapa-karmico':'Mapa Kármico','personalizada':'Leitura Personalizada'};
   document.getElementById('pay-desc').textContent=nomes[tipoAtual]+' — R$ '+precoAtual.toFixed(2).replace('.',',');
@@ -309,7 +334,7 @@ async function confirmarPagamento(){
   else if(d.tipo==='mapa-karmico')p=`Expert kármica. PORTUGUÊS para ${d.nome}, nascido(a) ${d.data} em ${d.cidade}. Sol ${n.solS}, Lua ${n.luaS}. JSON: {"secoes":[{"titulo":"🔮 Missão da Alma","texto":"4 frases sobre propósito kármico"},{"titulo":"☊ Nodo Norte","texto":"3 frases sobre o que veio aprender"},{"titulo":"☋ Nodo Sul","texto":"3 frases sobre vidas passadas"},{"titulo":"♄ Lições Kármicas","texto":"3 frases sobre desafios"},{"titulo":"⟳ Padrões a Transformar","texto":"3 frases sobre transformações"},{"titulo":"✦ Mensagem da Alma","texto":"4 frases para ${d.nome}"}]}`;
   else p=`Astróloga profissional. Leitura personalizada PORTUGUÊS para ${d.nome}, nascido(a) ${d.data} em ${d.cidade}. Sol ${n.solS}, Lua ${n.luaS}, Asc ${n.ascS}. Situação: "${d.pergunta||'leitura geral'}". JSON: {"secoes":[{"titulo":"✨ Visão Geral","texto":"4 frases sobre a situação"},{"titulo":"☉ Os Astros Revelam","texto":"4 frases com interpretação"},{"titulo":"☽ Lado Emocional","texto":"3 frases sobre sentimentos"},{"titulo":"🔮 Caminhos","texto":"4 frases sobre possibilidades"},{"titulo":"⚡ Ação Recomendada","texto":"3 frases sobre o que fazer"},{"titulo":"✦ Mensagem Especial","texto":"5 frases para ${d.nome}"}]}`;
   try{
-    const r=await fetch('https://const r=await fetch('/api/leitura',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:p})});',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:p}]})});
+   const r=await fetch('/api/leitura',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:p,dados:{data:d.data,hora:d.hora,lat:d.lat,lon:d.lon,timezone:d.timezone}})});',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:p}]})});
     const j=await r.json();
     const txt=j.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
     const leitura=JSON.parse(txt);
