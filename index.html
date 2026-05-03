@@ -89,17 +89,11 @@ footer{border-top:1px solid #1c0e40;padding:2rem 1.5rem;text-align:center}
 .form-page-pay{max-width:560px;margin:0 auto;padding:2rem 1.3rem 3rem}
 .pay-box{background:#0d0620;border:1px solid #1c0e40;border-radius:16px;padding:1.8rem;margin-bottom:1rem}
 .pay-title{font-family:'Cinzel',serif;font-size:.82rem;color:#b090e0;letter-spacing:.12em;margin-bottom:1.3rem;text-align:center}
-.pay-methods{display:flex;gap:.8rem;justify-content:center;margin-bottom:1.5rem}
-.pay-m{flex:1;max-width:150px;background:#110830;border:1px solid #2a1650;border-radius:10px;padding:1rem .8rem;cursor:pointer;transition:all .2s;text-align:center}
-.pay-m.on{border-color:#c9a84c;background:#1a0f30}
-.pm-ico{font-size:1.6rem;margin-bottom:.4rem}
-.pm-lbl{font-family:'Cinzel',serif;font-size:.65rem;color:#7a5ea0;letter-spacing:.08em}
-.pay-m.on .pm-lbl{color:#f0d080}
-.pix-area{background:#06030e;border:1px solid #1c0e40;border-radius:10px;padding:1.2rem;margin-bottom:1rem}
-.pix-code{font-family:monospace;font-size:.75rem;color:#c9a84c;word-break:break-all;line-height:1.6;margin-bottom:.8rem}
-.btn-copiar{background:#1c0e40;border:1px solid #3a1e70;color:#c9a8f5;font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.1em;padding:.45rem 1rem;border-radius:8px;cursor:pointer;transition:all .2s}
-.btn-copiar:hover{background:#2a1650;color:#f0d080}
-.pay-info{font-size:.82rem;color:#5a3d80;font-style:italic;line-height:1.6;margin-top:.8rem;text-align:center}
+.pay-aguarda{background:#0d0420;border:1px solid #2a1650;border-radius:12px;padding:1.2rem;text-align:center;margin-bottom:1rem}
+.pay-aguarda p{font-size:.9rem;color:#9070c0;line-height:1.7;margin-bottom:.8rem}
+.pay-link{display:inline-block;background:linear-gradient(135deg,#005c1a,#00a832);color:#fff;font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:.1em;padding:.7rem 1.8rem;border-radius:10px;text-decoration:none;margin-bottom:.8rem;transition:opacity .2s}
+.pay-link:hover{opacity:.88}
+.pay-info{font-size:.82rem;color:#5a3d80;font-style:italic;line-height:1.6;margin-top:.5rem}
 .btn-confirmar{width:100%;padding:.82rem;background:linear-gradient(135deg,#3a1070,#c9a84c);border:none;border-radius:10px;color:#fff;font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.12em;cursor:pointer;margin-top:1rem;transition:opacity .2s}
 .btn-confirmar:hover{opacity:.88}
 .btn-voltar{display:block;width:100%;padding:.7rem;background:transparent;border:1px solid #2a1650;border-radius:10px;color:#6a4d90;font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.1em;cursor:pointer;text-align:center;transition:all .2s;margin-top:.8rem}
@@ -120,6 +114,7 @@ footer{border-top:1px solid #1c0e40;padding:2rem 1.5rem;text-align:center}
 </style>
 </head>
 <body>
+
 <nav class="nav">
   <div class="nav-logo">Astral<em>IA</em></div>
   <div class="nav-pages">
@@ -127,6 +122,8 @@ footer{border-top:1px solid #1c0e40;padding:2rem 1.5rem;text-align:center}
     <button class="npg" onclick="goPage('form',this)">Leituras</button>
   </div>
 </nav>
+
+<!-- HOME -->
 <div class="page on" id="pg-home">
   <div class="hero">
     <div class="hero-orb"><svg width="420" height="420" viewBox="-210 -210 420 420"><circle r="190" fill="none" stroke="#c9a84c" stroke-width=".8" stroke-dasharray="4 9"/><circle r="130" fill="none" stroke="#7a3ddd" stroke-width=".6" stroke-dasharray="2 7"/><circle r="75" fill="none" stroke="#c9a84c" stroke-width=".4" stroke-dasharray="1 6"/><circle cx="190" cy="0" r="5.5" fill="#c9a84c" opacity=".9"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite"/></circle><circle cx="130" cy="0" r="4" fill="#7a3ddd" opacity=".85"><animateTransform attributeName="transform" type="rotate" from="0" to="-360" dur="13s" repeatCount="indefinite"/></circle><circle cx="75" cy="0" r="3" fill="#c9a84c" opacity=".7"><animateTransform attributeName="transform" type="rotate" from="90" to="450" dur="8s" repeatCount="indefinite"/></circle></svg></div>
@@ -159,8 +156,8 @@ footer{border-top:1px solid #1c0e40;padding:2rem 1.5rem;text-align:center}
     <div class="steps">
       <div class="step"><div class="step-n">1</div><div><h3>Escolha a Leitura</h3><p>Selecione entre as 6 opções disponíveis.</p></div></div>
       <div class="step"><div class="step-n">2</div><div><h3>Informe seus Dados</h3><p>Digite sua data, hora e cidade de nascimento.</p></div></div>
-      <div class="step"><div class="step-n">3</div><div><h3>Realize o Pagamento</h3><p>Pague com PIX ou cartão de forma segura.</p></div></div>
-      <div class="step"><div class="step-n">4</div><div><h3>Receba na Hora</h3><p>A IA gera sua leitura imediatamente. Sem espera.</p></div></div>
+      <div class="step"><div class="step-n">3</div><div><h3>Realize o Pagamento</h3><p>Pague com PIX ou cartão de forma segura via Mercado Pago.</p></div></div>
+      <div class="step"><div class="step-n">4</div><div><h3>Receba na Hora</h3><p>A IA gera sua leitura personalizada imediatamente. Sem espera.</p></div></div>
     </div>
   </div>
   <div class="section">
@@ -176,6 +173,8 @@ footer{border-top:1px solid #1c0e40;padding:2rem 1.5rem;text-align:center}
   <div class="section alt"><div class="cta-wrap"><h2>Os Astros Têm uma Mensagem para Você</h2><p>Não deixe mais o cosmos falar sem que você ouça. Descubra o que seu mapa natal revela.</p><button class="btn-gold" onclick="goPage('form',document.querySelectorAll('.npg')[1])">✦ Iniciar Minha Leitura Agora</button></div></div>
   <footer><div class="footer-logo">Astral IA</div><p class="footer-text">Leituras astrológicas geradas por Inteligência Artificial.<br>Resultados para fins de autoconhecimento e entretenimento.</p><div class="footer-links"><a href="#">Termos de Uso</a><a href="#">Privacidade</a><a href="#">Contato</a></div></footer>
 </div>
+
+<!-- FORM -->
 <div class="page" id="pg-form">
   <div class="form-page">
     <div class="form-header"><h2>✦ Sua Leitura Astral</h2><p>Escolha o tipo e preencha seus dados</p></div>
@@ -201,28 +200,25 @@ footer{border-top:1px solid #1c0e40;padding:2rem 1.5rem;text-align:center}
     <button class="btn-pagar" onclick="irPagar()">☉ Prosseguir para Pagamento</button>
   </div>
 </div>
+
+<!-- PAGAMENTO -->
 <div class="page" id="pg-pay">
   <div class="form-page-pay">
     <div class="form-header"><h2>✦ Pagamento</h2><p id="pay-desc">Mapa Astral — R$ 49,90</p></div>
     <div class="pay-box">
-      <div class="pay-title">✧ Forma de Pagamento ✧</div>
-      <div class="pay-methods">
-        <div class="pay-m on" onclick="setMetodo('pix',this)"><div class="pm-ico">⬡</div><div class="pm-lbl">PIX</div></div>
-        <div class="pay-m" onclick="setMetodo('cartao',this)"><div class="pm-ico">◻</div><div class="pm-lbl">Cartão</div></div>
+      <div class="pay-title">✧ Pagamento Seguro via Mercado Pago ✧</div>
+      <div class="pay-aguarda">
+        <p>Clique no botão abaixo para pagar com <strong>PIX ou Cartão</strong>.<br>Após confirmar o pagamento, volte aqui e clique em <strong>"Já Paguei"</strong>.</p>
+        <a id="link-pagamento" href="#" target="_blank" class="pay-link">💳 Pagar com Mercado Pago</a>
+        <p class="pay-info">✅ Ambiente 100% seguro · PIX, Cartão de Crédito e Débito</p>
       </div>
-      <div id="pix-section">
-        <div class="pix-area"><p style="font-family:'Cinzel',serif;font-size:.62rem;color:#5a3d80;letter-spacing:.1em;margin-bottom:.6rem">CHAVE PIX — COPIA E COLA</p><div class="pix-code" id="pix-code">https://mpago.la/2nDCeRS</div><button class="btn-copiar" onclick="copiarPix()">Copiar código PIX</button></div>
-        <p class="pay-info">Após o pagamento, clique abaixo para gerar sua leitura.</p>
-        <button class="btn-confirmar" onclick="irParaPagamento()">✦ Confirmar e Gerar Leitura</button>
-      </div>
-      <div id="cartao-section" style="display:none">
-        <div class="fbox" style="text-align:left;margin-bottom:.8rem"><div class="fd"><label>Número do Cartão</label><input type="text" placeholder="0000 0000 0000 0000" maxlength="19"/></div><div class="r2"><div class="fd"><label>Validade</label><input type="text" placeholder="MM/AA" maxlength="5"/></div><div class="fd"><label>CVV</label><input type="text" placeholder="123" maxlength="3"/></div></div><div class="fd"><label>Nome no Cartão</label><input type="text" placeholder="Como aparece no cartão"/></div></div>
-        <button class="btn-confirmar" onclick="irParaPagamento()">✦ Pagar e Gerar Leitura</button>
-      </div>
+      <button class="btn-confirmar" onclick="confirmarPagamento()">✦ Já Paguei — Gerar Minha Leitura</button>
     </div>
     <button class="btn-voltar" onclick="goPage('form',document.querySelectorAll('.npg')[1])">← Voltar</button>
   </div>
 </div>
+
+<!-- RESULTADO -->
 <div class="page" id="pg-result">
   <div class="result-page">
     <div class="res-header"><div class="res-title" id="res-title">✦ Sua Leitura Astral ✦</div><div class="res-sub">Gerada exclusivamente para você pelos astros</div></div>
@@ -231,48 +227,99 @@ footer{border-top:1px solid #1c0e40;padding:2rem 1.5rem;text-align:center}
     <button class="btn-voltar" id="btn-nova" style="display:none" onclick="goPage('home',document.querySelectorAll('.npg')[0])">← Nova Leitura</button>
   </div>
 </div>
+
 <script>
+// ============================================
+// ⚠️ SUBSTITUA SUAS CHAVES AQUI
+const LINK_49 = 'https://mpago.la/2quNVWb';
+const LINK_197 = 'https://mpago.la/14jtH6c';
+const ASTRO_API_KEY = 'COLE_SUA_CHAVE_FREEASTROLOGY_AQUI';
+// ============================================
+
 const SIGNOS=['Áries','Touro','Gêmeos','Câncer','Leão','Virgem','Libra','Escorpião','Sagitário','Capricórnio','Aquário','Peixes'];
-let tipoAtual='mapa-astral',precoAtual=49.90,metodoAtual='pix',dadosForm={};
+let tipoAtual='mapa-astral',precoAtual=49.90,dadosForm={};
+
 (()=>{const s=document.getElementById('f-anors'),y=new Date().getFullYear();for(let i=y;i<=y+4;i++){const o=document.createElement('option');o.value=i;o.textContent=i+(i===y?' (atual)':'');s.appendChild(o);}})();
+
 function goPage(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.npg').forEach(b=>b.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');if(btn)btn.classList.add('on');window.scrollTo({top:0,behavior:'smooth'});}
-function selecionarTipo(tipo){tipoAtual=tipo;const p={'mapa-astral':49.90,'revolucao-solar':49.90,'mapa-profissional':49.90,'sinastria':49.90,'mapa-karmico':49.90,'personalizada':197.17};precoAtual=p[tipo]||49.90;document.querySelectorAll('.tipo-btn').forEach(b=>{b.classList.remove('on');if(b.dataset.tipo===tipo)b.classList.add('on');});document.getElementById('preco-display').textContent='R$ '+precoAtual.toFixed(2).replace('.',',');document.getElementById('extra-sinastria').style.display=tipo==='sinastria'?'block':'none';document.getElementById('extra-rs').style.display=tipo==='revolucao-solar'?'block':'none';document.getElementById('extra-personalizada').style.display=tipo==='personalizada'?'block':'none';goPage('form',document.querySelectorAll('.npg')[1]);}
-function setTipo(el){document.querySelectorAll('.tipo-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');tipoAtual=el.dataset.tipo;precoAtual=parseFloat(el.dataset.preco)||49.90;document.getElementById('preco-display').textContent='R$ '+precoAtual.toFixed(2).replace('.',',');document.getElementById('extra-sinastria').style.display=tipoAtual==='sinastria'?'block':'none';document.getElementById('extra-rs').style.display=tipoAtual==='revolucao-solar'?'block':'none';document.getElementById('extra-personalizada').style.display=tipoAtual==='personalizada'?'block':'none';}
-function setMetodo(m,btn){metodoAtual=m;document.querySelectorAll('.pay-m').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('pix-section').style.display=m==='pix'?'block':'none';document.getElementById('cartao-section').style.display=m==='cartao'?'block':'none';}
-function irParaPagamento(){
-  const link0,5 = 'https://mpago.la/2quNVWb';
-  const link197 = 'https://mpago.la/14jtH6c';
-  if(dadosForm.tipo === 'personalizada'){
-    window.open(link197, '_blank');
-  } else {
-    window.open(link49, '_blank');
-  }
-  setTimeout(()=>confirmarPagamento(), 3000);
+
+function selecionarTipo(tipo){
+  tipoAtual=tipo;
+  const precos={'mapa-astral':49.90,'revolucao-solar':49.90,'mapa-profissional':49.90,'sinastria':49.90,'mapa-karmico':49.90,'personalizada':197.17};
+  precoAtual=precos[tipo]||49.90;
+  document.querySelectorAll('.tipo-btn').forEach(b=>{b.classList.remove('on');if(b.dataset.tipo===tipo)b.classList.add('on');});
+  document.getElementById('preco-display').textContent='R$ '+precoAtual.toFixed(2).replace('.',',');
+  document.getElementById('extra-sinastria').style.display=tipo==='sinastria'?'block':'none';
+  document.getElementById('extra-rs').style.display=tipo==='revolucao-solar'?'block':'none';
+  document.getElementById('extra-personalizada').style.display=tipo==='personalizada'?'block':'none';
+  goPage('form',document.querySelectorAll('.npg')[1]);
 }
-function irPagar(){const nome=document.getElementById('f-nome').value.trim(),data=document.getElementById('f-data').value,cidade=document.getElementById('f-cidade').value.trim();if(!nome||!data||!cidade){document.getElementById('err-msg').style.display='block';return;}document.getElementById('err-msg').style.display='none';dadosForm={nome,data,hora:document.getElementById('f-hora').value,cidade,tipo:tipoAtual,preco:precoAtual,nome2:document.getElementById('f-nome2').value,data2:document.getElementById('f-data2').value,hora2:document.getElementById('f-hora2').value,cidade2:document.getElementById('f-cidade2').value,cidadeRS:document.getElementById('f-cidaders').value||cidade,anoRS:document.getElementById('f-anors').value,pergunta:document.getElementById('f-pergunta').value};const n={'mapa-astral':'Mapa Astral','revolucao-solar':'Revolução Solar','mapa-profissional':'Mapa Profissional','sinastria':'Sinastria','mapa-karmico':'Mapa Kármico','personalizada':'Leitura Personalizada'};document.getElementById('pay-desc').textContent=n[tipoAtual]+' — R$ '+precoAtual.toFixed(2).replace('.',',');goPage('pay',null);}
-function copiarPix(){navigator.clipboard.writeText(document.getElementById('pix-code').textContent).then(()=>{const b=document.querySelector('.btn-copiar');b.textContent='Copiado!';setTimeout(()=>b.textContent='Copiar código PIX',2500);});}
+
+function setTipo(el){
+  document.querySelectorAll('.tipo-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  tipoAtual=el.dataset.tipo;
+  precoAtual=parseFloat(el.dataset.preco)||49.90;
+  document.getElementById('preco-display').textContent='R$ '+precoAtual.toFixed(2).replace('.',',');
+  document.getElementById('extra-sinastria').style.display=tipoAtual==='sinastria'?'block':'none';
+  document.getElementById('extra-rs').style.display=tipoAtual==='revolucao-solar'?'block':'none';
+  document.getElementById('extra-personalizada').style.display=tipoAtual==='personalizada'?'block':'none';
+}
+
+function irPagar(){
+  const nome=document.getElementById('f-nome').value.trim();
+  const data=document.getElementById('f-data').value;
+  const cidade=document.getElementById('f-cidade').value.trim();
+  if(!nome||!data||!cidade){document.getElementById('err-msg').style.display='block';return;}
+  document.getElementById('err-msg').style.display='none';
+  dadosForm={nome,data,hora:document.getElementById('f-hora').value,cidade,tipo:tipoAtual,preco:precoAtual,
+    nome2:document.getElementById('f-nome2').value,data2:document.getElementById('f-data2').value,
+    hora2:document.getElementById('f-hora2').value,cidade2:document.getElementById('f-cidade2').value,
+    cidadeRS:document.getElementById('f-cidaders').value||cidade,anoRS:document.getElementById('f-anors').value,
+    pergunta:document.getElementById('f-pergunta').value};
+  const nomes={'mapa-astral':'Mapa Astral','revolucao-solar':'Revolução Solar','mapa-profissional':'Mapa Profissional','sinastria':'Sinastria','mapa-karmico':'Mapa Kármico','personalizada':'Leitura Personalizada'};
+  document.getElementById('pay-desc').textContent=nomes[tipoAtual]+' — R$ '+precoAtual.toFixed(2).replace('.',',');
+  document.getElementById('link-pagamento').href = tipoAtual==='personalizada' ? LINK_197 : LINK_49;
+  goPage('pay',null);
+}
+
 function sIdx(m,d){const L=[[3,21,0],[4,20,1],[5,21,2],[6,21,3],[7,23,4],[8,23,5],[9,23,6],[10,23,7],[11,22,8],[12,22,9],[1,20,10],[2,19,11]];for(const[lm,ld,i]of L)if(m===lm&&d>=ld)return i;return(m>2)?Math.floor((m*30.4+d)/30.4)%12:11;}
-function calcP(data,hora){const dt=new Date(data+'T12:00:00'),m=dt.getMonth()+1,d=dt.getDate(),yr=dt.getFullYear(),j=new Date(yr,0,1),doy=Math.floor((dt-j)/86400000),h=hora?parseInt(hora):12,sol=sIdx(m,d);const offs=[0,Math.round(doy*13/360)%12,Math.round(doy/88*12)%12,Math.round(doy/225*12)%12,0,Math.round(doy/4333*12)%12];const asc=(sol+Math.round(h/2)+4)%12;return{solS:SIGNOS[sol],ascS:SIGNOS[asc],luaS:SIGNOS[(sol+offs[1])%12],venS:SIGNOS[(sol+offs[3])%12],jupS:SIGNOS[(sol+offs[5])%12]};}
+
+function calcP(data,hora){
+  const dt=new Date(data+'T12:00:00'),m=dt.getMonth()+1,d=dt.getDate(),yr=dt.getFullYear();
+  const j=new Date(yr,0,1),doy=Math.floor((dt-j)/86400000),h=hora?parseInt(hora):12,sol=sIdx(m,d);
+  const offs=[0,Math.round(doy*13/360)%12,Math.round(doy/88*12)%12,Math.round(doy/225*12)%12,0,Math.round(doy/4333*12)%12];
+  const asc=(sol+Math.round(h/2)+4)%12;
+  return{solS:SIGNOS[sol],ascS:SIGNOS[asc],luaS:SIGNOS[(sol+offs[1])%12],venS:SIGNOS[(sol+offs[3])%12],jupS:SIGNOS[(sol+offs[5])%12]};
+}
+
 async function confirmarPagamento(){
-  goPage('result',null);document.getElementById('res-loading').style.display='block';document.getElementById('res-content').innerHTML='';document.getElementById('btn-nova').style.display='none';
+  goPage('result',null);
+  document.getElementById('res-loading').style.display='block';
+  document.getElementById('res-content').innerHTML='';
+  document.getElementById('btn-nova').style.display='none';
   const d=dadosForm,n=calcP(d.data,d.hora);
   const nomes={'mapa-astral':'Mapa Astral','revolucao-solar':'Revolução Solar','mapa-profissional':'Mapa Profissional','sinastria':'Sinastria','mapa-karmico':'Mapa Kármico','personalizada':'Leitura Personalizada'};
   document.getElementById('res-title').textContent='✦ '+nomes[d.tipo]+' de '+d.nome+' ✦';
   let p='';
-  if(d.tipo==='mapa-astral')p=`Astróloga profissional. Mapa Astral PORTUGUÊS para ${d.nome}, nascido(a) ${d.data} em ${d.cidade}. Sol ${n.solS}, Lua ${n.luaS}, Asc ${n.ascS}. JSON sem markdown: {"secoes":[{"titulo":"☉ Essência Solar","texto":"4 frases sobre Sol em ${n.solS}"},{"titulo":"☽ Mundo Emocional","texto":"4 frases sobre Lua em ${n.luaS}"},{"titulo":"↑ Ascendente","texto":"3 frases sobre Asc em ${n.ascS}"},{"titulo":"♀ Amor","texto":"3 frases sobre vida afetiva com Vênus ${n.venS}"},{"titulo":"♃ Missão","texto":"3 frases sobre propósito com Júpiter ${n.jupS}"},{"titulo":"✦ Mensagem dos Astros","texto":"4 frases inspiradoras para ${d.nome}"}]}`;
-  else if(d.tipo==='revolucao-solar'){const ano=d.anoRS||new Date().getFullYear();p=`Expert RS. PORTUGUÊS para ${d.nome}, nascido(a) ${d.data} em ${d.cidade}. RS ${ano} em ${d.cidadeRS||d.cidade}. Sol RS ${n.solS}. JSON: {"secoes":[{"titulo":"☉ Tom do Ano","texto":"4 frases sobre energia do ciclo ${ano}"},{"titulo":"☽ Mundo Interior","texto":"3 frases sobre emoções do ano"},{"titulo":"♀ Amor","texto":"3 frases sobre relacionamentos"},{"titulo":"♃ Carreira","texto":"3 frases sobre realizações"},{"titulo":"◷ Mês a Mês","texto":"Visão dos principais períodos do ano"},{"titulo":"✦ Mensagem Solar","texto":"4 frases para ${d.nome} em ${ano}"}]}`;}
-  else if(d.tipo==='sinastria'){const n2=d.data2?calcP(d.data2,d.hora2):n;p=`Expert Sinastria. PORTUGUÊS para ${d.nome} (Sol ${n.solS}) e ${d.nome2||'parceiro(a)'} (Sol ${n2.solS}). JSON: {"secoes":[{"titulo":"💕 Conexão","texto":"4 frases sobre afinidade"},{"titulo":"☉ Dinâmica Solar","texto":"3 frases sobre os Sóis"},{"titulo":"☽ Emoções","texto":"3 frases sobre compatibilidade emocional"},{"titulo":"♂ Atração","texto":"3 frases sobre química e tensões"},{"titulo":"⚖ Crescimento","texto":"3 frases sobre aprendizados"},{"titulo":"✦ Mensagem","texto":"4 frases para o casal"}]}`;}
-  else if(d.tipo==='mapa-profissional')p=`Expert vocacional. PORTUGUÊS para ${d.nome}, nascido(a) ${d.data} em ${d.cidade}. Sol ${n.solS}, Lua ${n.luaS}, Asc ${n.ascS}. JSON: {"secoes":[{"titulo":"💼 Vocação","texto":"4 frases sobre dons e talentos"},{"titulo":"☿ Mente","texto":"3 frases sobre habilidades"},{"titulo":"♃ Expansão","texto":"3 frases sobre potencial"},{"titulo":"♄ Estrutura","texto":"3 frases sobre solidez profissional"},{"titulo":"🎯 Áreas Indicadas","texto":"Áreas profissionais alinhadas com este mapa"},{"titulo":"✦ Propósito","texto":"4 frases para ${d.nome}"}]}`;
-  else if(d.tipo==='mapa-karmico')p=`Expert kármica. PORTUGUÊS para ${d.nome}, nascido(a) ${d.data} em ${d.cidade}. Sol ${n.solS}, Lua ${n.luaS}. JSON: {"secoes":[{"titulo":"🔮 Missão da Alma","texto":"4 frases sobre propósito kármico"},{"titulo":"☊ Nodo Norte","texto":"3 frases sobre o que veio aprender"},{"titulo":"☋ Nodo Sul","texto":"3 frases sobre vidas passadas"},{"titulo":"♄ Lições","texto":"3 frases sobre desafios"},{"titulo":"⟳ Padrões","texto":"3 frases sobre transformações"},{"titulo":"✦ Mensagem da Alma","texto":"4 frases para ${d.nome}"}]}`;
-  else p=`Astróloga profissional. Leitura personalizada PORTUGUÊS para ${d.nome}, nascido(a) ${d.data} em ${d.cidade}. Sol ${n.solS}, Lua ${n.luaS}, Asc ${n.ascS}. Pergunta: "${d.pergunta||'leitura geral'}". JSON: {"secoes":[{"titulo":"✨ Visão Geral","texto":"4 frases sobre a situação"},{"titulo":"☉ Os Astros Revelam","texto":"4 frases com interpretação"},{"titulo":"☽ Lado Emocional","texto":"3 frases sobre sentimentos"},{"titulo":"🔮 Caminhos","texto":"4 frases sobre possibilidades"},{"titulo":"⚡ Ação","texto":"3 frases sobre o que fazer"},{"titulo":"✦ Mensagem Especial","texto":"5 frases para ${d.nome}"}]}`;
-  const ASTRO_API_KEY = 'XsNwhBmRjX8yDUmVRCO7Z4S3hVw7n7xPapUfneZw';
+  if(d.tipo==='mapa-astral')p=`Você é astróloga profissional. Mapa Astral em PORTUGUÊS para ${d.nome}, nascido(a) em ${d.data} em ${d.cidade}. Sol ${n.solS}, Lua ${n.luaS}, Asc ${n.ascS}, Vênus ${n.venS}, Júpiter ${n.jupS}. Responda APENAS JSON sem markdown: {"secoes":[{"titulo":"☉ Essência Solar","texto":"4 frases profundas sobre Sol em ${n.solS}"},{"titulo":"☽ Mundo Emocional","texto":"4 frases sobre Lua em ${n.luaS}"},{"titulo":"↑ Ascendente","texto":"3 frases sobre Asc em ${n.ascS}"},{"titulo":"♀ Amor e Relacionamentos","texto":"3 frases sobre vida afetiva com Vênus ${n.venS}"},{"titulo":"♃ Missão e Propósito","texto":"3 frases sobre propósito com Júpiter ${n.jupS}"},{"titulo":"✦ Mensagem dos Astros","texto":"4 frases inspiradoras para ${d.nome}"}]}`;
+  else if(d.tipo==='revolucao-solar'){const ano=d.anoRS||new Date().getFullYear();p=`Expert Revolução Solar. PORTUGUÊS para ${d.nome}, nascido(a) ${d.data} em ${d.cidade}. RS ${ano} em ${d.cidadeRS||d.cidade}. Sol RS ${n.solS}. JSON: {"secoes":[{"titulo":"☉ Tom do Ano ${ano}","texto":"4 frases sobre energia do ciclo"},{"titulo":"☽ Mundo Interior","texto":"3 frases sobre emoções do ano"},{"titulo":"♀ Amor neste Ciclo","texto":"3 frases sobre relacionamentos"},{"titulo":"♃ Carreira e Realizações","texto":"3 frases sobre trabalho"},{"titulo":"◷ Mês a Mês","texto":"Visão dos principais períodos do ano"},{"titulo":"✦ Mensagem Solar","texto":"4 frases para ${d.nome} em ${ano}"}]}`;}
+  else if(d.tipo==='sinastria'){const n2=d.data2?calcP(d.data2,d.hora2):n;p=`Expert Sinastria. PORTUGUÊS para ${d.nome} (Sol ${n.solS}) e ${d.nome2||'parceiro(a)'} (Sol ${n2.solS}). JSON: {"secoes":[{"titulo":"💕 Conexão e Afinidade","texto":"4 frases sobre afinidade"},{"titulo":"☉ Dinâmica Solar","texto":"3 frases sobre os Sóis"},{"titulo":"☽ Compatibilidade Emocional","texto":"3 frases sobre emoções"},{"titulo":"♂ Atração e Tensão","texto":"3 frases sobre química"},{"titulo":"⚖ Crescimento Mútuo","texto":"3 frases sobre aprendizados"},{"titulo":"✦ Mensagem para o Casal","texto":"4 frases inspiradoras"}]}`;}
+  else if(d.tipo==='mapa-profissional')p=`Expert vocacional. PORTUGUÊS para ${d.nome}, nascido(a) ${d.data} em ${d.cidade}. Sol ${n.solS}, Lua ${n.luaS}, Asc ${n.ascS}. JSON: {"secoes":[{"titulo":"💼 Vocação e Talentos","texto":"4 frases sobre dons naturais"},{"titulo":"☿ Mente e Comunicação","texto":"3 frases sobre habilidades"},{"titulo":"♃ Expansão e Sucesso","texto":"3 frases sobre potencial"},{"titulo":"♄ Estrutura e Legado","texto":"3 frases sobre solidez"},{"titulo":"🎯 Áreas Indicadas","texto":"Áreas profissionais alinhadas"},{"titulo":"✦ Mensagem de Propósito","texto":"4 frases para ${d.nome}"}]}`;
+  else if(d.tipo==='mapa-karmico')p=`Expert kármica. PORTUGUÊS para ${d.nome}, nascido(a) ${d.data} em ${d.cidade}. Sol ${n.solS}, Lua ${n.luaS}. JSON: {"secoes":[{"titulo":"🔮 Missão da Alma","texto":"4 frases sobre propósito kármico"},{"titulo":"☊ Nodo Norte","texto":"3 frases sobre o que veio aprender"},{"titulo":"☋ Nodo Sul","texto":"3 frases sobre vidas passadas"},{"titulo":"♄ Lições Kármicas","texto":"3 frases sobre desafios"},{"titulo":"⟳ Padrões a Transformar","texto":"3 frases sobre transformações"},{"titulo":"✦ Mensagem da Alma","texto":"4 frases para ${d.nome}"}]}`;
+  else p=`Astróloga profissional. Leitura personalizada PORTUGUÊS para ${d.nome}, nascido(a) ${d.data} em ${d.cidade}. Sol ${n.solS}, Lua ${n.luaS}, Asc ${n.ascS}. Situação: "${d.pergunta||'leitura geral'}". JSON: {"secoes":[{"titulo":"✨ Visão Geral","texto":"4 frases sobre a situação"},{"titulo":"☉ Os Astros Revelam","texto":"4 frases com interpretação"},{"titulo":"☽ Lado Emocional","texto":"3 frases sobre sentimentos"},{"titulo":"🔮 Caminhos","texto":"4 frases sobre possibilidades"},{"titulo":"⚡ Ação Recomendada","texto":"3 frases sobre o que fazer"},{"titulo":"✦ Mensagem Especial","texto":"5 frases para ${d.nome}"}]}`;
   try{
     const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:p}]})});
-    const j=await r.json();const txt=j.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();const leitura=JSON.parse(txt);
+    const j=await r.json();
+    const txt=j.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+    const leitura=JSON.parse(txt);
     document.getElementById('res-loading').style.display='none';
     document.getElementById('res-content').innerHTML=leitura.secoes.map(s=>`<div class="res-card"><h3>${s.titulo}</h3><p>${s.texto}</p></div>`).join('');
     document.getElementById('btn-nova').style.display='block';
-  }catch(e){document.getElementById('res-loading').innerHTML='<p style="color:#e09090">Erro ao gerar. Tente novamente.</p>';document.getElementById('btn-nova').style.display='block';}
+  }catch(e){
+    document.getElementById('res-loading').innerHTML='<p style="color:#e09090">Erro ao gerar. Tente novamente.</p>';
+    document.getElementById('btn-nova').style.display='block';
+  }
 }
 </script>
 </body>
