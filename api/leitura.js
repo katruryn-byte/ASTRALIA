@@ -216,6 +216,8 @@ module.exports = async function handler(req, res) {
 
     const data = await response.json();
     if (planetasReais.length > 0) data.planetas = planetasReais;
+    if (casasData && casasData.output) data.casas = casasData.output;
+    if (aspectosData2 && aspectosData2.output) data.aspectos = aspectosData2.output;
     return res.status(200).json(data);
 
   } catch (error) {
