@@ -12,6 +12,8 @@ module.exports = async function handler(req, res) {
   try {
     let infoAstro = '';
     let planetasReais = [];
+    let baseConhecimento = '';
+    let casasData = null;
 
     if (dados && dados.lat && dados.lon && dados.data) {
       const dt = new Date(dados.data + 'T' + (dados.hora || '12:00') + ':00');
@@ -55,7 +57,7 @@ module.exports = async function handler(req, res) {
           headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.FREEASTROLOGY_API_KEY },
           body: JSON.stringify({ ...body, config: { observation_point: 'topocentric', ayanamsha: 'tropical', house_system: 'Placidus', language: 'pt' } })
         });
-        const casasData = await casasRes.json();
+        casasData = await casasRes.json();
         if (casasData && casasData.output && casasData.output.Houses) {
           infoAstro += '\nCasas Astrologicas (Placidus):\n';
           casasData.output.Houses.forEach(casa => {
@@ -93,9 +95,87 @@ module.exports = async function handler(req, res) {
           });
         }
       } catch(e) { console.log('Aspectos erro:', e.message); }
+
+      // 4. Consulta base de conhecimento
+      try {
+        const planetaMap = {
+          'Sun':'sol','Moon':'lua','Mercury':'mercurio','Venus':'venus',
+          'Mars':'marte','Jupiter':'jupiter','Saturn':'saturno',
+          'Uranus':'urano','Neptune':'netuno','Pluto':'plutao'
+        };
+        const signoMap = {
+          'Aries':'aries','Taurus':'touro','Gemini':'gemeos','Cancer':'cancer',
+          'Leo':'leao','Virgo':'virgem','Libra':'libra','Scorpio':'escorpiao',
+          'Sagittarius':'sagitario','Capricorn':'capricornio','Aquarius':'aquario','Pisces':'peixes'
+        };
+        const nomePT = {
+          'Sun':'Sol','Moon':'Lua','Mercury':'Mercúrio','Venus':'Vênus',
+          'Mars':'Marte','Jupiter':'Júpiter','Saturn':'Saturno',
+          'Uranus':'Urano','Neptune':'Netuno','Pluto':'Plutão'
+        };
+        const casaColMap = {
+          1:'casa 1 ',2:'casa 2 ',3:'casa 3',4:'casa 4',
+          6:'casa 6',7:'casa 7',8:'casa 8',9:'casa 9',
+          10:'casa 10',11:'casa 11',12:'casa 12'
+        };
+
+        const planetasPrincipais = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn'];
+
+        const baseRes = await fetch(`${process.env.KNOWLEDGE_BASE_URL}?limit=500`);
+        const baseData = await baseRes.json();
+
+        if (baseData && Array.isArray(baseData) && baseData.length > 0) {
+          baseConhecimento = '\n\n=== BASE DE CONHECIMENTO ASTROLOGICO — USE OBRIGATORIAMENTE ===\n';
+          baseConhecimento += 'As interpretacoes abaixo sao a base da leitura. Use-as como fundamento e expanda com sua sabedoria:\n\n';
+
+          for (const planetaEn of planetasPrincipais) {
+            const planetaItem = planetasReais.find(p => p.planet?.en === planetaEn);
+            if (!planetaItem) continue;
+
+            const planetaKey = planetaMap[planetaEn];
+            const signoEn = planetaItem.zodiac_sign?.name?.en || '';
+            const signoKey = signoMap[signoEn] || signoEn.toLowerCase();
+
+            // Calcula casa do planeta
+            let casaNum = 1;
+            if (casasData && casasData.output && casasData.output.Houses) {
+              const grauPlaneta = planetaItem.fullDegree || 0;
+              const houses = casasData.output.Houses;
+              for (let i = 0; i < houses.length; i++) {
+                const proxIdx = (i + 1) % 12;
+                const inicio = houses[i].degree;
+                const fim = houses[proxIdx].degree;
+                if (fim > inicio) {
+                  if (grauPlaneta >= inicio && grauPlaneta < fim) { casaNum = houses[i].House; break; }
+                } else {
+                  if (grauPlaneta >= inicio || grauPlaneta < fim) { casaNum = houses[i].House; break; }
+                }
+              }
+            }
+
+            const casaCol = casaColMap[casaNum];
+
+            // Busca na base
+            const linha = baseData.find(row => {
+              const vals = Object.values(row);
+              const rPlaneta = (vals[0] || '').toString().toLowerCase().trim();
+              const rSigno = (vals[1] || '').toString().toLowerCase().trim();
+              return rPlaneta === planetaKey && rSigno === signoKey;
+            });
+
+            if (linha && casaCol) {
+              const interp = linha[casaCol] || '';
+              if (interp && interp.length > 10) {
+                baseConhecimento += `--- ${nomePT[planetaEn]} em ${signoEn} na Casa ${casaNum} ---\n${interp}\n\n`;
+              }
+            }
+          }
+          baseConhecimento += '=== FIM DA BASE — SINTETIZE TUDO DE FORMA ELOQUENTE E INSPIRADORA ===\n';
+        }
+      } catch(e) { console.log('Base conhecimento erro:', e.message); }
     }
 
-    // 4. Salva cliente no Google Sheets via SheetDB
+    // 5. Salva cliente no Google Sheets
     if (dados && dados.nome) {
       try {
         await fetch(process.env.SHEETDB_URL, {
@@ -115,12 +195,11 @@ module.exports = async function handler(req, res) {
             }]
           })
         });
-        console.log('Cliente salvo no Sheets:', dados.nome);
       } catch(e) { console.log('SheetDB erro:', e.message); }
     }
 
-    // 5. Gera leitura com Claude
-    const promptFinal = prompt + infoAstro;
+    // 6. Gera leitura com Claude
+    const promptFinal = prompt + infoAstro + baseConhecimento;
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -130,7 +209,7 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1500,
+        max_tokens: 2000,
         messages: [{ role: 'user', content: promptFinal }]
       })
     });
