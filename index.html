@@ -1,145 +1,316 @@
-module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-
-  const { prompt, dados } = req.body;
-  if (!prompt) return res.status(400).json({ error: 'Prompt obrigatorio' });
-
-  try {
-    let infoAstro = '';
-    let planetasReais = [];
-
-    if (dados && dados.lat && dados.lon && dados.data) {
-      const dt = new Date(dados.data + 'T' + (dados.hora || '12:00') + ':00');
-      const body = {
-        year: dt.getFullYear(),
-        month: dt.getMonth() + 1,
-        date: dt.getDate(),
-        hours: dt.getHours(),
-        minutes: dt.getMinutes(),
-        seconds: 0,
-        latitude: parseFloat(dados.lat),
-        longitude: parseFloat(dados.lon),
-        timezone: dados.timezone || -3
-      };
-
-      // 1. Planetas
-      try {
-        const planetasRes = await fetch('https://json.freeastrologyapi.com/western/planets', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.FREEASTROLOGY_API_KEY },
-          body: JSON.stringify({ ...body, config: { observation_point: 'topocentric', ayanamsha: 'tropical', language: 'pt' } })
-        });
-        const planetasData = await planetasRes.json();
-        if (planetasData && planetasData.output && Array.isArray(planetasData.output)) {
-          planetasReais = planetasData.output;
-          infoAstro += '\n\nPosicoes REAIS dos planetas:\n';
-          planetasData.output.forEach(item => {
-            const nome = item.planet?.en || '';
-            const signo = item.zodiac_sign?.name?.en || '';
-            const grau = item.normDegree ? ` ${item.normDegree.toFixed(1)}` : '';
-            const retro = (item.isRetro === 'True' || item.isRetro === true) ? ' (Retrogrado)' : '';
-            if (nome && signo) infoAstro += `${nome}: ${signo}${grau}${retro}\n`;
-          });
-        }
-      } catch(e) { console.log('Planetas erro:', e.message); }
-
-      // 2. Casas
-      try {
-        const casasRes = await fetch('https://json.freeastrologyapi.com/western/houses', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.FREEASTROLOGY_API_KEY },
-          body: JSON.stringify({ ...body, config: { observation_point: 'topocentric', ayanamsha: 'tropical', house_system: 'Placidus', language: 'pt' } })
-        });
-        const casasData = await casasRes.json();
-        if (casasData && casasData.output && casasData.output.Houses) {
-          infoAstro += '\nCasas Astrologicas (Placidus):\n';
-          casasData.output.Houses.forEach(casa => {
-            const signo = casa.zodiac_sign?.name?.en || '';
-            const grau = casa.normDegree ? ` ${casa.normDegree.toFixed(1)}` : '';
-            if (signo) infoAstro += `Casa ${casa.House}: ${signo}${grau}\n`;
-          });
-        }
-      } catch(e) { console.log('Casas erro:', e.message); }
-
-      // 3. Aspectos
-      try {
-        const aspectosRes = await fetch('https://json.freeastrologyapi.com/western/aspects', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.FREEASTROLOGY_API_KEY },
-          body: JSON.stringify({
-            ...body,
-            config: {
-              observation_point: 'topocentric',
-              ayanamsha: 'tropical',
-              language: 'pt',
-              allowed_aspects: ['Conjunction', 'Opposition', 'Trine', 'Square', 'Sextile'],
-              orb_values: { Conjunction: 8, Opposition: 8, Trine: 8, Square: 8, Sextile: 6 }
-            }
-          })
-        });
-        const aspectosData = await aspectosRes.json();
-        if (aspectosData && aspectosData.output && Array.isArray(aspectosData.output)) {
-          infoAstro += '\nAspectos Principais:\n';
-          aspectosData.output.slice(0, 10).forEach(item => {
-            const p1 = item.planet_1?.en || '';
-            const p2 = item.planet_2?.en || '';
-            const asp = item.aspect?.en || '';
-            if (p1 && p2 && asp) infoAstro += `${p1} ${asp} ${p2}\n`;
-          });
-        }
-      } catch(e) { console.log('Aspectos erro:', e.message); }
-    }
-
-    // 4. Salva cliente no Google Sheets via SheetDB
-    if (dados && dados.nome) {
-      try {
-        await fetch(process.env.SHEETDB_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            data: [{
-              Data: new Date().toLocaleString('pt-BR'),
-              Nome: dados.nome || '',
-              WhatsApp: dados.whatsapp || '',
-              Email: dados.email || '',
-              Cidade: dados.cidade || '',
-              Nascimento: dados.data || '',
-              Hora: dados.hora || '',
-              Tipo: dados.tipo || '',
-              Valor: dados.preco || ''
-            }]
-          })
-        });
-        console.log('Cliente salvo no Sheets:', dados.nome);
-      } catch(e) { console.log('SheetDB erro:', e.message); }
-    }
-
-    // 5. Gera leitura com Claude
-    const promptFinal = prompt + infoAstro;
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1500,
-        messages: [{ role: 'user', content: promptFinal }]
-      })
-    });
-
-    const data = await response.json();
-    if (planetasReais.length > 0) data.planetas = planetasReais;
-    return res.status(200).json(data);
-
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Astral IA — Leituras Astrológicas com Inteligência Artificial</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body,html{background:#06030e;color:#e5d0ff;font-family:'Cormorant Garamond',serif;scroll-behavior:smooth}
+.nav{background:rgba(6,3,14,.97);border-bottom:1px solid #1c0e40;padding:.85rem 1.5rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;backdrop-filter:blur(10px)}
+.nav-logo{font-family:'Cinzel',serif;font-size:1.15rem;color:#c9a84c;letter-spacing:.1em}
+.nav-logo em{color:#a07fff;font-style:normal}
+.nav-pages{display:flex;gap:.4rem}
+.npg{background:transparent;border:none;color:#7a5ea0;font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.12em;padding:.4rem .85rem;cursor:pointer;border-radius:20px;transition:all .2s}
+.npg:hover,.npg.on{background:#1c0e40;color:#c9a84c}
+.page{display:none}.page.on{display:block}
+.hero{background:radial-gradient(ellipse at 50% 0%,#18083a 0%,#06030e 65%);padding:4rem 1.5rem 3.5rem;text-align:center;position:relative;overflow:hidden}
+.hero-orb{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;opacity:.18}
+.hero-badge{display:inline-block;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);color:#c9a84c;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.2em;padding:.3rem .9rem;border-radius:20px;margin-bottom:1.3rem}
+.hero-title{font-family:'Cinzel',serif;font-size:clamp(2.2rem,7vw,4rem);color:#f0d080;letter-spacing:.18em;margin-bottom:.5rem;line-height:1.1}
+.hero-sub-title{font-family:'Cinzel',serif;font-size:clamp(.9rem,2.5vw,1.2rem);color:#a07fff;letter-spacing:.1em;margin-bottom:1rem}
+.hero-desc{font-size:1rem;color:#7a5ea0;font-style:italic;max-width:520px;margin:0 auto 2.2rem;line-height:1.75}
+.hero-btns{display:flex;gap:.9rem;justify-content:center;flex-wrap:wrap}
+.btn-gold{background:linear-gradient(135deg,#7a3000,#c9a84c);border:none;color:#fff;font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.12em;padding:.8rem 2rem;border-radius:30px;cursor:pointer;transition:opacity .2s,transform .15s}
+.btn-gold:hover{opacity:.88;transform:translateY(-2px)}
+.btn-ghost{background:transparent;border:1px solid rgba(201,168,76,.35);color:#c9a84c;font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.12em;padding:.8rem 2rem;border-radius:30px;cursor:pointer;transition:all .2s}
+.btn-ghost:hover{background:rgba(201,168,76,.08)}
+.section{padding:3.5rem 1.3rem}.section.alt{background:#09040f}
+.sec-label{font-family:'Cinzel',serif;font-size:.62rem;color:#c9a84c;letter-spacing:.25em;text-align:center;margin-bottom:.5rem}
+.sec-title{font-family:'Cinzel',serif;font-size:clamp(1.3rem,3.5vw,2rem);text-align:center;color:#e5d0ff;margin-bottom:.6rem}
+.sec-sub{font-size:.95rem;color:#6a4d90;text-align:center;font-style:italic;margin-bottom:2.2rem;line-height:1.7;max-width:520px;margin-left:auto;margin-right:auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:1.1rem;max-width:1050px;margin:0 auto}
+.scard{background:#0d0620;border:1px solid #1c0e40;border-radius:16px;padding:1.6rem;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#c9a84c,transparent);opacity:0;transition:opacity .3s}
+.scard:hover{transform:translateY(-4px);border-color:rgba(201,168,76,.35)}.scard:hover::before{opacity:1}
+.scard.premium{border-color:rgba(160,127,255,.3);background:linear-gradient(135deg,#0d0620,#130828)}
+.sc-icon{font-size:1.9rem;margin-bottom:.85rem;display:block}
+.sc-title{font-family:'Cinzel',serif;font-size:.9rem;color:#f0d080;letter-spacing:.07em;margin-bottom:.55rem}
+.sc-desc{font-size:.9rem;color:#6a4d90;line-height:1.7;margin-bottom:1.1rem;font-weight:300}
+.sc-price{font-family:'Cinzel',serif;font-size:1.3rem;color:#c9a84c;margin-bottom:.9rem}
+.sc-price small{font-size:.75rem;color:#5a3d80;margin-right:.2rem}
+.sc-badge{position:absolute;top:.85rem;right:.85rem;background:linear-gradient(135deg,#5a20aa,#a07fff);color:#fff;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.1em;padding:.22rem .65rem;border-radius:20px}
+.sc-btn{display:block;width:100%;padding:.65rem;background:linear-gradient(135deg,#3a1070,#7a3000);border:none;border-radius:9px;color:#fff;font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.1em;cursor:pointer;transition:opacity .2s}
+.sc-btn:hover{opacity:.82}
+.steps{display:grid;gap:.85rem;max-width:650px;margin:0 auto}
+.step{display:flex;gap:1.1rem;align-items:flex-start;background:#0d0620;border:1px solid #1c0e40;border-radius:13px;padding:1.25rem}
+.step-n{flex-shrink:0;width:38px;height:38px;background:linear-gradient(135deg,#5a20aa,#7a3000);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.88rem;color:#fff}
+.step h3{font-family:'Cinzel',serif;font-size:.8rem;color:#f0d080;letter-spacing:.07em;margin-bottom:.35rem}
+.step p{font-size:.9rem;color:#6a4d90;line-height:1.65;font-weight:300}
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;max-width:900px;margin:0 auto}
+.testi{background:#0d0620;border:1px solid #1c0e40;border-radius:14px;padding:1.5rem}
+.testi-stars{color:#c9a84c;font-size:.9rem;margin-bottom:.8rem}
+.testi-text{font-size:.93rem;color:#7a5ea0;line-height:1.78;font-style:italic;margin-bottom:1rem}
+.testi-name{font-family:'Cinzel',serif;font-size:.68rem;color:#5a3d80;letter-spacing:.1em}
+.cta-wrap{max-width:580px;margin:0 auto;background:linear-gradient(135deg,rgba(122,61,221,.08),rgba(201,168,76,.05));border:1px solid rgba(201,168,76,.2);border-radius:22px;padding:3rem 2rem;text-align:center}
+.cta-wrap h2{font-family:'Cinzel',serif;font-size:clamp(1.2rem,3.5vw,1.8rem);color:#f0d080;margin-bottom:.9rem;line-height:1.3}
+.cta-wrap p{font-size:.97rem;color:#6a4d90;font-style:italic;line-height:1.75;margin-bottom:1.8rem}
+footer{border-top:1px solid #1c0e40;padding:2rem 1.5rem;text-align:center}
+.footer-logo{font-family:'Cinzel',serif;font-size:1rem;color:#c9a84c;margin-bottom:.5rem}
+.footer-text{font-size:.8rem;color:#5a3d80;line-height:1.7}
+.footer-links{display:flex;justify-content:center;gap:1.5rem;margin-top:.9rem}
+.footer-links a{color:#5a3d80;text-decoration:none;font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.1em;transition:color .2s}
+.footer-links a:hover{color:#c9a84c}
+.form-page{max-width:620px;margin:0 auto;padding:2rem 1.3rem 3rem}
+.form-header{text-align:center;margin-bottom:2rem}
+.form-header h2{font-family:'Cinzel',serif;font-size:1.3rem;color:#f0d080;letter-spacing:.1em;margin-bottom:.4rem}
+.form-header p{font-size:.9rem;color:#6a4d90;font-style:italic}
+.tipo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1.5rem}
+.tipo-btn{background:#0d0620;border:1px solid #1c0e40;border-radius:10px;padding:.8rem .5rem;text-align:center;cursor:pointer;transition:all .2s;font-family:'Cinzel',serif;font-size:.62rem;color:#7a5ea0;letter-spacing:.05em;line-height:1.4}
+.tipo-btn:hover,.tipo-btn.on{border-color:#c9a84c;color:#f0d080;background:#130830}
+.tipo-btn .ti{font-size:1.3rem;display:block;margin-bottom:.3rem}
+.fbox{background:#0d0620;border:1px solid #1c0e40;border-radius:16px;padding:1.8rem;margin-bottom:1rem}
+.fbox-title{font-family:'Cinzel',serif;font-size:.78rem;color:#b090e0;letter-spacing:.12em;margin-bottom:1.2rem;text-align:center}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.fd{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.85rem;position:relative}
+.fd label{font-family:'Cinzel',serif;font-size:.58rem;color:#5a3d80;letter-spacing:.12em;text-transform:uppercase}
+.fd input,.fd select,.fd textarea{background:#110830;border:1px solid #2a1650;color:#e5d0ff;border-radius:8px;padding:.58rem .9rem;font-family:'Cormorant Garamond',serif;font-size:.95rem;width:100%;transition:border-color .2s;resize:none}
+.fd input:focus,.fd select:focus,.fd textarea:focus{outline:none;border-color:#8040d0}
+.fd input::placeholder,.fd textarea::placeholder{color:#3a2560}
+.fd select option{background:#110830}
+.autocomplete-results{display:none;position:absolute;top:100%;left:0;right:0;background:#110830;border:1px solid #2a1650;border-radius:8px;z-index:999;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.autocomplete-item{padding:.6rem .9rem;cursor:pointer;font-size:.88rem;color:#e5d0ff;border-bottom:1px solid #1c0e40;transition:background .15s}
+.autocomplete-item:hover{background:#1c0e40}
+.autocomplete-item:last-child{border-bottom:none}
+.sep{border-top:1px solid #1c0e40;margin:.9rem 0;padding-top:.9rem}
+.preco-box{background:linear-gradient(135deg,#180800,#200c00);border:1px solid rgba(201,168,76,.3);border-radius:12px;padding:1rem 1.3rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+.preco-label{font-family:'Cinzel',serif;font-size:.75rem;color:#7a5030}
+.preco-val{font-family:'Cinzel',serif;font-size:1.4rem;color:#c9a84c}
+.btn-pagar{width:100%;padding:.88rem;background:linear-gradient(135deg,#7a3000,#c9a84c);border:none;border-radius:11px;color:#fff;font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:.14em;cursor:pointer;transition:opacity .2s}
+.btn-pagar:hover{opacity:.88}
+.err-msg{background:#1a0808;border:1px solid #4a1515;border-radius:8px;padding:.65rem 1rem;color:#e09090;font-size:.82rem;text-align:center;margin-bottom:.8rem;display:none}
+.form-page-pay{max-width:560px;margin:0 auto;padding:2rem 1.3rem 3rem}
+.pay-box{background:#0d0620;border:1px solid #1c0e40;border-radius:16px;padding:1.8rem;margin-bottom:1rem}
+.pay-title{font-family:'Cinzel',serif;font-size:.82rem;color:#b090e0;letter-spacing:.12em;margin-bottom:1.3rem;text-align:center}
+.pay-aguarda{background:#0d0420;border:1px solid #2a1650;border-radius:12px;padding:1.2rem;text-align:center;margin-bottom:1rem}
+.pay-aguarda p{font-size:.9rem;color:#9070c0;line-height:1.7;margin-bottom:.8rem}
+.pay-link{display:inline-block;background:linear-gradient(135deg,#005c1a,#00a832);color:#fff;font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:.1em;padding:.7rem 1.8rem;border-radius:10px;text-decoration:none;margin-bottom:.8rem;transition:opacity .2s}
+.pay-link:hover{opacity:.88}
+.pay-info{font-size:.82rem;color:#5a3d80;font-style:italic;line-height:1.6;margin-top:.5rem}
+.btn-confirmar{width:100%;padding:.82rem;background:linear-gradient(135deg,#3a1070,#c9a84c);border:none;border-radius:10px;color:#fff;font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.12em;cursor:pointer;margin-top:1rem;transition:opacity .2s}
+.btn-confirmar:hover{opacity:.88}
+.btn-voltar{display:block;width:100%;padding:.7rem;background:transparent;border:1px solid #2a1650;border-radius:10px;color:#6a4d90;font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.1em;cursor:pointer;text-align:center;transition:all .2s;margin-top:.8rem}
+.btn-voltar:hover{border-color:#c9a84c;color:#f0d080}
+.result-page{max-width:750px;margin:0 auto;padding:2rem 1.3rem 3rem}
+.res-header{text-align:center;margin-bottom:1.8rem}
+.res-title{font-family:'Cinzel',serif;font-size:1.1rem;color:#f0d080;letter-spacing:.1em;margin-bottom:.4rem}
+.res-sub{font-size:.85rem;color:#6a4d90;font-style:italic}
+.res-loading{text-align:center;padding:3rem 1rem}
+.res-loading p{color:#6a4d90;font-style:italic;font-size:.95rem;margin-top:.9rem;line-height:1.6}
+.res-loading svg{animation:spin 3s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.mandala-wrap{margin:1.5rem 0;border-radius:16px;overflow:hidden;border:1px solid #1c0e40;position:relative}
+.mandala-wrap canvas{display:block;width:100%}
+.mandala-label{position:absolute;bottom:12px;left:0;right:0;text-align:center;font-family:'Cinzel',serif;font-size:.65rem;color:#c9a84c;letter-spacing:.2em;opacity:.8}
+.planetas-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.6rem;margin:1rem 0}
+.planeta-card{background:#0d0620;border:1px solid #1c0e40;border-radius:10px;padding:.8rem;text-align:center}
+.planeta-sym{font-size:1.4rem;margin-bottom:.3rem}
+.planeta-nome{font-family:'Cinzel',serif;font-size:.6rem;color:#7a5ea0;letter-spacing:.1em}
+.planeta-signo{font-size:.85rem;color:#c9a84c;margin-top:.2rem}
+.planeta-retro{font-size:.6rem;color:#e09090;margin-top:.1rem}
+.res-card{background:#0d0620;border:1px solid #1c0e40;border-radius:14px;padding:1.5rem;margin-bottom:.9rem}
+.res-card h3{font-family:'Cinzel',serif;font-size:.75rem;color:#b090e0;letter-spacing:.12em;margin-bottom:.65rem;display:flex;align-items:center;gap:.45rem}
+.res-card h3::after{content:'';flex:1;height:1px;background:#1c0e40}
+.res-card p{font-size:.98rem;color:#d0b8f5;line-height:1.88;font-weight:300}
+.upsell-box{background:linear-gradient(135deg,#130828,#1a0a2e);border:1px solid rgba(160,127,255,.4);border-radius:16px;padding:1.8rem;text-align:center;margin-top:1.5rem}
+.upsell-box h3{font-family:'Cinzel',serif;font-size:.9rem;color:#f0d080;letter-spacing:.08em;margin-bottom:.6rem}
+.upsell-box p{font-size:.9rem;color:#7a5ea0;font-style:italic;margin-bottom:1.2rem;line-height:1.7}
+.btn-upsell-pay{width:100%;padding:.82rem;background:linear-gradient(135deg,#005c1a,#00a832);border:none;border-radius:10px;color:#fff;font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.12em;cursor:pointer;transition:opacity .2s;text-decoration:none;display:block;text-align:center}
+.personalizada-aviso{background:linear-gradient(135deg,#1a0828,#0d0620);border:1px solid rgba(160,127,255,.3);border-radius:12px;padding:1.2rem;text-align:center;margin-top:1rem}
+.personalizada-aviso p{font-size:.9rem;color:#9070c0;line-height:1.7}
+.personalizada-aviso strong{color:#f0d080}
+@media(max-width:580px){.tipo-grid{grid-template-columns:repeat(2,1fr)}.r2{grid-template-columns:1fr}.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-logo">Astral<em>IA</em></div>
+  <div class="nav-pages">
+    <button class="npg on" onclick="goPage('home',this)">Início</button>
+    <button class="npg" onclick="goPage('form',this)">Leituras</button>
+  </div>
+</nav>
+<div class="page on" id="pg-home">
+  <div class="hero">
+    <div class="hero-orb"><svg width="420" height="420" viewBox="-210 -210 420 420"><circle r="190" fill="none" stroke="#c9a84c" stroke-width=".8" stroke-dasharray="4 9"/><circle r="130" fill="none" stroke="#7a3ddd" stroke-width=".6" stroke-dasharray="2 7"/><circle r="75" fill="none" stroke="#c9a84c" stroke-width=".4" stroke-dasharray="1 6"/><circle cx="190" cy="0" r="5.5" fill="#c9a84c" opacity=".9"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite"/></circle><circle cx="130" cy="0" r="4" fill="#7a3ddd" opacity=".85"><animateTransform attributeName="transform" type="rotate" from="0" to="-360" dur="13s" repeatCount="indefinite"/></circle><circle cx="75" cy="0" r="3" fill="#c9a84c" opacity=".7"><animateTransform attributeName="transform" type="rotate" from="90" to="450" dur="8s" repeatCount="indefinite"/></circle></svg></div>
+    <div class="hero-badge">✦ Leituras com Inteligência Artificial ✦</div>
+    <h1 class="hero-title">ASTRAL IA</h1>
+    <div class="hero-sub-title">O Cosmos Revelado para Você</div>
+    <p class="hero-desc">Leituras astrológicas profundas e personalizadas, geradas com base no seu mapa natal único.</p>
+    <div class="hero-btns">
+      <button class="btn-gold" onclick="goPage('form',document.querySelectorAll('.npg')[1])">✦ Descobrir Meu Mapa</button>
+      <button class="btn-ghost" onclick="document.getElementById('sec-s').scrollIntoView({behavior:'smooth'})">Ver Serviços</button>
+    </div>
+  </div>
+  <div class="section" id="sec-s">
+    <div class="sec-label">✦ Nossos Serviços</div>
+    <h2 class="sec-title">Escolha sua Leitura</h2>
+    <p class="sec-sub">Cada leitura é gerada exclusivamente para você, com base na posição dos astros no momento do seu nascimento.</p>
+    <div class="cards">
+      <div class="scard" onclick="selecionarTipo('mapa-astral')"><span class="sc-icon">☉</span><div class="sc-title">Mapa Astral</div><p class="sc-desc">Sua carta natal completa — Sol, Lua, Ascendente e todos os planetas interpretados com profundidade.</p><div class="sc-price"><small>R$</small>49,90</div><button class="sc-btn">Quero esta leitura →</button></div>
+      <div class="scard" onclick="selecionarTipo('revolucao-solar')"><span class="sc-icon">🌅</span><div class="sc-title">Revolução Solar</div><p class="sc-desc">O mapa do seu novo ano — do aniversário ao próximo. Descubra os temas do ciclo que se inicia.</p><div class="sc-price"><small>R$</small>49,90</div><button class="sc-btn">Quero esta leitura →</button></div>
+      <div class="scard" onclick="selecionarTipo('mapa-profissional')"><span class="sc-icon">💼</span><div class="sc-title">Mapa Profissional</div><p class="sc-desc">Descubra sua vocação, talentos naturais e o caminho para realizar seu propósito na carreira.</p><div class="sc-price"><small>R$</small>49,90</div><button class="sc-btn">Quero esta leitura →</button></div>
+      <div class="scard" onclick="selecionarTipo('sinastria')"><span class="sc-icon">💕</span><div class="sc-title">Sinastria</div><p class="sc-desc">A comparação entre dois mapas astrais. Entenda a compatibilidade e os desafios do relacionamento.</p><div class="sc-price"><small>R$</small>49,90</div><button class="sc-btn">Quero esta leitura →</button></div>
+      <div class="scard" onclick="selecionarTipo('mapa-karmico')"><span class="sc-icon">🔮</span><div class="sc-title">Mapa Kármico</div><p class="sc-desc">As missões da sua alma — nodos lunares, planetas retrógrados e padrões de vidas passadas.</p><div class="sc-price"><small>R$</small>49,90</div><button class="sc-btn">Quero esta leitura →</button></div>
+      <div class="scard premium" onclick="selecionarTipo('personalizada')"><div class="sc-badge">✦ PREMIUM</div><span class="sc-icon">✨</span><div class="sc-title">Leitura Personalizada</div><p class="sc-desc">Análise profunda com previsão anual completa. Entregue em até 7 dias via WhatsApp.</p><div class="sc-price"><small>R$</small>197,17</div><button class="sc-btn">Quero esta leitura →</button></div>
+    </div>
+  </div>
+  <div class="section alt">
+    <div class="sec-label">✦ Passo a Passo</div>
+    <h2 class="sec-title">Como Funciona</h2>
+    <p class="sec-sub">Em menos de 5 minutos você recebe sua leitura completa.</p>
+    <div class="steps">
+      <div class="step"><div class="step-n">1</div><div><h3>Escolha a Leitura</h3><p>Selecione entre as 6 opções disponíveis.</p></div></div>
+      <div class="step"><div class="step-n">2</div><div><h3>Informe seus Dados</h3><p>Digite seus dados de nascimento, WhatsApp e e-mail.</p></div></div>
+      <div class="step"><div class="step-n">3</div><div><h3>Realize o Pagamento</h3><p>Pague com PIX ou cartão de forma segura via Mercado Pago.</p></div></div>
+      <div class="step"><div class="step-n">4</div><div><h3>Receba sua Leitura</h3><p>Leituras standard na hora. Leitura Personalizada em até 7 dias via WhatsApp.</p></div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sec-label">✦ Depoimentos</div>
+    <h2 class="sec-title">O que dizem nossos clientes</h2>
+    <p class="sec-sub">Pessoas que descobriram o que os astros revelam sobre sua vida.</p>
+    <div class="testi-grid">
+      <div class="testi"><div class="testi-stars">★★★★★</div><p class="testi-text">"A leitura do meu Mapa Astral foi surpreendentemente precisa. Identifiquei padrões que nunca havia percebido!"</p><div class="testi-name">— MARIANA S., SÃO PAULO</div></div>
+      <div class="testi"><div class="testi-stars">★★★★★</div><p class="testi-text">"Fiz a Sinastria com meu marido e ficamos impressionados. Ajudou muito a entender nossa dinâmica."</p><div class="testi-name">— CAROLINA M., RIO DE JANEIRO</div></div>
+      <div class="testi"><div class="testi-stars">★★★★★</div><p class="testi-text">"O Mapa Profissional confirmou minha vocação e me deu coragem para mudar de carreira!"</p><div class="testi-name">— RAFAEL T., BELO HORIZONTE</div></div>
+    </div>
+  </div>
+  <div class="section alt"><div class="cta-wrap"><h2>Os Astros Têm uma Mensagem para Você</h2><p>Não deixe mais o cosmos falar sem que você ouça. Descubra o que seu mapa natal revela.</p><button class="btn-gold" onclick="goPage('form',document.querySelectorAll('.npg')[1])">✦ Iniciar Minha Leitura Agora</button></div></div>
+  <footer><div class="footer-logo">Astral IA</div><p class="footer-text">Leituras astrológicas geradas por Inteligência Artificial.<br>Resultados para fins de autoconhecimento e entretenimento.</p><div class="footer-links"><a href="#">Termos de Uso</a><a href="#">Privacidade</a><a href="#">Contato</a></div></footer>
+</div>
+<div class="page" id="pg-form">
+  <div class="form-page">
+    <div class="form-header"><h2>✦ Sua Leitura Astral</h2><p>Escolha o tipo e preencha seus dados</p></div>
+    <div class="tipo-grid">
+      <div class="tipo-btn on" data-tipo="mapa-astral" data-preco="49.90" onclick="setTipo(this)"><span class="ti">☉</span>Mapa Astral</div>
+      <div class="tipo-btn" data-tipo="revolucao-solar" data-preco="49.90" onclick="setTipo(this)"><span class="ti">🌅</span>Rev. Solar</div>
+      <div class="tipo-btn" data-tipo="mapa-profissional" data-preco="49.90" onclick="setTipo(this)"><span class="ti">💼</span>Profissional</div>
+      <div class="tipo-btn" data-tipo="sinastria" data-preco="49.90" onclick="setTipo(this)"><span class="ti">💕</span>Sinastria</div>
+      <div class="tipo-btn" data-tipo="mapa-karmico" data-preco="49.90" onclick="setTipo(this)"><span class="ti">🔮</span>Kármico</div>
+      <div class="tipo-btn" data-tipo="personalizada" data-preco="197.17" onclick="setTipo(this)"><span class="ti">✨</span>Personalizada</div>
+    </div>
+    <div class="fbox">
+      <div class="fbox-title">✧ Seus Dados ✧</div>
+      <div class="fd"><label>Nome Completo</label><input type="text" id="f-nome" placeholder="Seu nome completo"/></div>
+      <div class="r2">
+        <div class="fd"><label>WhatsApp</label><input type="tel" id="f-whatsapp" placeholder="(00) 00000-0000"/></div>
+        <div class="fd"><label>E-mail</label><input type="email" id="f-email" placeholder="seu@email.com"/></div>
+      </div>
+      <div class="fbox-title" style="margin-top:.5rem">✧ Dados de Nascimento ✧</div>
+      <div class="r2"><div class="fd"><label>Data de Nascimento</label><input type="date" id="f-data"/></div><div class="fd"><label>Hora (opcional)</label><input type="time" id="f-hora"/></div></div>
+      <div class="fd">
+        <label>Cidade de Nascimento</label>
+        <input type="text" id="f-cidade" placeholder="Digite sua cidade..." autocomplete="off" oninput="buscarCidade(this,'lista-cidade','f-lat','f-lon')"/>
+        <div class="autocomplete-results" id="lista-cidade"></div>
+        <input type="hidden" id="f-lat"/><input type="hidden" id="f-lon"/>
+      </div>
+      <div id="extra-sinastria" style="display:none">
+        <div class="sep">
+          <div class="fbox-title" style="margin-bottom:.9rem">✧ Dados do Parceiro(a) ✧</div>
+          <div class="fd"><label>Nome</label><input type="text" id="f-nome2" placeholder="Nome do parceiro(a)"/></div>
+          <div class="r2"><div class="fd"><label>Data</label><input type="date" id="f-data2"/></div><div class="fd"><label>Hora</label><input type="time" id="f-hora2"/></div></div>
+          <div class="fd">
+            <label>Cidade</label>
+            <input type="text" id="f-cidade2" placeholder="Cidade de nascimento" autocomplete="off" oninput="buscarCidade(this,'lista-cidade2','f-lat2','f-lon2')"/>
+            <div class="autocomplete-results" id="lista-cidade2"></div>
+            <input type="hidden" id="f-lat2"/><input type="hidden" id="f-lon2"/>
+          </div>
+        </div>
+      </div>
+      <div id="extra-rs" style="display:none"><div class="sep"><div class="fd"><label>Cidade no Aniversário</label><input type="text" id="f-cidaders" placeholder="Onde passará o aniversário"/></div><div class="fd"><label>Ano da Revolução Solar</label><select id="f-anors"></select></div></div></div>
+      <div id="extra-personalizada" style="display:none">
+        <div class="sep">
+          <div class="fd"><label>Sua pergunta principal para os astros</label><textarea id="f-pergunta" rows="4" placeholder="Descreva sua situação ou o que gostaria que a leitura focasse..."></textarea></div>
+          <div style="background:#0d0420;border:1px solid rgba(160,127,255,.2);border-radius:10px;padding:.9rem;font-size:.85rem;color:#7a5ea0;line-height:1.7;margin-top:.5rem">✨ <strong style="color:#c9a84c">Leitura Personalizada Premium</strong> — Você receberá uma análise profunda com previsão anual completa, entregue em até 7 dias via WhatsApp.</div>
+        </div>
+      </div>
+    </div>
+    <div class="preco-box"><div class="preco-label">Valor da leitura</div><div class="preco-val" id="preco-display">R$ 49,90</div></div>
+    <div class="err-msg" id="err-msg">Preencha nome, data e cidade para continuar.</div>
+    <button class="btn-pagar" onclick="irPagar()">☉ Prosseguir para Pagamento</button>
+  </div>
+</div>
+<div class="page" id="pg-pay">
+  <div class="form-page-pay">
+    <div class="form-header"><h2>✦ Pagamento</h2><p id="pay-desc">Mapa Astral — R$ 49,90</p></div>
+    <div class="pay-box">
+      <div class="pay-title">✧ Pagamento Seguro via Mercado Pago ✧</div>
+      <div class="pay-aguarda">
+        <p>Clique no botão abaixo para pagar com <strong>PIX ou Cartão</strong>.<br>Após confirmar o pagamento, volte aqui e clique em <strong>"Já Paguei"</strong>.</p>
+        <a id="link-pagamento" href="#" target="_blank" class="pay-link">💳 Pagar com Mercado Pago</a>
+        <p class="pay-info">✅ Ambiente 100% seguro · PIX, Cartão de Crédito e Débito</p>
+      </div>
+      <button class="btn-confirmar" onclick="confirmarPagamento()">✦ Já Paguei — Gerar Minha Leitura</button>
+    </div>
+    <button class="btn-voltar" onclick="goPage('form',document.querySelectorAll('.npg')[1])">← Voltar</button>
+  </div>
+</div>
+<div class="page" id="pg-result">
+  <div class="result-page">
+    <div class="res-header">
+      <div class="res-title" id="res-title">✦ Sua Leitura Astral ✦</div>
+      <div class="res-sub">Gerada exclusivamente para você pelos astros</div>
+    </div>
+    <div id="res-loading" class="res-loading">
+      <svg width="54" height="54" viewBox="-27 -27 54 54"><circle r="22" fill="none" stroke="#2a1650" stroke-width="2"/><circle r="22" fill="none" stroke="#c9a84c" stroke-width="2" stroke-dasharray="18 120" stroke-linecap="round"/><circle cx="22" cy="0" r="3.5" fill="#c9a84c"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="3s" repeatCount="indefinite"/></circle></svg>
+      <p>Os astros estão sendo consultados...<br><small style="font-size:.78rem;color:#3a2560">Calculando posições planetárias reais e gerando sua leitura</small></p>
+    </div>
+    <div id="res-content" style="display:none">
+      <div class="mandala-wrap" id="mandala-wrap" style="display:none">
+        <canvas id="mandala-canvas" width="680" height="580"></canvas>
+        <div class="mandala-label">✦ MAPA NATAL CÓSMICO ✦</div>
+      </div>
+      <div id="planetas-wrap" style="display:none;margin:1rem 0">
+        <div style="font-family:'Cinzel',serif;font-size:.7rem;color:#b090e0;letter-spacing:.15em;text-align:center;margin-bottom:.8rem">✧ POSIÇÕES PLANETÁRIAS REAIS ✧</div>
+        <div class="planetas-grid" id="planetas-grid"></div>
+      </div>
+      <div id="leitura-content"></div>
+      <div class="upsell-box" id="upsell-box" style="display:none">
+        <h3>✨ Aprofunde sua Jornada Cósmica</h3>
+        <p>Os astros têm ainda mais a revelar. Faça uma pergunta adicional e receba uma interpretação focada e personalizada.</p>
+        <a href="#" id="upsell-pay-link" class="btn-upsell-pay" target="_blank">💳 Fazer mais uma pergunta — R$ 49,90</a>
+      </div>
+      <div class="personalizada-aviso" id="personalizada-aviso" style="display:none">
+        <p>✨ Sua <strong>Leitura Personalizada Premium</strong> está sendo preparada com todo o cuidado que você merece.<br>Você receberá sua análise completa via <strong>WhatsApp em até 7 dias</strong>. Aguarde nossa mensagem!</p>
+      </div>
+    </div>
+    <button class="btn-voltar" id="btn-nova" style="display:none" onclick="goPage('home',document.querySelectorAll('.npg')[0])">← Nova Leitura</button>
+  </div>
+</div>
+<script>
+const LINK_49='https://mpago.la/2quNVWb';
+const LINK_197='https://mpago.la/14jtH6c';
+const SIGNOS=['Áries','Touro','Gêmeos','Câncer','Leão','Virgem','Libra','Escorpião','Sagitário','Capricórnio','Aquário','Peixes'];
+const PLANET_SYMS={'Sun':'☉','Moon':'☽','Mercury':'☿','Venus':'♀','Mars':'♂','Jupiter':'♃','Saturn':'♄','Uranus':'♅','Neptune':'♆','Pluto':'♇','Ascendant':'↑','MC':'⊕'};
+const PLANET_PT={'Sun':'Sol','Moon':'Lua','Mercury':'Mercúrio','Venus':'Vênus','Mars':'Marte','Jupiter':'Júpiter','Saturn':'Saturno','Uranus':'Urano','Neptune':'Netuno','Pluto':'Plutão','Ascendant':'Ascendente','MC':'Meio do Céu'};
+let tipoAtual='mapa-astral',precoAtual=49.90,dadosForm={},planetasReais=[];
+(()=>{const s=document.getElementById('f-anors'),y=new Date().getFullYear();for(let i=y;i<=y+4;i++){const o=document.createElement('option');o.value=i;o.textContent=i+(i===y?' (atual)':'');s.appendChild(o);}})();
+document.addEventListener('click',e=>{document.querySelectorAll('.autocomplete-results').forEach(d=>{if(!d.contains(e.target))d.style.display='none';});});
+async function buscarCidade(input,listaId,latId,lonId){const q=input.value.trim(),lista=document.getElementById(listaId);if(q.length<3){lista.style.display='none';return;}try{const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&accept-language=pt`);const data=await r.json();if(!data.length){lista.style.display='none';return;}lista.innerHTML=data.map(d=>`<div class="autocomplete-item" onclick="selecionarCidade('${d.display_name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${d.lat}','${d.lon}','${input.id}','${listaId}','${latId}','${lonId}')">${d.display_name}</div>`).join('');lista.style.display='block';}catch(e){lista.style.display='none';}}
+function selecionarCidade(nome,lat,lon,inputId,listaId,latId,lonId){document.getElementById(inputId).value=nome;document.getElementById(latId).value=lat;document.getElementById(lonId).value=lon;document.getElementById(listaId).style.display='none';}
+(function(){const params=new URLSearchParams(window.location.search);if(params.get('pago')==='sim'){const dados=JSON.parse(sessionStorage.getItem('dadosForm')||'null');if(dados){dadosForm=dados;setTimeout(()=>confirmarPagamento(),500);}}})();
+function goPage(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.npg').forEach(b=>b.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');if(btn)btn.classList.add('on');window.scrollTo({top:0,behavior:'smooth'});}
+function selecionarTipo(tipo){tipoAtual=tipo;const precos={'mapa-astral':49.90,'revolucao-solar':49.90,'mapa-profissional':49.90,'sinastria':49.90,'mapa-karmico':49.90,'personalizada':197.17};precoAtual=precos[tipo]||49.90;document.querySelectorAll('.tipo-btn').forEach(b=>{b.classList.remove('on');if(b.dataset.tipo===tipo)b.classList.add('on');});document.getElementById('preco-display').textContent='R$ '+precoAtual.toFixed(2).replace('.',',');document.getElementById('extra-sinastria').style.display=tipo==='sinastria'?'block':'none';document.getElementById('extra-rs').style.display=tipo==='revolucao-solar'?'block':'none';document.getElementById('extra-personalizada').style.display=tipo==='personalizada'?'block':'none';goPage('form',document.querySelectorAll('.npg')[1]);}
+function setTipo(el){document.querySelectorAll('.tipo-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');tipoAtual=el.dataset.tipo;precoAtual=parseFloat(el.dataset.preco)||49.90;document.getElementById('preco-display').textContent='R$ '+precoAtual.toFixed(2).replace('.',',');document.getElementById('extra-sinastria').style.display=tipoAtual==='sinastria'?'block':'none';document.getElementById('extra-rs').style.display=tipoAtual==='revolucao-solar'?'block':'none';document.getElementById('extra-personalizada').style.display=tipoAtual==='personalizada'?'block':'none';}
+function irPagar(){const nome=document.getElementById('f-nome').value.trim();const data=document.getElementById('f-data').value;const cidade=document.getElementById('f-cidade').value.trim();if(!nome||!data||!cidade){document.getElementById('err-msg').style.display='block';return;}document.getElementById('err-msg').style.display='none';dadosForm={nome,data,hora:document.getElementById('f-hora').value,cidade,whatsapp:document.getElementById('f-whatsapp').value,email:document.getElementById('f-email').value,tipo:tipoAtual,preco:precoAtual,lat:document.getElementById('f-lat').value,lon:document.getElementById('f-lon').value,timezone:-3,nome2:document.getElementById('f-nome2').value,data2:document.getElementById('f-data2').value,hora2:document.getElementById('f-hora2').value,cidade2:document.getElementById('f-cidade2').value,lat2:document.getElementById('f-lat2')?document.getElementById('f-lat2').value:'',lon2:document.getElementById('f-lon2')?document.getElementById('f-lon2').value:'',cidadeRS:document.getElementById('f-cidaders').value||cidade,anoRS:document.getElementById('f-anors').value,pergunta:document.getElementById('f-pergunta').value};const nomes={'mapa-astral':'Mapa Astral','revolucao-solar':'Revolução Solar','mapa-profissional':'Mapa Profissional','sinastria':'Sinastria','mapa-karmico':'Mapa Kármico','personalizada':'Leitura Personalizada'};document.getElementById('pay-desc').textContent=nomes[tipoAtual]+' — R$ '+precoAtual.toFixed(2).replace('.',',');document.getElementById('link-pagamento').href=tipoAtual==='personalizada'?LINK_197:LINK_49;sessionStorage.setItem('dadosForm',JSON.stringify(dadosForm));goPage('pay',null);}
+function sIdx(m,d){const L=[[3,21,0],[4,20,1],[5,21,2],[6,21,3],[7,23,4],[8,23,5],[9,23,6],[10,23,7],[11,22,8],[12,22,9],[1,20,10],[2,19,11]];for(const[lm,ld,i]of L)if(m===lm&&d>=ld)return i;return(m>2)?Math.floor((m*30.4+d)/30.4)%12:11;}
+function calcP(data,hora){const dt=new Date(data+'T12:00:00'),m=dt.getMonth()+1,d=dt.getDate(),yr=dt.getFullYear();const j=new Date(yr,0,1),doy=Math.floor((dt-j)/86400000),h=hora?parseInt(hora):12,sol=sIdx(m,d);const offs=[0,Math.round(doy*13/360)%12,Math.round(doy/88*12)%12,Math.round(doy/225*12)%12,0,Math.round(doy/4333*12)%12];const asc=(sol+Math.round(h/2)+4)%12;return{solS:SIGNOS[sol],ascS:SIGNOS[asc],luaS:SIGNOS[(sol+offs[1])%12],venS:SIGNOS[(sol+offs[3])%12],jupS:SIGNOS[(sol+offs[5])%12]};}
+function desenharMandala(planetas){const canvas=document.getElementById('mandala-canvas');const ctx=canvas.getContext('2d');const W=680,H=580,cx=W/2,cy=H/2-10,TAU=Math.PI*2;const bg=ctx.createRadialGradient(cx,cy,0,cx,cy,320);bg.addColorStop(0,'#12063a');bg.addColorStop(0.5,'#08042a');bg.addColorStop(1,'#06030e');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);const nebula=(x,y,r,c,a)=>{const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${c},${a})`);g.addColorStop(1,`rgba(${c},0)`);ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();};nebula(cx-80,cy-60,180,'80,20,160',0.18);nebula(cx+90,cy+50,150,'20,60,140',0.15);nebula(cx,cy,100,'160,100,20',0.08);const rng=(s)=>{let x=s;return()=>{x=(x*1664525+1013904223)&0xffffffff;return(x>>>0)/0xffffffff;};};const rand=rng(42);for(let i=0;i<220;i++){const x=rand()*W,y=rand()*H,r=rand()*1.5+0.3,a=rand()*0.7+0.2;ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();}const cons=[{stars:[[cx-200,cy-170],[cx-220,cy-140],[cx-190,cy-110],[cx-165,cy-130],[cx-145,cy-100]],lines:[[0,1],[1,2],[2,3],[3,4]]},{stars:[[cx+160,cy-190],[cx+185,cy-160],[cx+210,cy-185],[cx+235,cy-155],[cx+260,cy-175]],lines:[[0,1],[1,2],[2,3],[3,4]]},{stars:[[cx+195,cy+110],[cx+195,cy+170],[cx+165,cy+140],[cx+225,cy+140]],lines:[[0,1],[2,3]]},{stars:[[cx-175,cy+140],[cx-150,cy+120],[cx-125,cy+135],[cx-105,cy+120],[cx-90,cy+100],[cx-65,cy+80]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5]]},];cons.forEach(con=>{ctx.strokeStyle='rgba(160,127,255,0.25)';ctx.lineWidth=0.7;ctx.setLineDash([3,6]);con.lines.forEach(([a,b])=>{ctx.beginPath();ctx.moveTo(con.stars[a][0],con.stars[a][1]);ctx.lineTo(con.stars[b][0],con.stars[b][1]);ctx.stroke();});ctx.setLineDash([]);con.stars.forEach(([x,y])=>{ctx.fillStyle='rgba(220,200,255,0.7)';ctx.beginPath();ctx.arc(x,y,2.5,0,TAU);ctx.fill();ctx.fillStyle='rgba(255,255,255,0.9)';ctx.beginPath();ctx.arc(x,y,1.2,0,TAU);ctx.fill();});});const circle=(x,y,r,stroke,lw,dash=[])=>{ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.setLineDash(dash);ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.stroke();ctx.setLineDash([]);};circle(cx,cy,250,'rgba(201,168,76,0.15)',1,[2,8]);circle(cx,cy,235,'rgba(201,168,76,0.35)',0.8);circle(cx,cy,215,'rgba(100,60,180,0.2)',0.5,[4,8]);const zc=['#8B000022','#65432122','#2F4F4F22','#19197022','#4B008222','#00640022','#8B451322','#2F4F4F22','#4B008222','#8B000022','#19197022','#00640022'];const zs=['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];for(let i=0;i<12;i++){const sa=(i*30-90)*Math.PI/180,ea=((i+1)*30-90)*Math.PI/180;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,235,sa,ea);ctx.closePath();ctx.fillStyle=zc[i];ctx.fill();ctx.strokeStyle='rgba(201,168,76,0.3)';ctx.lineWidth=0.6;ctx.stroke();const ma=(i*30+15-90)*Math.PI/180,sx=cx+Math.cos(ma)*218,sy=cy+Math.sin(ma)*218;ctx.save();ctx.translate(sx,sy);ctx.rotate(ma+Math.PI/2);ctx.font='15px serif';ctx.fillStyle='#f0d080';ctx.globalAlpha=0.9;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(zs[i],0,0);ctx.globalAlpha=1;ctx.restore();}circle(cx,cy,180,'rgba(201,168,76,0.5)',1.2);circle(cx,cy,165,'rgba(100,60,180,0.3)',0.5,[3,6]);circle(cx,cy,148,'rgba(201,168,76,0.4)',0.8);const dl=(x1,y1,x2,y2,c,lw)=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle=c;ctx.lineWidth=lw;ctx.stroke();};const tri=(r,rot,c)=>{for(let i=0;i<3;i++){const a1=(rot+i*120)*Math.PI/180,a2=(rot+(i+1)*120)*Math.PI/180;dl(cx+Math.cos(a1)*r,cy+Math.sin(a1)*r,cx+Math.cos(a2)*r,cy+Math.sin(a2)*r,c,0.6);}};tri(143,-90,'rgba(201,168,76,0.25)');tri(143,-30,'rgba(160,127,255,0.2)');const sq=(r,rot,c)=>{for(let i=0;i<4;i++){const a1=(rot+i*90)*Math.PI/180,a2=(rot+(i+1)*90)*Math.PI/180;dl(cx+Math.cos(a1)*r,cy+Math.sin(a1)*r,cx+Math.cos(a2)*r,cy+Math.sin(a2)*r,c,0.5);}};sq(125,-45,'rgba(100,60,180,0.2)');const pc={'Sun':'#f0d080','Moon':'#d0c8f0','Mercury':'#c9a84c','Venus':'#f4c0d3','Mars':'#e07060','Jupiter':'#c9a84c','Saturn':'#a07fff','Uranus':'#90d0e0','Neptune':'#7090f0','Pluto':'#c090d0','Ascendant':'#f0d080','MC':'#c9a84c'};const mp=['Ascendant','Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn'];if(planetas&&planetas.length>0){const fi=planetas.filter(p=>mp.includes(p.planet?.en));fi.forEach((item,i)=>{const nome=item.planet?.en||'',grau=item.fullDegree||0,angle=(grau-90)*Math.PI/180,r=118+((i%3)*12);const px=cx+Math.cos(angle)*r,py=cy+Math.sin(angle)*r,color=pc[nome]||'#c9a84c';const g=ctx.createRadialGradient(px,py,0,px,py,10);g.addColorStop(0,color+'cc');g.addColorStop(1,color+'00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(px,py,10,0,TAU);ctx.fill();ctx.fillStyle=color;ctx.beginPath();ctx.arc(px,py,3,0,TAU);ctx.fill();ctx.font='12px serif';ctx.fillStyle=color;ctx.globalAlpha=0.95;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(PLANET_SYMS[nome]||'●',px,py-13);ctx.globalAlpha=1;});for(let i=0;i<Math.min(fi.length,5);i++){for(let j=i+1;j<Math.min(fi.length,5);j++){const a=fi[i],b=fi[j],diff=Math.abs((a.fullDegree||0)-(b.fullDegree||0)),norm=diff>180?360-diff:diff;let color=null;if(Math.abs(norm-0)<8)color='rgba(201,168,76,0.15)';else if(Math.abs(norm-120)<8)color='rgba(160,127,255,0.12)';else if(Math.abs(norm-90)<8)color='rgba(224,112,96,0.1)';else if(Math.abs(norm-180)<8)color='rgba(100,100,200,0.1)';if(color){const ra=118+((i%3)*12),rb=118+((j%3)*12);const aa=((a.fullDegree||0)-90)*Math.PI/180,ab=((b.fullDegree||0)-90)*Math.PI/180;ctx.setLineDash([4,8]);dl(cx+Math.cos(aa)*ra,cy+Math.sin(aa)*ra,cx+Math.cos(ab)*rb,cy+Math.sin(ab)*rb,color,0.8);ctx.setLineDash([]);}}}else{const deco=[{sym:'☉',r:130,angle:-65,color:'#f0d080'},{sym:'☽',r:112,angle:20,color:'#d0c8f0'},{sym:'☿',r:92,angle:110,color:'#c9a84c'},{sym:'♀',r:118,angle:195,color:'#f4c0d3'},{sym:'♂',r:138,angle:260,color:'#e07060'},{sym:'♃',r:148,angle:320,color:'#c9a84c'},{sym:'♄',r:125,angle:380,color:'#a07fff'}];deco.forEach(p=>{const angle=p.angle*Math.PI/180,px=cx+Math.cos(angle)*p.r,py=cy+Math.sin(angle)*p.r;const g=ctx.createRadialGradient(px,py,0,px,py,10);g.addColorStop(0,p.color+'cc');g.addColorStop(1,p.color+'00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(px,py,10,0,TAU);ctx.fill();ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(px,py,3,0,TAU);ctx.fill();ctx.font='12px serif';ctx.fillStyle=p.color;ctx.globalAlpha=0.95;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(p.sym,px,py-13);ctx.globalAlpha=1;});}for(let i=0;i<360;i+=5){const angle=(i-90)*Math.PI/180,inner=i%30===0?228:i%10===0?231:233;ctx.beginPath();ctx.moveTo(cx+Math.cos(angle)*inner,cy+Math.sin(angle)*inner);ctx.lineTo(cx+Math.cos(angle)*235,cy+Math.sin(angle)*235);ctx.strokeStyle=i%30===0?'rgba(201,168,76,0.6)':'rgba(201,168,76,0.2)';ctx.lineWidth=i%30===0?1:0.5;ctx.stroke();}const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,55);cg.addColorStop(0,'rgba(201,168,76,0.3)');cg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=cg;ctx.beginPath();ctx.arc(cx,cy,55,0,TAU);ctx.fill();circle(cx,cy,45,'rgba(201,168,76,0.5)',1);circle(cx,cy,34,'rgba(160,127,255,0.4)',0.8,[3,5]);circle(cx,cy,22,'rgba(201,168,76,0.6)',1.2);ctx.strokeStyle='rgba(201,168,76,0.4)';ctx.lineWidth=0.8;ctx.beginPath();ctx.moveTo(cx-21,cy);ctx.lineTo(cx+21,cy);ctx.stroke();ctx.beginPath();ctx.moveTo(cx,cy-21);ctx.lineTo(cx,cy+21);ctx.stroke();for(let t=0;t<2;t++){ctx.beginPath();for(let i=0;i<3;i++){const a=(t*60+i*120-90)*Math.PI/180,x=cx+Math.cos(a)*16,y=cy+Math.sin(a)*16;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.closePath();ctx.strokeStyle='rgba(240,208,128,0.7)';ctx.lineWidth=0.8;ctx.stroke();}ctx.fillStyle='#f0d080';ctx.beginPath();ctx.arc(cx,cy,4.5,0,TAU);ctx.fill();ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(cx,cy,2,0,TAU);ctx.fill();const sg=ctx.createLinearGradient(560,70,490,130);sg.addColorStop(0,'rgba(255,255,200,0)');sg.addColorStop(1,'rgba(255,255,200,0.7)');ctx.strokeStyle=sg;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(560,70);ctx.lineTo(490,130);ctx.stroke();ctx.fillStyle='rgba(255,255,200,0.9)';ctx.beginPath();ctx.arc(490,130,1.5,0,TAU);ctx.fill();}
+function exibirPlanetas(planetas){const grid=document.getElementById('planetas-grid');const main=['Ascendant','Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn'];const fi=planetas.filter(p=>main.includes(p.planet?.en)).slice(0,8);if(!fi.length)return;grid.innerHTML=fi.map(item=>{const nome=item.planet?.en||'',signo=item.zodiac_sign?.name?.en||'',grau=item.normDegree?item.normDegree.toFixed(1)+'°':'',retro=(item.isRetro==='True'||item.isRetro===true)?'Retrógrado':'',sym=PLANET_SYMS[nome]||'●',nomePT=PLANET_PT[nome]||nome;return `<div class="planeta-card"><div class="planeta-sym">${sym}</div><div class="planeta-nome">${nomePT}</div><div class="planeta-signo">${signo} ${grau}</div>${retro?`<div class="planeta-retro">↙ ${retro}</div>`:''}</div>`;}).join('');document.getElementById('planetas-wrap').style.display='block';}
+async function confirmarPagamento(){goPage('result',null);document.getElementById('res-loading').style.display='block';document.getElementById('res-content').style.display='none';document.getElementById('btn-nova').style.display='none';const d=dadosForm,n=calcP(d.data,d.hora);const nomes={'mapa-astral':'Mapa Astral','revolucao-solar':'Revolução Solar','mapa-profissional':'Mapa Profissional','sinastria':'Sinastria','mapa-karmico':'Mapa Kármico','personalizada':'Leitura Personalizada'};document.getElementById('res-title').textContent='✦ '+nomes[d.tipo]+' de '+d.nome+' ✦';let p='';const eloquencia='Use linguagem eloquente, inspiradora, poética e profunda. Cada frase deve tocar a alma do leitor e revelar verdades cósmicas de forma bela e transformadora.';if(d.tipo==='mapa-astral'){p=`Você é uma astróloga mística e profunda. ${eloquencia} Mapa Astral COMPLETO em PORTUGUÊS para ${d.nome}, nascido(a) em ${d.data} em ${d.cidade}. Sol ${n.solS}, Lua ${n.luaS}, Asc ${n.ascS}, Vênus ${n.venS}, Júpiter ${n.jupS}. Responda APENAS JSON sem markdown: {"secoes":[{"titulo":"☉ Essência Solar — ${n.solS}","texto":"4 frases profundas e eloquentes sobre a essência de Sol em ${n.solS}"},{"titulo":"☽ Mundo Emocional — ${n.luaS}","texto":"4 frases poéticas sobre o universo emocional com Lua em ${n.luaS}"},{"titulo":"↑ Ascendente — ${n.ascS}","texto":"3 frases inspiradoras sobre a máscara e o caminho com Asc em ${n.ascS}"},{"titulo":"♀ Amor e Relacionamentos","texto":"3 frases eloquentes sobre vida afetiva com Vênus em ${n.venS}"},{"titulo":"♃ Missão e Propósito","texto":"3 frases transformadoras sobre propósito com Júpiter em ${n.jupS}"},{"titulo":"♄ Desafios e Crescimento","texto":"3 frases sobre as lições kármicas e o crescimento da alma"},{"titulo":"✦ Mensagem dos Astros para ${d.nome}","texto":"4 frases profundamente inspiradoras e personalizadas"}]}`;}else if(d.tipo==='revolucao-solar'){const ano=d.anoRS||new Date().getFullYear();p=`Você é uma astróloga mística e visionária. ${eloquencia} Revolução Solar ${ano} COMPLETA em PORTUGUÊS para ${d.nome}, nascido(a) em ${d.data} em ${d.cidade}. RS em ${d.cidadeRS||d.cidade}. Sol RS em ${n.solS}. JSON: {"secoes":[{"titulo":"☉ Tom Cósmico de ${ano}","texto":"4 frases eloquentes sobre a energia e o tema central deste ciclo"},{"titulo":"☽ Paisagem Interior","texto":"3 frases poéticas sobre as emoções e transformações internas do ano"},{"titulo":"♀ Ciclos do Coração","texto":"3 frases inspiradoras sobre amor e relacionamentos em ${ano}"},{"titulo":"♃ Expansão e Realizações","texto":"3 frases motivadoras sobre carreira e conquistas"},{"titulo":"◷ Momentos Marcantes","texto":"Descreva de forma eloquente os principais momentos e inflexões do ano, mês a mês"},{"titulo":"✦ Mensagem Estelar para ${d.nome} em ${ano}","texto":"4 frases profundamente inspiradoras para este novo ciclo"}]}`;}else if(d.tipo==='sinastria'){const n2=d.data2?calcP(d.data2,d.hora2):n;p=`Você é uma astróloga especialista em relacionamentos. ${eloquencia} Sinastria em PORTUGUÊS para ${d.nome} (Sol ${n.solS}, Lua ${n.luaS}) e ${d.nome2||'parceiro(a)'} (Sol ${n2.solS}, Lua ${n2.luaS}). JSON: {"secoes":[{"titulo":"💕 A Tapeçaria do Encontro","texto":"4 frases eloquentes sobre a natureza desta conexão cósmica"},{"titulo":"☉ Dança dos Sóis","texto":"3 frases poéticas sobre como as essências se complementam ou tensionam"},{"titulo":"☽ Ressonância Emocional","texto":"3 frases inspiradoras sobre a compatibilidade emocional e afetiva"},{"titulo":"♂ Magnetismo e Desafios","texto":"3 frases profundas sobre a atração, a tensão e o crescimento mútuo"},{"titulo":"⚖ Lições desta União","texto":"3 frases transformadoras sobre o que esta relação veio ensinar"},{"titulo":"✦ Mensagem Cósmica para o Casal","texto":"4 frases profundamente inspiradoras para esta união"}]}`;}else if(d.tipo==='mapa-profissional'){p=`Você é uma astróloga especialista em vocação e propósito. ${eloquencia} Mapa Profissional em PORTUGUÊS para ${d.nome}, nascido(a) em ${d.data} em ${d.cidade}. Sol ${n.solS}, Lua ${n.luaS}, Asc ${n.ascS}. JSON: {"secoes":[{"titulo":"💼 Os Dons que o Cosmos Concedeu","texto":"4 frases eloquentes sobre os talentos naturais e a vocação"},{"titulo":"☿ A Mente a Serviço do Mundo","texto":"3 frases inspiradoras sobre habilidades intelectuais e comunicação"},{"titulo":"♃ O Caminho da Expansão","texto":"3 frases motivadoras sobre crescimento e sucesso profissional"},{"titulo":"♄ Construindo o Legado","texto":"3 frases profundas sobre estrutura, disciplina e o legado a deixar"},{"titulo":"🎯 Caminhos Iluminados pelos Astros","texto":"Descreva eloquentemente as áreas profissionais mais alinhadas com este mapa"},{"titulo":"✦ Mensagem de Propósito para ${d.nome}","texto":"4 frases transformadoras sobre a missão profissional"}]}`;}else if(d.tipo==='mapa-karmico'){p=`Você é uma astróloga especialista em astrologia kármica e espiritual. ${eloquencia} Mapa Kármico em PORTUGUÊS para ${d.nome}, nascido(a) em ${d.data} em ${d.cidade}. Sol ${n.solS}, Lua ${n.luaS}. JSON: {"secoes":[{"titulo":"🔮 A Missão da Alma","texto":"4 frases eloquentes e profundas sobre o propósito kármico desta encarnação"},{"titulo":"☊ O Nodo Norte — O Caminho à Frente","texto":"3 frases inspiradoras sobre o que a alma veio aprender e conquistar"},{"titulo":"☋ O Nodo Sul — As Memórias da Alma","texto":"3 frases poéticas sobre os padrões e dons trazidos de outras vidas"},{"titulo":"♄ As Lições Sagradas","texto":"3 frases transformadoras sobre os desafios kármicos a superar"},{"titulo":"⟳ Padrões a Transmutar","texto":"3 frases eloquentes sobre o que precisa ser liberado e transformado"},{"titulo":"✦ Mensagem da Alma para ${d.nome}","texto":"4 frases profundamente espirituais e inspiradoras"}]}`;}else{p=`Você é uma astróloga mística de alto nível. ${eloquencia} Leitura Personalizada PROFUNDA em PORTUGUÊS para ${d.nome}, nascido(a) em ${d.data} em ${d.cidade}. Sol ${n.solS}, Lua ${n.luaS}, Asc ${n.ascS}. Pergunta: "${d.pergunta||'leitura geral profunda'}". JSON: {"secoes":[{"titulo":"✨ O Céu Fala — Visão Geral","texto":"5 frases eloquentes sobre a situação"},{"titulo":"☉ O que os Planetas Revelam","texto":"4 frases com interpretação profunda"},{"titulo":"☽ O Universo Interior","texto":"4 frases sobre o mundo emocional"},{"titulo":"🔮 Os Caminhos do Destino","texto":"4 frases sobre possibilidades"},{"titulo":"⚡ A Ação que os Astros Pedem","texto":"4 frases sobre o que fazer agora"},{"titulo":"💫 Previsão Anual","texto":"Previsão eloquente dos próximos 12 meses com momentos marcantes"},{"titulo":"✦ Mensagem Estelar para ${d.nome}","texto":"5 frases profundamente inspiradoras"}]}`;}
+try{const r=await fetch('/api/leitura',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:p,dados:{data:d.data,hora:d.hora,lat:d.lat,lon:d.lon,timezone:d.timezone,nome:d.nome,whatsapp:d.whatsapp,email:d.email,cidade:d.cidade,tipo:d.tipo,preco:d.preco}})});const j=await r.json();if(j.planetas)planetasReais=j.planetas;document.getElementById('res-loading').style.display='none';document.getElementById('res-content').style.display='block';document.getElementById('mandala-wrap').style.display='block';desenharMandala(planetasReais);if(planetasReais.length>0)exibirPlanetas(planetasReais);if(d.tipo==='personalizada'){document.getElementById('personalizada-aviso').style.display='block';document.getElementById('leitura-content').innerHTML='<div class="res-card"><h3>✦ Sua leitura está sendo preparada</h3><p>Nossa astróloga está analisando seu mapa com toda a profundidade que você merece. Em até 7 dias você receberá sua análise completa via WhatsApp.</p></div>';}else{const txt=j.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();const leitura=JSON.parse(txt);document.getElementById('leitura-content').innerHTML=leitura.secoes.map(s=>`<div class="res-card"><h3>${s.titulo}</h3><p>${s.texto}</p></div>`).join('');document.getElementById('upsell-box').style.display='block';document.getElementById('upsell-pay-link').href=LINK_49;}document.getElementById('btn-nova').style.display='block';sessionStorage.removeItem('dadosForm');}catch(e){document.getElementById('res-loading').innerHTML='<p style="color:#e09090;font-size:.9rem">Erro ao gerar a leitura. Por favor, tente novamente.</p>';document.getElementById('btn-nova').style.display='block';}}
+</script>
+</body>
+</html>
