@@ -7,7 +7,7 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { prompt, dados } = req.body;
-  if (!prompt) return res.status(400).json({ error: 'Prompt obrigatório' });
+  if (!prompt) return res.status(400).json({ error: 'Prompt obrigatorio' });
 
   try {
     let infoAstro = '';
@@ -37,12 +37,12 @@ module.exports = async function handler(req, res) {
         const planetasData = await planetasRes.json();
         if (planetasData && planetasData.output && Array.isArray(planetasData.output)) {
           planetasReais = planetasData.output;
-          infoAstro += '\n\nPosições REAIS dos planetas:\n';
+          infoAstro += '\n\nPosicoes REAIS dos planetas:\n';
           planetasData.output.forEach(item => {
             const nome = item.planet?.en || '';
             const signo = item.zodiac_sign?.name?.en || '';
-            const grau = item.normDegree ? ` ${item.normDegree.toFixed(1)}°` : '';
-            const retro = (item.isRetro === 'True' || item.isRetro === true) ? ' (Retrógrado)' : '';
+            const grau = item.normDegree ? ` ${item.normDegree.toFixed(1)}` : '';
+            const retro = (item.isRetro === 'True' || item.isRetro === true) ? ' (Retrogrado)' : '';
             if (nome && signo) infoAstro += `${nome}: ${signo}${grau}${retro}\n`;
           });
         }
@@ -57,10 +57,10 @@ module.exports = async function handler(req, res) {
         });
         const casasData = await casasRes.json();
         if (casasData && casasData.output && casasData.output.Houses) {
-          infoAstro += '\nCasas Astrológicas (Placidus):\n';
+          infoAstro += '\nCasas Astrologicas (Placidus):\n';
           casasData.output.Houses.forEach(casa => {
             const signo = casa.zodiac_sign?.name?.en || '';
-            const grau = casa.normDegree ? ` ${casa.normDegree.toFixed(1)}°` : '';
+            const grau = casa.normDegree ? ` ${casa.normDegree.toFixed(1)}` : '';
             if (signo) infoAstro += `Casa ${casa.House}: ${signo}${grau}\n`;
           });
         }
@@ -95,7 +95,7 @@ module.exports = async function handler(req, res) {
       } catch(e) { console.log('Aspectos erro:', e.message); }
     }
 
-    // 4. Salva cliente no Google Sheets
+    // 4. Salva cliente no Google Sheets via SheetDB
     if (dados && dados.nome) {
       try {
         await fetch(process.env.SHEETDB_URL, {
@@ -115,6 +115,7 @@ module.exports = async function handler(req, res) {
             }]
           })
         });
+        console.log('Cliente salvo no Sheets:', dados.nome);
       } catch(e) { console.log('SheetDB erro:', e.message); }
     }
 
