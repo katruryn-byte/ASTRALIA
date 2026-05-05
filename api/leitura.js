@@ -12,8 +12,9 @@ module.exports = async function handler(req, res) {
   try {
     let infoAstro = '';
     let planetasReais = [];
+    let casasReais = null;
+    let aspectosReais = [];
     let baseConhecimento = '';
-    let casasData = null;
 
     if (dados && dados.lat && dados.lon && dados.data) {
       const dt = new Date(dados.data + 'T' + (dados.hora || '12:00') + ':00');
@@ -43,7 +44,7 @@ module.exports = async function handler(req, res) {
           planetasData.output.forEach(item => {
             const nome = item.planet?.en || '';
             const signo = item.zodiac_sign?.name?.en || '';
-            const grau = item.normDegree ? ` ${item.normDegree.toFixed(1)}` : '';
+            const grau = item.normDegree ? ` ${item.normDegree.toFixed(2)}` : '';
             const retro = (item.isRetro === 'True' || item.isRetro === true) ? ' (Retrogrado)' : '';
             if (nome && signo) infoAstro += `${nome}: ${signo}${grau}${retro}\n`;
           });
@@ -57,12 +58,13 @@ module.exports = async function handler(req, res) {
           headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.FREEASTROLOGY_API_KEY },
           body: JSON.stringify({ ...body, config: { observation_point: 'topocentric', ayanamsha: 'tropical', house_system: 'Placidus', language: 'pt' } })
         });
-        casasData = await casasRes.json();
+        const casasData = await casasRes.json();
         if (casasData && casasData.output && casasData.output.Houses) {
+          casasReais = casasData.output;
           infoAstro += '\nCasas Astrologicas (Placidus):\n';
           casasData.output.Houses.forEach(casa => {
             const signo = casa.zodiac_sign?.name?.en || '';
-            const grau = casa.normDegree ? ` ${casa.normDegree.toFixed(1)}` : '';
+            const grau = casa.normDegree ? ` ${casa.normDegree.toFixed(2)}` : '';
             if (signo) infoAstro += `Casa ${casa.House}: ${signo}${grau}\n`;
           });
         }
@@ -79,15 +81,16 @@ module.exports = async function handler(req, res) {
               observation_point: 'topocentric',
               ayanamsha: 'tropical',
               language: 'pt',
-              allowed_aspects: ['Conjunction', 'Opposition', 'Trine', 'Square', 'Sextile'],
-              orb_values: { Conjunction: 8, Opposition: 8, Trine: 8, Square: 8, Sextile: 6 }
+              allowed_aspects: ['Conjunction','Opposition','Trine','Square','Sextile','Quincunx'],
+              orb_values: { Conjunction:8, Opposition:8, Trine:8, Square:8, Sextile:6, Quincunx:5 }
             }
           })
         });
         const aspectosData = await aspectosRes.json();
         if (aspectosData && aspectosData.output && Array.isArray(aspectosData.output)) {
+          aspectosReais = aspectosData.output;
           infoAstro += '\nAspectos Principais:\n';
-          aspectosData.output.slice(0, 10).forEach(item => {
+          aspectosData.output.slice(0, 15).forEach(item => {
             const p1 = item.planet_1?.en || '';
             const p2 = item.planet_2?.en || '';
             const asp = item.aspect?.en || '';
@@ -96,7 +99,7 @@ module.exports = async function handler(req, res) {
         }
       } catch(e) { console.log('Aspectos erro:', e.message); }
 
-      // 4. Consulta base de conhecimento
+      // 4. Base de conhecimento
       try {
         const planetaMap = {
           'Sun':'sol','Moon':'lua','Mercury':'mercurio','Venus':'venus',
@@ -118,15 +121,13 @@ module.exports = async function handler(req, res) {
           6:'casa 6',7:'casa 7',8:'casa 8',9:'casa 9',
           10:'casa 10',11:'casa 11',12:'casa 12'
         };
-
-        const planetasPrincipais = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn'];
+        const planetasPrincipais = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
 
         const baseRes = await fetch(`${process.env.KNOWLEDGE_BASE_URL}?limit=500`);
         const baseData = await baseRes.json();
 
         if (baseData && Array.isArray(baseData) && baseData.length > 0) {
-          baseConhecimento = '\n\n=== BASE DE CONHECIMENTO ASTROLOGICO — USE OBRIGATORIAMENTE ===\n';
-          baseConhecimento += 'As interpretacoes abaixo sao a base da leitura. Use-as como fundamento e expanda com sua sabedoria:\n\n';
+          baseConhecimento = '\n\n=== BASE DE CONHECIMENTO — USE COMO FUNDAMENTO DA LEITURA ===\n\n';
 
           for (const planetaEn of planetasPrincipais) {
             const planetaItem = planetasReais.find(p => p.planet?.en === planetaEn);
@@ -136,11 +137,10 @@ module.exports = async function handler(req, res) {
             const signoEn = planetaItem.zodiac_sign?.name?.en || '';
             const signoKey = signoMap[signoEn] || signoEn.toLowerCase();
 
-            // Calcula casa do planeta
             let casaNum = 1;
-            if (casasData && casasData.output && casasData.output.Houses) {
+            if (casasReais && casasReais.Houses) {
               const grauPlaneta = planetaItem.fullDegree || 0;
-              const houses = casasData.output.Houses;
+              const houses = casasReais.Houses;
               for (let i = 0; i < houses.length; i++) {
                 const proxIdx = (i + 1) % 12;
                 const inicio = houses[i].degree;
@@ -154,13 +154,11 @@ module.exports = async function handler(req, res) {
             }
 
             const casaCol = casaColMap[casaNum];
-
-            // Busca na base
             const linha = baseData.find(row => {
               const vals = Object.values(row);
-              const rPlaneta = (vals[0] || '').toString().toLowerCase().trim();
-              const rSigno = (vals[1] || '').toString().toLowerCase().trim();
-              return rPlaneta === planetaKey && rSigno === signoKey;
+              const rP = (vals[0]||'').toString().toLowerCase().trim();
+              const rS = (vals[1]||'').toString().toLowerCase().trim();
+              return rP === planetaKey && rS === signoKey;
             });
 
             if (linha && casaCol) {
@@ -170,12 +168,12 @@ module.exports = async function handler(req, res) {
               }
             }
           }
-          baseConhecimento += '=== FIM DA BASE — SINTETIZE TUDO DE FORMA ELOQUENTE E INSPIRADORA ===\n';
+          baseConhecimento += '=== FIM DA BASE — EXPANDA COM LINGUAGEM ELOQUENTE E INSPIRADORA ===\n';
         }
       } catch(e) { console.log('Base conhecimento erro:', e.message); }
     }
 
-    // 5. Salva cliente no Google Sheets
+    // 5. Salva no Google Sheets
     if (dados && dados.nome) {
       try {
         await fetch(process.env.SHEETDB_URL, {
@@ -209,18 +207,19 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 2000,
+        max_tokens: 4000,
         messages: [{ role: 'user', content: promptFinal }]
       })
     });
 
     const data = await response.json();
     if (planetasReais.length > 0) data.planetas = planetasReais;
-    if (casasData && casasData.output) data.casas = casasData.output;
-    if (aspectosData2 && aspectosData2.output) data.aspectos = aspectosData2.output;
+    if (casasReais) data.casas = casasReais;
+    if (aspectosReais.length > 0) data.aspectos = aspectosReais;
     return res.status(200).json(data);
 
   } catch (error) {
+    console.log('Erro geral:', error.message);
     return res.status(500).json({ error: error.message });
   }
 }
