@@ -410,14 +410,13 @@ document.addEventListener('click',e=>{document.querySelectorAll('.autocomplete-r
 async function buscarCidade(input,listaId,latId,lonId){const q=input.value.trim(),lista=document.getElementById(listaId);if(q.length<3){lista.style.display='none';return;}try{const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&accept-language=pt`);const data=await r.json();if(!data.length){lista.style.display='none';return;}lista.innerHTML=data.map(d=>`<div class="autocomplete-item" onclick="selecionarCidade('${d.display_name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${d.lat}','${d.lon}','${input.id}','${listaId}','${latId}','${lonId}')">${d.display_name}</div>`).join('');lista.style.display='block';}catch(e){lista.style.display='none';}}
 function selecionarCidade(nome,lat,lon,inputId,listaId,latId,lonId){document.getElementById(inputId).value=nome;document.getElementById(latId).value=lat;document.getElementById(lonId).value=lon;document.getElementById(listaId).style.display='none';}
 
-// Detecta token na URL (retorno após pagamento MP)
+// Detecta retorno do MP após pagamento
 (function(){
   const params=new URLSearchParams(window.location.search);
-  const token=params.get('token');
-  const tipo=params.get('tipo');
-  if(token){
-    tokenPagamento=token;
-    if(tipo)tipoAtual=tipo;
+  const session=params.get('session');
+  const status=params.get('status');
+  if(session&&status==='approved'){
+    tokenPagamento=session;
     const dados=JSON.parse(sessionStorage.getItem('dadosForm')||'null');
     if(dados){
       dadosForm=dados;
@@ -426,13 +425,10 @@ function selecionarCidade(nome,lat,lon,inputId,listaId,latId,lonId){document.get
         gerarLeitura();
       },500);
     } else {
-      // Token existe mas não tem dados do form — mostra formulário para preencher
       goPage('result',null);
-      document.getElementById('res-loading').style.display='none';
-      document.getElementById('token-error').style.display='none';
       document.getElementById('res-loading').style.display='block';
-      document.getElementById('res-loading').innerHTML='<p style="color:#c9a84c;font-size:.95rem">✅ Pagamento confirmado!<br><small style="color:#6a4d90">Preencha seus dados de nascimento para gerar a leitura.</small></p>';
-      setTimeout(()=>{goPage('form',document.querySelectorAll('.npg')[1]);},2000);
+      document.getElementById('res-loading').innerHTML='<p style="color:#c9a84c">✅ Pagamento confirmado!<br><small style="color:#6a4d90">Preencha seus dados para gerar a leitura.</small></p>';
+      setTimeout(()=>goPage('form',document.querySelectorAll('.npg')[1]),2000);
     }
   }
 })();
@@ -445,7 +441,7 @@ function setTipo(el){document.querySelectorAll('.tipo-btn').forEach(b=>b.classLi
 
 function atualizarPreco(){const p=PRODUTOS[tipoAtual];document.getElementById('preco-label').textContent=p.nome;document.getElementById('preco-de').textContent='De '+p.de;document.getElementById('preco-display').textContent=p.por;document.getElementById('preco-promo').textContent=p.promo;document.getElementById('entrega-info').textContent=p.entrega;}
 
-function irPagar(){
+async function irPagar(){
   const nome=document.getElementById('f-nome').value.trim();
   const data=document.getElementById('f-data').value;
   const cidade=document.getElementById('f-cidade').value.trim();
@@ -453,10 +449,41 @@ function irPagar(){
   document.getElementById('err-msg').style.display='none';
   const p=PRODUTOS[tipoAtual];
   dadosForm={nome,data,hora:document.getElementById('f-hora').value,cidade,whatsapp:document.getElementById('f-whatsapp').value,email:document.getElementById('f-email').value,tipo:tipoAtual,preco:p.preco,lat:document.getElementById('f-lat').value,lon:document.getElementById('f-lon').value,timezone:-3,nome2:document.getElementById('f-nome2').value,data2:document.getElementById('f-data2').value,hora2:document.getElementById('f-hora2').value,cidade2:document.getElementById('f-cidade2').value,lat2:document.getElementById('f-lat2')?document.getElementById('f-lat2').value:'',lon2:document.getElementById('f-lon2')?document.getElementById('f-lon2').value:'',cidadeRS:document.getElementById('f-cidaders').value||cidade,anoRS:document.getElementById('f-anors').value};
-  document.getElementById('pay-desc').textContent=p.nome+' — '+p.por;
-  document.getElementById('link-pagamento').href=p.link;
   sessionStorage.setItem('dadosForm',JSON.stringify(dadosForm));
-  goPage('pay',null);
+
+  // Mostra loading
+  const btn=document.querySelector('.btn-pagar');
+  btn.textContent='⏳ Gerando link de pagamento...';
+  btn.disabled=true;
+
+  try{
+    // Cria preferência de pagamento via SDK
+    const r=await fetch('/api/pagamento',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        tipo:tipoAtual,
+        nome:dadosForm.nome,
+        email:dadosForm.email||'cliente@astralia.online',
+        dados:dadosForm
+      })
+    });
+    const result=await r.json();
+    if(result.init_point){
+      // Salva sessionId para usar após retorno
+      sessionStorage.setItem('sessionId', result.sessionId);
+      // Redireciona para o checkout do MP
+      window.location.href=result.init_point;
+    } else {
+      throw new Error(result.error||'Erro ao criar pagamento');
+    }
+  }catch(e){
+    console.error('Erro pagamento:',e);
+    btn.textContent='☉ Prosseguir para Pagamento Seguro';
+    btn.disabled=false;
+    document.getElementById('err-msg').textContent='Erro ao criar pagamento. Tente novamente.';
+    document.getElementById('err-msg').style.display='block';
+  }
 }
 
 function setTab(id,btn){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('on'));if(btn)btn.classList.add('on');document.getElementById('tab-'+id).classList.add('on');}
@@ -559,8 +586,8 @@ async function gerarLeitura(){
   else{p=`Astróloga mística de alto nível. ${eloquencia} Leitura Personalizada PROFUNDA para ${d.nome}, ${d.data}${d.hora?' às '+d.hora:''} em ${d.cidade}. Sol ${n.solS}, Lua ${n.luaS}, Asc ${n.ascS}. MÍNIMO 10 seções com 8 frases cada. JSON: {"secoes":[{"titulo":"✨ O Céu no Momento do Seu Nascimento","texto":"8 frases panorama geral"},{"titulo":"☉ Identidade Solar e Propósito","texto":"8 frases sobre Sol e missão"},{"titulo":"☽ Universo Emocional","texto":"8 frases sobre Lua"},{"titulo":"↑ Ascendente e Jornada","texto":"7 frases sobre caminho"},{"titulo":"♀ Amor e Valores","texto":"7 frases sobre Vênus"},{"titulo":"♂ Força e Ação","texto":"7 frases sobre Marte"},{"titulo":"♃♄ Expansão e Lições","texto":"7 frases sobre Júpiter e Saturno"},{"titulo":"🔮 Aspectos Centrais","texto":"7 frases sobre aspectos importantes"},{"titulo":"💫 Previsão dos Próximos 12 Meses","texto":"Previsão detalhada dos próximos 12 meses mês a mês"},{"titulo":"🌟 Síntese do Mapa","texto":"8 frases sintetizando tudo"},{"titulo":"✦ Mensagem Estelar para ${d.nome}","texto":"8 frases profundamente inspiradoras"}]}`;}
 
   try{
-    const r=await fetch('/api/leitura',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:p,token:tokenPagamento,dados:{data:d.data,hora:d.hora,lat:d.lat,lon:d.lon,timezone:d.timezone,nome:d.nome,whatsapp:d.whatsapp,email:d.email,cidade:d.cidade,tipo:d.tipo||tipoAtual,preco:d.preco}})});
-    if(!r.ok){const err=await r.json();if(err.code==='NO_TOKEN'||err.code==='INVALID_TOKEN'){document.getElementById('res-loading').style.display='none';document.getElementById('token-error').style.display='block';return;}throw new Error(err.error||'Erro '+r.status);}
+    const r=await fetch('/api/leitura',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:p,sessionId:tokenPagamento,dados:{data:d.data,hora:d.hora,lat:d.lat,lon:d.lon,timezone:d.timezone,nome:d.nome,whatsapp:d.whatsapp,email:d.email,cidade:d.cidade,tipo:d.tipo||tipoAtual,preco:d.preco}})});
+    if(!r.ok){const err=await r.json();if(err.code==='NO_SESSION'||err.code==='INVALID_SESSION'||err.code==='NOT_APPROVED'){document.getElementById('res-loading').style.display='none';document.getElementById('token-error').style.display='block';return;}throw new Error(err.error||'Erro '+r.status);}
     const j=await r.json();
     if(j.planetas){planetasReais=j.planetas;if(j.casas&&j.casas.Houses){casasReais=j.casas;planetasReais.forEach(item=>{const grauPlaneta=item.fullDegree||0;const houses=j.casas.Houses;let casaNum=1;for(let i=0;i<houses.length;i++){const proxIdx=(i+1)%12;const inicio=houses[i].degree;const fim=houses[proxIdx].degree;if(fim>inicio){if(grauPlaneta>=inicio&&grauPlaneta<fim){casaNum=houses[i].House;break;}}else{if(grauPlaneta>=inicio||grauPlaneta<fim){casaNum=houses[i].House;break;}}}item.casaNum=casaNum;});}}
     if(j.casas)casasReais=j.casas;
