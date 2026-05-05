@@ -8,28 +8,30 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { prompt, dados, token } = req.body;
+  const { prompt, dados, sessionId } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Prompt obrigatorio' });
 
-  // Verifica token de pagamento
-  if (!token) {
-    return res.status(401).json({ error: 'Pagamento nao verificado', code: 'NO_TOKEN' });
+  // Verifica sessão de pagamento
+  if (!sessionId) {
+    return res.status(401).json({ error: 'Sessao nao encontrada', code: 'NO_SESSION' });
   }
 
   try {
-    // Valida token no Redis
-    const client = createClient({ url: process.env.STORAGE_URL });
-    await client.connect();
-    const tokenData = await client.get(`payment:${token}`);
-    await client.quit();
+    // Valida sessão no Redis
+    const redisClient = createClient({ url: process.env.STORAGE_URL });
+    await redisClient.connect();
+    const sessionData = await redisClient.get(`session:${sessionId}`);
+    await redisClient.quit();
 
-    if (!tokenData) {
-      return res.status(401).json({ error: 'Token invalido ou expirado', code: 'INVALID_TOKEN' });
+    if (!sessionData) {
+      return res.status(401).json({ error: 'Sessao invalida ou expirada', code: 'INVALID_SESSION' });
     }
 
-    const pagamento = JSON.parse(tokenData);
-    if (pagamento.status !== 'approved') {
-      return res.status(401).json({ error: 'Pagamento nao aprovado', code: 'NOT_APPROVED' });
+    const session = JSON.parse(sessionData);
+
+    // Aceita se aprovado pelo webhook OU se veio com status=approved na URL (MP confirma)
+    if (session.status !== 'approved') {
+      return res.status(401).json({ error: 'Pagamento nao confirmado ainda', code: 'NOT_APPROVED' });
     }
 
     let infoAstro = '';
@@ -123,26 +125,10 @@ module.exports = async function handler(req, res) {
 
       // 4. Base de conhecimento
       try {
-        const planetaMap = {
-          'Sun':'sol','Moon':'lua','Mercury':'mercurio','Venus':'venus',
-          'Mars':'marte','Jupiter':'jupiter','Saturn':'saturno',
-          'Uranus':'urano','Neptune':'netuno','Pluto':'plutao'
-        };
-        const signoMap = {
-          'Aries':'aries','Taurus':'touro','Gemini':'gemeos','Cancer':'cancer',
-          'Leo':'leao','Virgo':'virgem','Libra':'libra','Scorpio':'escorpiao',
-          'Sagittarius':'sagitario','Capricorn':'capricornio','Aquarius':'aquario','Pisces':'peixes'
-        };
-        const nomePT = {
-          'Sun':'Sol','Moon':'Lua','Mercury':'Mercúrio','Venus':'Vênus',
-          'Mars':'Marte','Jupiter':'Júpiter','Saturn':'Saturno',
-          'Uranus':'Urano','Neptune':'Netuno','Pluto':'Plutão'
-        };
-        const casaColMap = {
-          1:'casa 1 ',2:'casa 2 ',3:'casa 3',4:'casa 4',
-          6:'casa 6',7:'casa 7',8:'casa 8',9:'casa 9',
-          10:'casa 10',11:'casa 11',12:'casa 12'
-        };
+        const planetaMap = { 'Sun':'sol','Moon':'lua','Mercury':'mercurio','Venus':'venus','Mars':'marte','Jupiter':'jupiter','Saturn':'saturno','Uranus':'urano','Neptune':'netuno','Pluto':'plutao' };
+        const signoMap = { 'Aries':'aries','Taurus':'touro','Gemini':'gemeos','Cancer':'cancer','Leo':'leao','Virgo':'virgem','Libra':'libra','Scorpio':'escorpiao','Sagittarius':'sagitario','Capricorn':'capricornio','Aquarius':'aquario','Pisces':'peixes' };
+        const nomePT = { 'Sun':'Sol','Moon':'Lua','Mercury':'Mercúrio','Venus':'Vênus','Mars':'Marte','Jupiter':'Júpiter','Saturn':'Saturno','Uranus':'Urano','Neptune':'Netuno','Pluto':'Plutão' };
+        const casaColMap = { 1:'casa 1 ',2:'casa 2 ',3:'casa 3',4:'casa 4',6:'casa 6',7:'casa 7',8:'casa 8',9:'casa 9',10:'casa 10',11:'casa 11',12:'casa 12' };
         const planetasPrincipais = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
 
         const baseRes = await fetch(`${process.env.KNOWLEDGE_BASE_URL}?limit=500`);
@@ -164,11 +150,8 @@ module.exports = async function handler(req, res) {
                 const proxIdx = (i + 1) % 12;
                 const inicio = houses[i].degree;
                 const fim = houses[proxIdx].degree;
-                if (fim > inicio) {
-                  if (grauPlaneta >= inicio && grauPlaneta < fim) { casaNum = houses[i].House; break; }
-                } else {
-                  if (grauPlaneta >= inicio || grauPlaneta < fim) { casaNum = houses[i].House; break; }
-                }
+                if (fim > inicio) { if (grauPlaneta >= inicio && grauPlaneta < fim) { casaNum = houses[i].House; break; } }
+                else { if (grauPlaneta >= inicio || grauPlaneta < fim) { casaNum = houses[i].House; break; } }
               }
             }
             const casaCol = casaColMap[casaNum];
@@ -190,7 +173,7 @@ module.exports = async function handler(req, res) {
       } catch(e) { console.log('Base erro:', e.message); }
     }
 
-    // 5. Salva cliente no Sheets
+    // 5. Salva no Sheets
     if (dados && dados.nome) {
       try {
         await fetch(process.env.SHEETDB_URL, {
@@ -205,8 +188,8 @@ module.exports = async function handler(req, res) {
               Cidade: dados.cidade || '',
               Nascimento: dados.data || '',
               Hora: dados.hora || '',
-              Tipo: dados.tipo || pagamento.tipo || '',
-              Valor: dados.preco || pagamento.valor || ''
+              Tipo: dados.tipo || session.tipo || '',
+              Valor: dados.preco || ''
             }]
           })
         });
