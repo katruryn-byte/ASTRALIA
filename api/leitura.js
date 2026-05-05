@@ -1,3 +1,5 @@
+const { createClient } = require('redis');
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -6,10 +8,30 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { prompt, dados } = req.body;
+  const { prompt, dados, token } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Prompt obrigatorio' });
 
+  // Verifica token de pagamento
+  if (!token) {
+    return res.status(401).json({ error: 'Pagamento nao verificado', code: 'NO_TOKEN' });
+  }
+
   try {
+    // Valida token no Redis
+    const client = createClient({ url: process.env.STORAGE_URL });
+    await client.connect();
+    const tokenData = await client.get(`payment:${token}`);
+    await client.quit();
+
+    if (!tokenData) {
+      return res.status(401).json({ error: 'Token invalido ou expirado', code: 'INVALID_TOKEN' });
+    }
+
+    const pagamento = JSON.parse(tokenData);
+    if (pagamento.status !== 'approved') {
+      return res.status(401).json({ error: 'Pagamento nao aprovado', code: 'NOT_APPROVED' });
+    }
+
     let infoAstro = '';
     let planetasReais = [];
     let casasReais = null;
@@ -127,16 +149,13 @@ module.exports = async function handler(req, res) {
         const baseData = await baseRes.json();
 
         if (baseData && Array.isArray(baseData) && baseData.length > 0) {
-          baseConhecimento = '\n\n=== BASE DE CONHECIMENTO — USE COMO FUNDAMENTO DA LEITURA ===\n\n';
-
+          baseConhecimento = '\n\n=== BASE DE CONHECIMENTO — USE COMO FUNDAMENTO ===\n\n';
           for (const planetaEn of planetasPrincipais) {
             const planetaItem = planetasReais.find(p => p.planet?.en === planetaEn);
             if (!planetaItem) continue;
-
             const planetaKey = planetaMap[planetaEn];
             const signoEn = planetaItem.zodiac_sign?.name?.en || '';
             const signoKey = signoMap[signoEn] || signoEn.toLowerCase();
-
             let casaNum = 1;
             if (casasReais && casasReais.Houses) {
               const grauPlaneta = planetaItem.fullDegree || 0;
@@ -152,7 +171,6 @@ module.exports = async function handler(req, res) {
                 }
               }
             }
-
             const casaCol = casaColMap[casaNum];
             const linha = baseData.find(row => {
               const vals = Object.values(row);
@@ -160,7 +178,6 @@ module.exports = async function handler(req, res) {
               const rS = (vals[1]||'').toString().toLowerCase().trim();
               return rP === planetaKey && rS === signoKey;
             });
-
             if (linha && casaCol) {
               const interp = linha[casaCol] || '';
               if (interp && interp.length > 10) {
@@ -168,12 +185,12 @@ module.exports = async function handler(req, res) {
               }
             }
           }
-          baseConhecimento += '=== FIM DA BASE — EXPANDA COM LINGUAGEM ELOQUENTE E INSPIRADORA ===\n';
+          baseConhecimento += '=== FIM DA BASE ===\n';
         }
-      } catch(e) { console.log('Base conhecimento erro:', e.message); }
+      } catch(e) { console.log('Base erro:', e.message); }
     }
 
-    // 5. Salva no Google Sheets
+    // 5. Salva cliente no Sheets
     if (dados && dados.nome) {
       try {
         await fetch(process.env.SHEETDB_URL, {
@@ -188,8 +205,8 @@ module.exports = async function handler(req, res) {
               Cidade: dados.cidade || '',
               Nascimento: dados.data || '',
               Hora: dados.hora || '',
-              Tipo: dados.tipo || '',
-              Valor: dados.preco || ''
+              Tipo: dados.tipo || pagamento.tipo || '',
+              Valor: dados.preco || pagamento.valor || ''
             }]
           })
         });
