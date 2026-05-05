@@ -1,79 +1,50 @@
+const { MercadoPagoConfig, Payment } = require('mercadopago');
 const { createClient } = require('redis');
 
 module.exports = async function handler(req, res) {
-  // Responde 200 imediatamente para o MP não reenviar
-  if (req.method === 'GET') {
-    return res.status(200).json({ status: 'ok' });
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method === 'GET') return res.status(200).json({ status: 'ok' });
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
     const body = req.body;
     console.log('Webhook recebido:', JSON.stringify(body));
 
-    // Só processa pagamentos aprovados
     if (body.type !== 'payment' || !body.data?.id) {
       return res.status(200).json({ status: 'ignored' });
     }
 
     const paymentId = body.data.id;
 
-    // Busca detalhes do pagamento na API do MP
-    const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-      headers: {
-        'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}`
-      }
-    });
+    // Busca detalhes do pagamento
+    const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
+    const paymentClient = new Payment(client);
+    const payment = await paymentClient.get({ id: paymentId });
 
-    const payment = await mpRes.json();
-    console.log('Payment status:', payment.status, 'id:', paymentId);
+    console.log('Payment status:', payment.status, 'ref:', payment.external_reference);
 
-    // Só libera se pagamento aprovado
     if (payment.status !== 'approved') {
-      return res.status(200).json({ status: 'payment_not_approved' });
+      return res.status(200).json({ status: 'not_approved' });
     }
 
-    // Gera token único para liberar a leitura
-    const token = `tok_${paymentId}_${Date.now()}_${Math.random().toString(36).substr(2,9)}`;
+    const sessionId = payment.external_reference;
+    if (!sessionId) return res.status(200).json({ status: 'no_session' });
 
-    // Detecta o tipo de leitura pelo valor pago
-    const valor = payment.transaction_amount || 0;
-    let tipo = 'mapa-astral';
-    if (valor >= 190) tipo = 'personalizada';
-    else if (valor >= 45) tipo = 'sinastria';
-    else if (valor >= 35) tipo = 'revolucao-solar';
+    // Marca sessão como paga no Redis
+    const redisClient = createClient({ url: process.env.STORAGE_URL });
+    await redisClient.connect();
 
-    // Dados para salvar
-    const dadosPagamento = {
-      token,
-      paymentId: String(paymentId),
-      status: 'approved',
-      valor: String(valor),
-      tipo,
-      email: payment.payer?.email || '',
-      nome: payment.payer?.first_name || '',
-      criadoEm: new Date().toISOString()
-    };
+    const sessionData = await redisClient.get(`session:${sessionId}`);
+    if (sessionData) {
+      const session = JSON.parse(sessionData);
+      session.status = 'approved';
+      session.paymentId = String(paymentId);
+      session.paidAt = new Date().toISOString();
+      await redisClient.setEx(`session:${sessionId}`, 7200, JSON.stringify(session));
+    }
 
-    // Salva no Redis com TTL de 24 horas
-    const client = createClient({ url: process.env.STORAGE_URL });
-    await client.connect();
-    await client.setEx(`payment:${token}`, 86400, JSON.stringify(dadosPagamento));
-    await client.quit();
-
-    console.log('Token salvo:', token, 'tipo:', tipo);
-
-    // Redireciona para a página de leitura com o token
-    const redirectUrl = `https://app.astralia.online/?token=${token}&tipo=${tipo}`;
-    
-    return res.status(200).json({ 
-      status: 'success', 
-      token,
-      redirect: redirectUrl
-    });
+    await redisClient.quit();
+    console.log('Sessão aprovada:', sessionId);
+    return res.status(200).json({ status: 'success' });
 
   } catch (error) {
     console.error('Webhook erro:', error.message);
