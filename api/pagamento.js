@@ -67,6 +67,11 @@ module.exports = async function handler(req, res) {
           failure: `https://astralia.online/?status=failed`,
           pending: `https://astralia.online/?status=pending`
         },
+        payment_methods: {
+          excluded_payment_types: [
+            { id: 'ticket' }
+          ]
+        },
         auto_return: 'approved',
         notification_url: `https://astralia.online/api/webhook`,
         external_reference: sessionId,
