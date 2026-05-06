@@ -1,4 +1,5 @@
 const { MercadoPagoConfig, Preference } = require('mercadopago');
+const { createClient } = require('redis');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,38 +13,36 @@ module.exports = async function handler(req, res) {
     const { tipo, nome, email, dados } = req.body;
 
     const PRECOS = {
-      'mapa-astral': { valor: 17.97, titulo: 'Mapa Astral Natal — Astral IA' },
-      'revolucao-solar': { valor: 37.97, titulo: 'Revolução Solar — Astral IA' },
+      'mapa-astral':       { valor: 17.97, titulo: 'Mapa Astral Natal — Astral IA' },
+      'revolucao-solar':   { valor: 37.97, titulo: 'Revolução Solar — Astral IA' },
       'mapa-profissional': { valor: 37.97, titulo: 'Mapa Profissional — Astral IA' },
-      'sinastria': { valor: 47.97, titulo: 'Sinastria — Astral IA' },
-      'mapa-karmico': { valor: 37.97, titulo: 'Mapa Kármico — Astral IA' },
-      'personalizada': { valor: 197.97, titulo: 'Leitura Personalizada Premium — Astral IA' }
+      'sinastria':         { valor: 47.97, titulo: 'Sinastria — Astral IA' },
+      'mapa-karmico':      { valor: 37.97, titulo: 'Mapa Kármico — Astral IA' },
+      'personalizada':     { valor: 197.97, titulo: 'Leitura Personalizada Premium — Astral IA' }
     };
 
     const produto = PRECOS[tipo] || PRECOS['mapa-astral'];
 
-    // Configura o MP
-    const client = new MercadoPagoConfig({
-      accessToken: process.env.MP_ACCESS_TOKEN
-    });
-
-    // Salva dados do cliente temporariamente para usar após pagamento
-    const { createClient } = require('redis');
-    const redisClient = createClient({ url: process.env.STORAGE_URL });
-    await redisClient.connect();
-
     // Gera ID único para esta sessão
     const sessionId = `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // Salva dados do formulário no Redis por 2 horas
+    // Salva sessão no Redis com status 'pending' desde o início
+    const redisClient = createClient({ url: process.env.STORAGE_URL });
+    await redisClient.connect();
     await redisClient.setEx(`session:${sessionId}`, 7200, JSON.stringify({
       tipo,
       nome,
       email,
       dados,
+      status: 'pending',   // ← CRÍTICO: salvar pending para webhook atualizar depois
       criadoEm: new Date().toISOString()
     }));
     await redisClient.quit();
+
+    // Configura o MP
+    const client = new MercadoPagoConfig({
+      accessToken: process.env.MP_ACCESS_TOKEN
+    });
 
     // Cria preferência de pagamento
     const preference = new Preference(client);
