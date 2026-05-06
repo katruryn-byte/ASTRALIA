@@ -9,14 +9,12 @@ module.exports = async function handler(req, res) {
     const body = req.body;
     console.log('Webhook recebido:', JSON.stringify(body));
 
-    // MP envia também notificações de tipo 'merchant_order' — ignorar
     if (body.type !== 'payment' || !body.data?.id) {
       return res.status(200).json({ status: 'ignored' });
     }
 
     const paymentId = body.data.id;
 
-    // Busca detalhes do pagamento no MP
     const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
     const paymentClient = new Payment(client);
     const payment = await paymentClient.get({ id: paymentId });
@@ -33,8 +31,10 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ status: 'no_session' });
     }
 
-    // Atualiza sessão como aprovada no Redis
-    const redisClient = createClient({ url: process.env.STORAGE_URL });
+    // Usa REDIS_URL (variável correta do Vercel)
+    const redisUrl = process.env.REDIS_URL || process.env.STORAGE_URL;
+    const redisClient = createClient({ url: redisUrl });
+    redisClient.on('error', (err) => console.error('Redis error:', err));
     await redisClient.connect();
 
     const sessionData = await redisClient.get(`session:${sessionId}`);
@@ -43,18 +43,15 @@ module.exports = async function handler(req, res) {
       session.status = 'approved';
       session.paymentId = String(paymentId);
       session.paidAt = new Date().toISOString();
-      // Mantém por mais 2h após aprovação
       await redisClient.setEx(`session:${sessionId}`, 7200, JSON.stringify(session));
       console.log('Sessão aprovada no Redis:', sessionId);
     } else {
-      // Sessão não existe ainda — cria com status approved
-      // (raro, mas pode acontecer se Redis reiniciou)
       await redisClient.setEx(`session:${sessionId}`, 7200, JSON.stringify({
         status: 'approved',
         paymentId: String(paymentId),
         paidAt: new Date().toISOString()
       }));
-      console.log('Sessão criada diretamente como approved:', sessionId);
+      console.log('Sessão criada como approved:', sessionId);
     }
 
     await redisClient.quit();
@@ -62,7 +59,6 @@ module.exports = async function handler(req, res) {
 
   } catch (error) {
     console.error('Webhook erro:', error.message);
-    // Sempre retorna 200 para o MP não retentar indefinidamente
     return res.status(200).json({ status: 'error', message: error.message });
   }
 }
