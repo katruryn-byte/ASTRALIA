@@ -7,18 +7,67 @@ module.exports = async function handler(req, res) {
 
   try {
     const body = req.body;
-    console.log('Webhook recebido:', JSON.stringify(body));
+    const query = req.query;
+    console.log('Webhook body:', JSON.stringify(body));
+    console.log('Webhook query:', JSON.stringify(query));
 
-    if (body.type !== 'payment' || !body.data?.id) {
+    const redisUrl = process.env.REDIS_URL || process.env.STORAGE_URL;
+    let paymentId = null;
+
+    // Formato 1: body.type === 'payment'
+    if (body?.type === 'payment' && body?.data?.id) {
+      paymentId = body.data.id;
+    }
+    // Formato 2: query topic=payment
+    else if (query?.topic === 'payment' && query?.id) {
+      paymentId = query.id;
+    }
+    // Formato 3: merchant_order
+    else if (body?.type === 'merchant_order' || query?.topic === 'merchant_order') {
+      const orderId = body?.data?.id || query?.id;
+      if (!orderId) return res.status(200).json({ status: 'no_order_id' });
+
+      console.log('merchant_order:', orderId);
+      const mpResponse = await fetch(`https://api.mercadopago.com/merchant_orders/${orderId}`, {
+        headers: { 'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}` }
+      });
+      const orderData = await mpResponse.json();
+      console.log('Order:', JSON.stringify(orderData));
+
+      const pagamentosAprovados = (orderData.payments || []).filter(p => p.status === 'approved');
+      if (pagamentosAprovados.length === 0) {
+        return res.status(200).json({ status: 'pending_payment' });
+      }
+      paymentId = pagamentosAprovados[0].id;
+
+      if (orderData.external_reference) {
+        const sessionId = orderData.external_reference;
+        const redisClient = createClient({ url: redisUrl });
+        redisClient.on('error', err => console.error('Redis:', err));
+        await redisClient.connect();
+        const existing = await redisClient.get(`session:${sessionId}`);
+        const sessionObj = existing ? JSON.parse(existing) : {};
+        sessionObj.status = 'approved';
+        sessionObj.paymentId = String(paymentId);
+        sessionObj.paidAt = new Date().toISOString();
+        await redisClient.setEx(`session:${sessionId}`, 7200, JSON.stringify(sessionObj));
+        await redisClient.quit();
+        console.log('Sessão aprovada via merchant_order:', sessionId);
+        return res.status(200).json({ status: 'success' });
+      }
+      return res.status(200).json({ status: 'no_external_reference' });
+    }
+    else {
+      console.log('Ignorado:', body?.type, query?.topic);
       return res.status(200).json({ status: 'ignored' });
     }
 
-    const paymentId = body.data.id;
+    if (!paymentId) return res.status(200).json({ status: 'no_payment_id' });
 
+    // Busca pagamento no MP
     const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
     const paymentClient = new Payment(client);
     const payment = await paymentClient.get({ id: paymentId });
-
     console.log('Payment status:', payment.status, 'ref:', payment.external_reference);
 
     if (payment.status !== 'approved') {
@@ -26,35 +75,19 @@ module.exports = async function handler(req, res) {
     }
 
     const sessionId = payment.external_reference;
-    if (!sessionId) {
-      console.log('Sem external_reference no pagamento', paymentId);
-      return res.status(200).json({ status: 'no_session' });
-    }
+    if (!sessionId) return res.status(200).json({ status: 'no_session' });
 
-    // Usa REDIS_URL (variável correta do Vercel)
-    const redisUrl = process.env.REDIS_URL || process.env.STORAGE_URL;
     const redisClient = createClient({ url: redisUrl });
-    redisClient.on('error', (err) => console.error('Redis error:', err));
+    redisClient.on('error', err => console.error('Redis:', err));
     await redisClient.connect();
-
-    const sessionData = await redisClient.get(`session:${sessionId}`);
-    if (sessionData) {
-      const session = JSON.parse(sessionData);
-      session.status = 'approved';
-      session.paymentId = String(paymentId);
-      session.paidAt = new Date().toISOString();
-      await redisClient.setEx(`session:${sessionId}`, 7200, JSON.stringify(session));
-      console.log('Sessão aprovada no Redis:', sessionId);
-    } else {
-      await redisClient.setEx(`session:${sessionId}`, 7200, JSON.stringify({
-        status: 'approved',
-        paymentId: String(paymentId),
-        paidAt: new Date().toISOString()
-      }));
-      console.log('Sessão criada como approved:', sessionId);
-    }
-
+    const existing = await redisClient.get(`session:${sessionId}`);
+    const sessionObj = existing ? JSON.parse(existing) : {};
+    sessionObj.status = 'approved';
+    sessionObj.paymentId = String(paymentId);
+    sessionObj.paidAt = new Date().toISOString();
+    await redisClient.setEx(`session:${sessionId}`, 7200, JSON.stringify(sessionObj));
     await redisClient.quit();
+    console.log('Sessão aprovada:', sessionId);
     return res.status(200).json({ status: 'success' });
 
   } catch (error) {
