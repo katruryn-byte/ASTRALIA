@@ -5,7 +5,6 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -22,29 +21,34 @@ module.exports = async function handler(req, res) {
     };
 
     const produto = PRECOS[tipo] || PRECOS['mapa-astral'];
-
-    // Gera ID único para esta sessão
     const sessionId = `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // Salva sessão no Redis com status 'pending' desde o início
-    const redisClient = createClient({ url: process.env.STORAGE_URL });
+    // Usa REDIS_URL que já existe no Vercel
+    const redisUrl = process.env.REDIS_URL || process.env.STORAGE_URL;
+    if (!redisUrl) {
+      throw new Error('REDIS_URL não configurada nas variáveis de ambiente');
+    }
+
+    const redisClient = createClient({ url: redisUrl });
+    redisClient.on('error', (err) => console.error('Redis error:', err));
     await redisClient.connect();
+
     await redisClient.setEx(`session:${sessionId}`, 7200, JSON.stringify({
       tipo,
       nome,
       email,
       dados,
-      status: 'pending',   // ← CRÍTICO: salvar pending para webhook atualizar depois
+      status: 'pending',
       criadoEm: new Date().toISOString()
     }));
+
     await redisClient.quit();
 
-    // Configura o MP
+    // Configura MP
     const client = new MercadoPagoConfig({
       accessToken: process.env.MP_ACCESS_TOKEN
     });
 
-    // Cria preferência de pagamento
     const preference = new Preference(client);
     const result = await preference.create({
       body: {
@@ -64,13 +68,10 @@ module.exports = async function handler(req, res) {
           pending: `https://astralia.online/?status=pending`
         },
         auto_return: 'approved',
-        notification_url: `https://app.astralia.online/api/webhook`,
+        notification_url: `https://astralia.online/api/webhook`,
         external_reference: sessionId,
         statement_descriptor: 'ASTRAL IA',
-        metadata: {
-          session_id: sessionId,
-          tipo: tipo
-        }
+        metadata: { session_id: sessionId, tipo }
       }
     });
 
@@ -81,7 +82,7 @@ module.exports = async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Pagamento erro:', error);
+    console.error('Pagamento erro:', error.message);
     return res.status(500).json({ error: error.message });
   }
 }
