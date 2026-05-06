@@ -1,5 +1,22 @@
 const { createClient } = require('redis');
 
+// Aguarda o webhook do MP atualizar o Redis (race condition)
+// Tenta até maxTentativas vezes com intervalo de intervalMs ms
+async function aguardarAprovacao(sessionId, maxTentativas = 5, intervalMs = 2000) {
+  for (let i = 0; i < maxTentativas; i++) {
+    await new Promise(r => setTimeout(r, intervalMs));
+    const redisClient = createClient({ url: process.env.STORAGE_URL });
+    await redisClient.connect();
+    const raw = await redisClient.get(`session:${sessionId}`);
+    await redisClient.quit();
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (s.status === 'approved') return true;
+    }
+  }
+  return false;
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -11,13 +28,12 @@ module.exports = async function handler(req, res) {
   const { prompt, dados, sessionId } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Prompt obrigatorio' });
 
-  // Verifica sessão de pagamento
   if (!sessionId) {
     return res.status(401).json({ error: 'Sessao nao encontrada', code: 'NO_SESSION' });
   }
 
   try {
-    // Valida sessão no Redis
+    // 1. Primeira verificação no Redis
     const redisClient = createClient({ url: process.env.STORAGE_URL });
     await redisClient.connect();
     const sessionData = await redisClient.get(`session:${sessionId}`);
@@ -27,11 +43,22 @@ module.exports = async function handler(req, res) {
       return res.status(401).json({ error: 'Sessao invalida ou expirada', code: 'INVALID_SESSION' });
     }
 
-    const session = JSON.parse(sessionData);
+    let session = JSON.parse(sessionData);
 
-    // Aceita se aprovado pelo webhook OU se veio com status=approved na URL (MP confirma)
+    // 2. Se ainda não aprovado, aguarda webhook (race condition MP → Redis)
+    //    O MP redireciona o usuário ANTES de disparar o webhook
+    //    Polling por até 10 segundos (5 tentativas × 2s)
     if (session.status !== 'approved') {
-      return res.status(401).json({ error: 'Pagamento nao confirmado ainda', code: 'NOT_APPROVED' });
+      console.log(`Sessão ${sessionId} ainda pending — aguardando webhook...`);
+      const aprovado = await aguardarAprovacao(sessionId, 5, 2000);
+      if (!aprovado) {
+        console.log(`Sessão ${sessionId} não aprovada após polling`);
+        return res.status(401).json({
+          error: 'Pagamento nao confirmado ainda',
+          code: 'NOT_APPROVED'
+        });
+      }
+      console.log(`Sessão ${sessionId} aprovada após polling`);
     }
 
     let infoAstro = '';
@@ -54,7 +81,7 @@ module.exports = async function handler(req, res) {
         timezone: dados.timezone || -3
       };
 
-      // 1. Planetas
+      // 3. Planetas
       try {
         const planetasRes = await fetch('https://json.freeastrologyapi.com/western/planets', {
           method: 'POST',
@@ -62,7 +89,7 @@ module.exports = async function handler(req, res) {
           body: JSON.stringify({ ...body, config: { observation_point: 'topocentric', ayanamsha: 'tropical', language: 'pt' } })
         });
         const planetasData = await planetasRes.json();
-        if (planetasData && planetasData.output && Array.isArray(planetasData.output)) {
+        if (planetasData?.output && Array.isArray(planetasData.output)) {
           planetasReais = planetasData.output;
           infoAstro += '\n\nPosicoes REAIS dos planetas:\n';
           planetasData.output.forEach(item => {
@@ -75,7 +102,7 @@ module.exports = async function handler(req, res) {
         }
       } catch(e) { console.log('Planetas erro:', e.message); }
 
-      // 2. Casas
+      // 4. Casas
       try {
         const casasRes = await fetch('https://json.freeastrologyapi.com/western/houses', {
           method: 'POST',
@@ -83,7 +110,7 @@ module.exports = async function handler(req, res) {
           body: JSON.stringify({ ...body, config: { observation_point: 'topocentric', ayanamsha: 'tropical', house_system: 'Placidus', language: 'pt' } })
         });
         const casasData = await casasRes.json();
-        if (casasData && casasData.output && casasData.output.Houses) {
+        if (casasData?.output?.Houses) {
           casasReais = casasData.output;
           infoAstro += '\nCasas Astrologicas (Placidus):\n';
           casasData.output.Houses.forEach(casa => {
@@ -94,7 +121,7 @@ module.exports = async function handler(req, res) {
         }
       } catch(e) { console.log('Casas erro:', e.message); }
 
-      // 3. Aspectos
+      // 5. Aspectos
       try {
         const aspectosRes = await fetch('https://json.freeastrologyapi.com/western/aspects', {
           method: 'POST',
@@ -111,7 +138,7 @@ module.exports = async function handler(req, res) {
           })
         });
         const aspectosData = await aspectosRes.json();
-        if (aspectosData && aspectosData.output && Array.isArray(aspectosData.output)) {
+        if (aspectosData?.output && Array.isArray(aspectosData.output)) {
           aspectosReais = aspectosData.output;
           infoAstro += '\nAspectos Principais:\n';
           aspectosData.output.slice(0, 15).forEach(item => {
@@ -123,18 +150,18 @@ module.exports = async function handler(req, res) {
         }
       } catch(e) { console.log('Aspectos erro:', e.message); }
 
-      // 4. Base de conhecimento
+      // 6. Base de conhecimento do Google Sheets
       try {
-        const planetaMap = { 'Sun':'sol','Moon':'lua','Mercury':'mercurio','Venus':'venus','Mars':'marte','Jupiter':'jupiter','Saturn':'saturno','Uranus':'urano','Neptune':'netuno','Pluto':'plutao' };
-        const signoMap = { 'Aries':'aries','Taurus':'touro','Gemini':'gemeos','Cancer':'cancer','Leo':'leao','Virgo':'virgem','Libra':'libra','Scorpio':'escorpiao','Sagittarius':'sagitario','Capricorn':'capricornio','Aquarius':'aquario','Pisces':'peixes' };
-        const nomePT = { 'Sun':'Sol','Moon':'Lua','Mercury':'Mercúrio','Venus':'Vênus','Mars':'Marte','Jupiter':'Júpiter','Saturn':'Saturno','Uranus':'Urano','Neptune':'Netuno','Pluto':'Plutão' };
-        const casaColMap = { 1:'casa 1 ',2:'casa 2 ',3:'casa 3',4:'casa 4',6:'casa 6',7:'casa 7',8:'casa 8',9:'casa 9',10:'casa 10',11:'casa 11',12:'casa 12' };
-        const planetasPrincipais = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
-
         const baseRes = await fetch(`${process.env.KNOWLEDGE_BASE_URL}?limit=500`);
         const baseData = await baseRes.json();
 
         if (baseData && Array.isArray(baseData) && baseData.length > 0) {
+          const planetaMap = { 'Sun':'sol','Moon':'lua','Mercury':'mercurio','Venus':'venus','Mars':'marte','Jupiter':'jupiter','Saturn':'saturno','Uranus':'urano','Neptune':'netuno','Pluto':'plutao' };
+          const signoMap = { 'Aries':'aries','Taurus':'touro','Gemini':'gemeos','Cancer':'cancer','Leo':'leao','Virgo':'virgem','Libra':'libra','Scorpio':'escorpiao','Sagittarius':'sagitario','Capricorn':'capricornio','Aquarius':'aquario','Pisces':'peixes' };
+          const nomePT = { 'Sun':'Sol','Moon':'Lua','Mercury':'Mercúrio','Venus':'Vênus','Mars':'Marte','Jupiter':'Júpiter','Saturn':'Saturno','Uranus':'Urano','Neptune':'Netuno','Pluto':'Plutão' };
+          const casaColMap = { 1:'casa 1',2:'casa 2',3:'casa 3',4:'casa 4',5:'casa 5',6:'casa 6',7:'casa 7',8:'casa 8',9:'casa 9',10:'casa 10',11:'casa 11',12:'casa 12' };
+          const planetasPrincipais = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
+
           baseConhecimento = '\n\n=== BASE DE CONHECIMENTO — USE COMO FUNDAMENTO ===\n\n';
           for (const planetaEn of planetasPrincipais) {
             const planetaItem = planetasReais.find(p => p.planet?.en === planetaEn);
@@ -143,7 +170,7 @@ module.exports = async function handler(req, res) {
             const signoEn = planetaItem.zodiac_sign?.name?.en || '';
             const signoKey = signoMap[signoEn] || signoEn.toLowerCase();
             let casaNum = 1;
-            if (casasReais && casasReais.Houses) {
+            if (casasReais?.Houses) {
               const grauPlaneta = planetaItem.fullDegree || 0;
               const houses = casasReais.Houses;
               for (let i = 0; i < houses.length; i++) {
@@ -170,33 +197,32 @@ module.exports = async function handler(req, res) {
           }
           baseConhecimento += '=== FIM DA BASE ===\n';
         }
-      } catch(e) { console.log('Base erro:', e.message); }
+      } catch(e) { console.log('Base conhecimento erro:', e.message); }
     }
 
-    // 5. Salva no Sheets
-    if (dados && dados.nome) {
-      try {
-        await fetch(process.env.SHEETDB_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            data: [{
-              Data: new Date().toLocaleString('pt-BR'),
-              Nome: dados.nome || '',
-              WhatsApp: dados.whatsapp || '',
-              Email: dados.email || '',
-              Cidade: dados.cidade || '',
-              Nascimento: dados.data || '',
-              Hora: dados.hora || '',
-              Tipo: dados.tipo || session.tipo || '',
-              Valor: dados.preco || ''
-            }]
-          })
-        });
-      } catch(e) { console.log('SheetDB erro:', e.message); }
+    // 7. Salva no Sheets (controle pessoal — não bloqueia o fluxo)
+    if (dados?.nome) {
+      fetch(process.env.SHEETDB_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: [{
+            Data: new Date().toLocaleString('pt-BR'),
+            Nome: dados.nome || '',
+            WhatsApp: dados.whatsapp || '',
+            Email: dados.email || '',
+            Cidade: dados.cidade || '',
+            Nascimento: dados.data || '',
+            Hora: dados.hora || '',
+            Tipo: dados.tipo || session.tipo || '',
+            Valor: dados.preco || ''
+          }]
+        })
+      }).catch(e => console.log('SheetDB erro (não crítico):', e.message));
+      // Fire-and-forget: não aguarda, não bloqueia a leitura
     }
 
-    // 6. Gera leitura com Claude
+    // 8. Gera leitura com Claude
     const promptFinal = prompt + infoAstro + baseConhecimento;
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -219,7 +245,7 @@ module.exports = async function handler(req, res) {
     return res.status(200).json(data);
 
   } catch (error) {
-    console.log('Erro geral:', error.message);
+    console.error('Erro geral:', error.message);
     return res.status(500).json({ error: error.message });
   }
 }
