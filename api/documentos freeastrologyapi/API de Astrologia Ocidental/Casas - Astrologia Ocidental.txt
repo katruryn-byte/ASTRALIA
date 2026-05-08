@@ -1,0 +1,215 @@
+A western/housesAPI fornece o grau e o signo do zodíaco de cada casa no mapa astral para a data, hora e local correspondentes.
+
+Ponto de extremidade da API:
+
+western/houses
+
+Método:
+
+POST
+
+URL completa:
+
+https://json.freeastrologyapi.com/western/houses
+
+Exemplo de carga útil
+
+
+{
+    "year": 1998,
+    "month": 3,
+    "date": 3,
+    "hours": 10,
+    "minutes": 30,
+    "seconds": 0,
+    "latitude": 17.38405,
+    "longitude": 78.45636,
+    "timezone": 5.5,
+    "config": {
+        "observation_point": "topocentric",
+        "ayanamsha": "tropical",
+        "house_system": "Placidus",
+        "language": "pt"
+    }
+}
+
+
+Código de exemplo
+
+
+var request = require('request');
+var options = {
+  'method': 'POST',
+  'url': 'https://json.freeastrologyapi.com/western/houses',
+  'headers': {
+    'Content-Type': 'application/json',
+    'x-api-key': 'YOUR_API_KEY_HERE'
+  },
+  body: JSON.stringify({
+    "year": 1998,
+    "month": 3,
+    "date": 3,
+    "hours": 10,
+    "minutes": 30,
+    "seconds": 0,
+    "latitude": 17.38405,
+    "longitude": 78.45636,
+    "timezone": 5.5,
+    "config": {
+      "observation_point": "topocentric",
+      "ayanamsha": "tropical",
+      "house_system": "Placidus",
+      "language": "en"
+    }
+  })
+
+};
+request(options, function (error, response) {
+  if (error) throw new Error(error);
+  console.log(response.body);
+});
+
+Dados de resposta
+
+
+{
+  "statusCode": 200,
+  "output": {
+    "Houses": [
+      {
+        "House": 1,
+        "degree": 52.47594854455679,
+        "normDegree": 22.475948544556793,
+        "zodiac_sign": {
+          "number": 2,
+          "name": {
+            "en": "Taurus"
+          }
+        }
+      },
+      {
+        "House": 2,
+        "degree": 80.32161383326883,
+        "normDegree": 20.321613833268827,
+        "zodiac_sign": {
+          "number": 3,
+          "name": {
+            "en": "Gemini"
+          }
+        }
+      },
+      {
+        "House": 3,
+        "degree": 105.40889300632585,
+        "normDegree": 15.408893006325854,
+        "zodiac_sign": {
+          "number": 4,
+          "name": {
+            "en": "Cancer"
+          }
+        }
+      },
+      {
+        "House": 4,
+        "degree": 131.68659732012725,
+        "normDegree": 11.686597320127248,
+        "zodiac_sign": {
+          "number": 5,
+          "name": {
+            "en": "Leo"
+          }
+        }
+      },
+      {
+        "House": 5,
+        "degree": 162.03624878632513,
+        "normDegree": 12.036248786325132,
+        "zodiac_sign": {
+          "number": 6,
+          "name": {
+            "en": "Virgo"
+          }
+        }
+      },
+      {
+        "House": 6,
+        "degree": 197.03470626535696,
+        "normDegree": 17.03470626535696,
+        "zodiac_sign": {
+          "number": 7,
+          "name": {
+            "en": "Libra"
+          }
+        }
+      },
+      {
+        "House": 7,
+        "degree": 232.4759485445568,
+        "normDegree": 22.475948544556786,
+        "zodiac_sign": {
+          "number": 8,
+          "name": {
+            "en": "Scorpio"
+          }
+        }
+      },
+      {
+        "House": 8,
+        "degree": 260.3216138332688,
+        "normDegree": 20.321613833268827,
+        "zodiac_sign": {
+          "number": 9,
+          "name": {
+            "en": "Sagittarius"
+          }
+        }
+      },
+      {
+        "House": 9,
+        "degree": 285.40889300632585,
+        "normDegree": 15.408893006325854,
+        "zodiac_sign": {
+          "number": 10,
+          "name": {
+            "en": "Capricorn"
+          }
+        }
+      },
+      {
+        "House": 10,
+        "degree": 311.68659732012725,
+        "normDegree": 11.686597320127248,
+        "zodiac_sign": {
+          "number": 11,
+          "name": {
+            "en": "Aquarius"
+          }
+        }
+      },
+      {
+        "House": 11,
+        "degree": 342.0362487863252,
+        "normDegree": 12.036248786325189,
+        "zodiac_sign": {
+          "number": 12,
+          "name": {
+            "en": "Pisces"
+          }
+        }
+      },
+      {
+        "House": 12,
+        "degree": 17.034706265356956,
+        "normDegree": 17.034706265356956,
+        "zodiac_sign": {
+          "number": 1,
+          "name": {
+            "en": "Aries"
+          }
+        }
+      }
+    ]
+  }
+}
+
+
