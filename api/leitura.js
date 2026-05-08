@@ -7,6 +7,7 @@ const {
   formatarPlanetasParaPrompt, formatarCasasParaPrompt, formatarAspectosParaPrompt,
   calcularCasaDoPlaneta
 } = require('./astro-config');
+const { getTimezone } = require('./timezone-config');
 
 async function aguardarAprovacao(sessionId, redisUrl, maxTentativas = 5, intervalMs = 2000) {
   for (let i = 0; i < maxTentativas; i++) {
@@ -71,7 +72,7 @@ module.exports = async function handler(req, res) {
         year: dt.getFullYear(), month: dt.getMonth() + 1, date: dt.getDate(),
         hours: dt.getHours(), minutes: dt.getMinutes(), seconds: 0,
         latitude: parseFloat(dados.lat), longitude: parseFloat(dados.lon),
-        timezone: dados.timezone || -3
+        timezone: getTimezone(dados.data, dados.hora, dados.cidade)
       };
 
       const listaPlanetas = (tipo === 'personalizada' || tipo === 'mapa-karmico') ? PLANETAS_ESTENDIDOS : PLANETAS_PRINCIPAIS;
