@@ -1,4 +1,5 @@
 {
+  "outputDirectory": ".",
   "rewrites": [
     {
       "source": "/(.*)",
@@ -34,12 +35,6 @@
       "source": "/(.*)",
       "has": [{ "type": "host", "value": "mapaprevisoes.astralia.online" }],
       "destination": "/mapaprevisoes.html"
-    },
-    { "source": "/mapakarmico", "destination": "/mapakarmico.html" },
-    { "source": "/lilith", "destination": "/lilith.html" },
-    { "source": "/mapadasorte", "destination": "/mapadasorte.html" },
-    { "source": "/sinastria", "destination": "/sinastria.html" },
-    { "source": "/mapaprofissional", "destination": "/mapaprofissional.html" },
-    { "source": "/mapaprevisoes", "destination": "/mapaprevisoes.html" }
+    }
   ]
 }
