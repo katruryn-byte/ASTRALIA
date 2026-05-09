@@ -2,13 +2,38 @@
   "rewrites": [
     {
       "source": "/(.*)",
-      "has": [
-        {
-          "type": "host",
-          "value": "app.astralia.online"
-        }
-      ],
+      "has": [{ "type": "host", "value": "app.astralia.online" }],
       "destination": "/app.html"
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "mapakarmico.astralia.online" }],
+      "destination": "/mapakarmico.html"
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "lilith.astralia.online" }],
+      "destination": "/lilith.html"
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "mapadasorte.astralia.online" }],
+      "destination": "/mapadasorte.html"
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "sinastria.astralia.online" }],
+      "destination": "/sinastria.html"
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "mapaprofissional.astralia.online" }],
+      "destination": "/mapaprofissional.html"
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "mapaprevisoes.astralia.online" }],
+      "destination": "/mapaprevisoes.html"
     }
   ]
 }
