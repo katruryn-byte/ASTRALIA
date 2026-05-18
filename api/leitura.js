@@ -1,13 +1,43 @@
+// api/leitura.js
+// Recebe pagamento confirmado, calcula astrologia, gera leitura via Claude.
+// Grava nas 22 colunas do SheetDB. Suporta os 8 produtos individuais.
+// Combo nao passa por aqui - tem fluxo proprio (Sprint 3).
+
 const { createClient } = require('redis');
 const {
+  API_CONFIG_BASE, API_CONFIG_CASAS, API_CONFIG_ASPECTOS,
   PLANETAS_PRINCIPAIS, PLANETAS_ESTENDIDOS,
-  API_CONFIG_BASE, API_CONFIG_CASAS, API_CONFIG_ASPECTOS, API_CONFIG_MANDALA,
-  buildPromptMapaAstral, buildPromptRevolucaoSolar, buildPromptSinastria,
-  buildPromptProfissional, buildPromptKarmico, buildPromptPersonalizada,
   formatarPlanetasParaPrompt, formatarCasasParaPrompt, formatarAspectosParaPrompt,
   calcularCasaDoPlaneta
 } = require('./astro-config');
 const { getTimezone } = require('./timezone-config');
+
+// Carrega prompts: tenta arquivo individual primeiro, cai pro astro-config se falhar
+function carregarPrompt(caminhoIndividual, nomeFuncaoFallback) {
+  try {
+    const mod = require(caminhoIndividual);
+    // Suporta export tipo `module.exports = funcao` OU `module.exports.buildPromptX = funcao`
+    if (typeof mod === 'function') return mod;
+    if (typeof mod[nomeFuncaoFallback] === 'function') return mod[nomeFuncaoFallback];
+    if (typeof mod.default === 'function') return mod.default;
+    throw new Error('Estrutura de export nao reconhecida');
+  } catch (e) {
+    console.log(`Prompt individual nao carregado (${caminhoIndividual}), usando fallback do astro-config: ${e.message}`);
+    return require('./astro-config')[nomeFuncaoFallback];
+  }
+}
+
+const PROMPTS_BUILDER = {
+  'mapa-astral':                carregarPrompt('./prompt-mapa-astral', 'buildPromptMapaAstral'),
+  'mapa-astral-personalizado':  carregarPrompt('./prompt-personalizada', 'buildPromptPersonalizada'),
+  'revolucao-solar':            carregarPrompt('./prompt-revolucao-solar', 'buildPromptRevolucaoSolar'),
+  'mapa-profissional':          carregarPrompt('./prompt-mapa-profissional', 'buildPromptProfissional'),
+  'sinastria':                  carregarPrompt('./prompt-sinastria', 'buildPromptSinastria'),
+  'mapa-karmico':               carregarPrompt('./prompt-mapa-karmico', 'buildPromptKarmico'),
+  // Os 2 mapas novos ainda nao tem prompt - vai dar erro util se chamado
+  'mapa-previsoes':             null,
+  'mapa-da-sorte':              null
+};
 
 async function aguardarAprovacao(sessionId, redisUrl, maxTentativas = 5, intervalMs = 2000) {
   for (let i = 0; i < maxTentativas; i++) {
@@ -25,13 +55,50 @@ async function aguardarAprovacao(sessionId, redisUrl, maxTentativas = 5, interva
   return false;
 }
 
-async function chamarAPI(endpoint, body) {
+async function chamarFreeAstro(endpoint, body) {
   const res = await fetch(`https://json.freeastrologyapi.com/western/${endpoint}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.FREEASTROLOGY_API_KEY },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.FREEASTROLOGY_API_KEY
+    },
     body: JSON.stringify(body)
   });
   return res.json();
+}
+
+// Extracao robusta de JSON da resposta do Claude (mesma logica da Lilith)
+function extrairJSON(texto) {
+  if (!texto) return null;
+  let limpo = texto.replace(/```json/gi, '').replace(/```/g, '').trim();
+  const primeiro = limpo.indexOf('{');
+  if (primeiro === -1) return null;
+
+  const ultimo = limpo.lastIndexOf('}');
+  if (ultimo > primeiro) {
+    try { return JSON.parse(limpo.substring(primeiro, ultimo + 1)); } catch(e) {}
+  }
+
+  // Tenta recuperar JSON truncado
+  let str = limpo.substring(primeiro);
+  let abertos = 0, dentroString = false, escape = false;
+  let ultimoFechamentoValido = -1;
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i];
+    if (escape) { escape = false; continue; }
+    if (c === '\\') { escape = true; continue; }
+    if (c === '"') { dentroString = !dentroString; continue; }
+    if (dentroString) continue;
+    if (c === '{' || c === '[') abertos++;
+    if (c === '}' || c === ']') {
+      abertos--;
+      if (abertos === 0) ultimoFechamentoValido = i;
+    }
+  }
+  if (ultimoFechamentoValido > -1) {
+    try { return JSON.parse(str.substring(0, ultimoFechamentoValido + 1)); } catch(e) {}
+  }
+  return null;
 }
 
 module.exports = async function handler(req, res) {
@@ -41,132 +108,171 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { prompt, dados, sessionId } = req.body;
+  const { dados, sessionId } = req.body;
   if (!sessionId) return res.status(401).json({ error: 'Sessao nao encontrada', code: 'NO_SESSION' });
 
   const redisUrl = process.env.REDIS_URL || process.env.STORAGE_URL;
-  if (!redisUrl) return res.status(500).json({ error: 'REDIS_URL nao configurada' });
 
   try {
+    // 1) Valida sessao e pagamento aprovado
     const rc = createClient({ url: redisUrl });
     rc.on('error', e => console.error('Redis:', e));
     await rc.connect();
     const sessionData = await rc.get(`session:${sessionId}`);
     await rc.quit();
 
-    if (!sessionData) return res.status(401).json({ error: 'Sessao invalida ou expirada', code: 'INVALID_SESSION' });
+    if (!sessionData) return res.status(401).json({ error: 'Sessao invalida', code: 'INVALID_SESSION' });
 
     let session = JSON.parse(sessionData);
     if (session.status !== 'approved') {
       const aprovado = await aguardarAprovacao(sessionId, redisUrl, 5, 2000);
-      if (!aprovado) return res.status(401).json({ error: 'Pagamento nao confirmado ainda', code: 'NOT_APPROVED' });
+      if (!aprovado) return res.status(401).json({ error: 'Pagamento nao confirmado', code: 'NOT_APPROVED' });
     }
 
-    let planetasReais = [], casasReais = null, aspectosReais = [], mandalaUrl = null;
-    let planetasInfo = '', casasInfo = '', aspectosInfo = '';
-    const tipo = dados?.tipo || 'mapa-astral';
+    const tipo = dados?.tipo || session.tipo || 'mapa-astral';
+
+    // 2) Valida que o prompt existe
+    const buildPrompt = PROMPTS_BUILDER[tipo];
+    if (!buildPrompt) {
+      return res.status(501).json({
+        error: `Prompt do produto "${tipo}" ainda nao configurado. Crie o arquivo api/prompt-${tipo}.js com a funcao adequada.`,
+        code: 'PROMPT_NOT_CONFIGURED'
+      });
+    }
+
+    // 3) Calcula astrologia via FreeAstrology (paralelo pra ganhar tempo)
+    let planetasReais = [], casasReais = null, aspectosReais = [];
 
     if (dados && dados.lat && dados.lon && dados.data) {
+      const timezone = getTimezone(dados.data, dados.hora, dados.cidade);
       const dt = new Date(dados.data + 'T' + (dados.hora || '12:00') + ':00');
       const bodyBase = {
         year: dt.getFullYear(), month: dt.getMonth() + 1, date: dt.getDate(),
         hours: dt.getHours(), minutes: dt.getMinutes(), seconds: 0,
         latitude: parseFloat(dados.lat), longitude: parseFloat(dados.lon),
-        timezone: getTimezone(dados.data, dados.hora, dados.cidade)
+        timezone
       };
 
-      const listaPlanetas = (tipo === 'personalizada' || tipo === 'mapa-karmico') ? PLANETAS_ESTENDIDOS : PLANETAS_PRINCIPAIS;
+      // Chamadas paralelas - economiza ~10s comparado ao sequencial
+      const [planetasResp, casasResp, aspectosResp] = await Promise.allSettled([
+        chamarFreeAstro('planets', { ...bodyBase, config: { ...API_CONFIG_BASE } }),
+        chamarFreeAstro('houses', { ...bodyBase, config: { ...API_CONFIG_CASAS } }),
+        chamarFreeAstro('aspects', { ...bodyBase, config: { ...API_CONFIG_ASPECTOS } })
+      ]);
 
-      try {
-        const d = await chamarAPI('planets', { ...bodyBase, config: { ...API_CONFIG_BASE } });
-        if (d?.output && Array.isArray(d.output)) { planetasReais = d.output; console.log('Planetas:', planetasReais.length); }
-      } catch(e) { console.log('Planetas erro:', e.message); }
+      if (planetasResp.status === 'fulfilled' && planetasResp.value?.output) {
+        planetasReais = planetasResp.value.output;
+      }
+      if (casasResp.status === 'fulfilled' && casasResp.value?.output?.Houses) {
+        casasReais = casasResp.value.output;
+      }
+      if (aspectosResp.status === 'fulfilled' && aspectosResp.value?.output) {
+        aspectosReais = aspectosResp.value.output;
+      }
 
-      try {
-        const d = await chamarAPI('houses', { ...bodyBase, config: { ...API_CONFIG_CASAS } });
-        if (d?.output?.Houses) { casasReais = d.output; console.log('Casas:', casasReais.Houses.length); }
-      } catch(e) { console.log('Casas erro:', e.message); }
-
+      // Calcula casa de cada planeta
       if (casasReais?.Houses && planetasReais.length > 0) {
-        planetasReais.forEach(item => { item.casaNum = calcularCasaDoPlaneta(item.fullDegree || 0, casasReais.Houses); });
+        planetasReais.forEach(item => {
+          item.casaNum = calcularCasaDoPlaneta(item.fullDegree || 0, casasReais.Houses);
+        });
       }
-
-      try {
-        const d = await chamarAPI('aspects', { ...bodyBase, config: { ...API_CONFIG_ASPECTOS } });
-        if (d?.output && Array.isArray(d.output)) { aspectosReais = d.output; console.log('Aspectos:', aspectosReais.length); }
-      } catch(e) { console.log('Aspectos erro:', e.message); }
-
-      if (tipo === 'mapa-astral' || tipo === 'personalizada') {
-        try {
-          const d = await chamarAPI('natal-wheel-chart', { ...bodyBase, config: { ...API_CONFIG_MANDALA } });
-          if (d?.output && typeof d.output === 'string') { mandalaUrl = d.output; console.log('Mandala obtida'); }
-        } catch(e) { console.log('Mandala erro:', e.message); }
-      }
-
-      planetasInfo = formatarPlanetasParaPrompt(planetasReais, casasReais, listaPlanetas);
-      casasInfo = formatarCasasParaPrompt(casasReais);
-      aspectosInfo = formatarAspectosParaPrompt(aspectosReais);
-
-      try {
-        const baseRes = await fetch(`${process.env.KNOWLEDGE_BASE_URL}?limit=500`);
-        const baseData = await baseRes.json();
-        if (baseData && Array.isArray(baseData) && baseData.length > 0) {
-          const planetaMap = {'Sun':'sol','Moon':'lua','Mercury':'mercurio','Venus':'venus','Mars':'marte','Jupiter':'jupiter','Saturn':'saturno','Uranus':'urano','Neptune':'netuno','Pluto':'plutao'};
-          const signoMap = {'Aries':'aries','Taurus':'touro','Gemini':'gemeos','Cancer':'cancer','Leo':'leao','Virgo':'virgem','Libra':'libra','Scorpio':'escorpiao','Sagittarius':'sagitario','Capricorn':'capricornio','Aquarius':'aquario','Pisces':'peixes'};
-          const casaColMap = {1:'casa 1',2:'casa 2',3:'casa 3',4:'casa 4',5:'casa 5',6:'casa 6',7:'casa 7',8:'casa 8',9:'casa 9',10:'casa 10',11:'casa 11',12:'casa 12'};
-          let base = '\n\n=== BASE DE CONHECIMENTO ===\n\n';
-          for (const pEn of ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto']) {
-            const pItem = planetasReais.find(p => p.planet?.en === pEn);
-            if (!pItem) continue;
-            const sEn = pItem.zodiac_sign?.name?.en || '';
-            const linha = baseData.find(row => {
-              const vals = Object.values(row);
-              return (vals[0]||'').toString().toLowerCase().trim() === planetaMap[pEn] &&
-                     (vals[1]||'').toString().toLowerCase().trim() === (signoMap[sEn] || sEn.toLowerCase());
-            });
-            const casaCol = casaColMap[pItem.casaNum || 1];
-            if (linha && casaCol) {
-              const interp = linha[casaCol] || '';
-              if (interp && interp.length > 10) base += `--- ${pEn} em ${sEn} na Casa ${pItem.casaNum} ---\n${interp}\n\n`;
-            }
-          }
-          base += '=== FIM ===\n';
-          planetasInfo += base;
-        }
-      } catch(e) { console.log('Base erro:', e.message); }
     }
 
-    let promptFinal = '';
-    if (tipo === 'mapa-astral') promptFinal = buildPromptMapaAstral(dados, planetasInfo, casasInfo, aspectosInfo);
-    else if (tipo === 'revolucao-solar') promptFinal = buildPromptRevolucaoSolar(dados, planetasInfo, casasInfo, dados.anoRS || new Date().getFullYear());
-    else if (tipo === 'sinastria') promptFinal = buildPromptSinastria(dados, planetasInfo, '');
-    else if (tipo === 'mapa-profissional') promptFinal = buildPromptProfissional(dados, planetasInfo, casasInfo);
-    else if (tipo === 'mapa-karmico') promptFinal = buildPromptKarmico(dados, planetasInfo, casasInfo);
-    else if (tipo === 'personalizada') promptFinal = buildPromptPersonalizada(dados, planetasInfo, casasInfo, aspectosInfo);
-    else promptFinal = (prompt || '') + '\n' + planetasInfo + casasInfo + aspectosInfo;
+    // 4) Monta info formatada pro prompt
+    const listaPlanetas = (tipo === 'mapa-astral-personalizado' || tipo === 'mapa-karmico')
+      ? PLANETAS_ESTENDIDOS
+      : PLANETAS_PRINCIPAIS;
 
+    const planetasInfo = formatarPlanetasParaPrompt(planetasReais, casasReais, listaPlanetas);
+    const casasInfo = formatarCasasParaPrompt(casasReais);
+    const aspectosInfo = formatarAspectosParaPrompt(aspectosReais);
+
+    // 5) Gera prompt final do produto
+    let promptFinal;
+    if (tipo === 'revolucao-solar') {
+      const ano = dados.anoRS || new Date().getFullYear();
+      promptFinal = buildPrompt(dados, planetasInfo, casasInfo, ano);
+    } else if (tipo === 'sinastria') {
+      promptFinal = buildPrompt(dados, planetasInfo, ''); // 2 pessoas - astrologia do parceiro vai no formatador
+    } else if (tipo === 'mapa-astral-personalizado') {
+      promptFinal = buildPrompt(dados, planetasInfo, casasInfo, aspectosInfo);
+    } else if (tipo === 'mapa-karmico' || tipo === 'mapa-profissional') {
+      promptFinal = buildPrompt(dados, planetasInfo, casasInfo);
+    } else {
+      // mapa-astral
+      promptFinal = buildPrompt(dados, planetasInfo, casasInfo, aspectosInfo);
+    }
+
+    // 6) Grava no SheetDB ANTES de chamar Claude (fire-and-forget).
+    // Se Claude der erro, ainda assim a venda ficou registrada.
     if (dados?.nome) {
+      const timezoneCalc = getTimezone(dados.data, dados.hora, dados.cidade);
       fetch(process.env.SHEETDB_URL, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: [{ Data: new Date().toLocaleString('pt-BR'), Nome: dados.nome||'', WhatsApp: dados.whatsapp||'', Email: dados.email||'', Cidade: dados.cidade||'', Nascimento: dados.data||'', Hora: dados.hora||'', Tipo: tipo, Valor: dados.preco||'' }]})
-      }).catch(e => console.log('SheetDB:', e.message));
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: [{
+          'Data': new Date().toLocaleString('pt-BR'),
+          'Nome': dados.nome || '',
+          'WhatsApp': dados.whatsapp || '',
+          'Email': dados.email || '',
+          'Cidade': dados.cidade || '',
+          'Nascimento': dados.data || '',
+          'Hora': dados.hora || '',
+          'Tipo': tipo,
+          'Valor': String(session.preco || dados.preco || ''),
+          'Codigo Cliente': session.codigoCliente || dados.codigoCliente || '',
+          'Genero': dados.genero || '',
+          'Cliente Recorrente': session.novoCliente === false ? 'Sim' : 'Não',
+          'Lat': String(dados.lat || ''),
+          'Lon': String(dados.lon || ''),
+          'Timezone': String(timezoneCalc),
+          'CPF': dados.cpf || '',
+          'Status Pagamento': 'approved',
+          'Payment ID MP': session.paymentId || '',
+          'Sessao ID': sessionId,
+          // Colunas do Sprint 4 ficam vazias - n8n preenche depois
+          'PDF Drive URL': '',
+          'Email Enviado Em': '',
+          'Status Entrega': 'pendente'
+        }] })
+      }).catch(e => console.log('SheetDB erro:', e.message));
     }
 
+    // 7) Chama Claude com o prompt final
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 8000, messages: [{ role: 'user', content: promptFinal }] })
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: tipo === 'mapa-astral-personalizado' ? 16000 : 8000,
+        messages: [{ role: 'user', content: promptFinal }]
+      })
     });
 
     const data = await response.json();
+
+    // 8) Extrai JSON robusto da resposta
+    if (data?.content && Array.isArray(data.content)) {
+      const textoCompleto = data.content.map(b => b.text || '').join('');
+      const jsonExtraido = extrairJSON(textoCompleto);
+      if (jsonExtraido && jsonExtraido.secoes) {
+        data.secoes = jsonExtraido.secoes;
+      }
+    }
+
+    // 9) Anexa dados astrologicos pro frontend desenhar mandala e tabelas
     if (planetasReais.length > 0) data.planetas = planetasReais;
     if (casasReais) data.casas = casasReais;
     if (aspectosReais.length > 0) data.aspectos = aspectosReais;
-    if (mandalaUrl) data.mandalaUrl = mandalaUrl;
+
     return res.status(200).json(data);
 
   } catch (error) {
-    console.error('Erro geral:', error.message);
+    console.error('Erro leitura:', error.message);
     return res.status(500).json({ error: error.message });
   }
-}
+};
