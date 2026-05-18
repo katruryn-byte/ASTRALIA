@@ -44,6 +44,36 @@ const NOMES_PRODUTOS = {
   'combo-completo':             'Guia Astral Completo'
 };
 
+// Simbolos astrologicos por produto. Frontend importa daqui pra cards,
+// modais, emails, WhatsApp - tudo puxa do mesmo lugar.
+// Combina simbolos astrologicos reais (☉ ☽ ♀ ♃ ♄ ☋ ⚸) com emoji
+// quando o astrologico nao comunica claramente o que e o produto.
+const SIMBOLOS_PRODUTOS = {
+  'mapa-astral':                '☉',      // Sol - essencia astrologica basica
+  'mapa-astral-personalizado':  '✦',      // Estrela - leitura premium completa
+  'revolucao-solar':            '☀',      // Sol em revolucao - ciclo anual
+  'mapa-profissional':          '♎',      // Libra/Casa 10 - carreira (MC)
+  'sinastria':                  '♀',      // Venus - amor e relacoes
+  'mapa-karmico':               '☋',      // Nodo Sul - heranca da alma
+  'mapa-previsoes':             '♄',      // Saturno - tempo e ciclos
+  'mapa-da-sorte':              '♃',      // Jupiter - sorte e expansao
+  'combo-completo':             '✧'       // Estrela ornamental - jornada completa
+};
+
+// Mesma logica, versao emoji - util quando o cliente esta em WhatsApp
+// ou em ambientes que renderizam emoji melhor que simbolo unicode
+const EMOJIS_PRODUTOS = {
+  'mapa-astral':                '⭐',
+  'mapa-astral-personalizado':  '✨',
+  'revolucao-solar':            '☀️',
+  'mapa-profissional':          '💼',
+  'sinastria':                  '💞',
+  'mapa-karmico':               '⚖️',
+  'mapa-previsoes':             '🔮',
+  'mapa-da-sorte':              '🍀',
+  'combo-completo':             '🌟'
+};
+
 // Gera codigo unico tipo ASTRO-KAR-X7F2Q9 (sem caracteres confusos O/0, I/1)
 function gerarCodigo(produtoBase) {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -265,3 +295,5 @@ module.exports.sugerirProximoProduto = sugerirProximoProduto;
 module.exports.PRODUTOS = PRODUTOS;
 module.exports.PREFIXOS = PREFIXOS;
 module.exports.NOMES_PRODUTOS = NOMES_PRODUTOS;
+module.exports.SIMBOLOS_PRODUTOS = SIMBOLOS_PRODUTOS;
+module.exports.EMOJIS_PRODUTOS = EMOJIS_PRODUTOS;
