@@ -1,0 +1,106 @@
+{
+  "_doc": "Precos do ecossistema Astralia. Para ativar modo teste (todos os precos viram R$1), troque _modo_teste para true. O backend SEMPRE le este arquivo, ignora o preco enviado pelo frontend.",
+  "_modo_teste": false,
+  "_desconto_codigo_cliente_pct": 10,
+  "_atualizado_em": "2026-05-18",
+
+  "mapa-astral": {
+    "ativo": true,
+    "titulo": "Mapa Astral Natal",
+    "preco": 17.97,
+    "preco_teste": 1.00,
+    "preco_de": 27.97,
+    "parcelas_max": 3,
+    "tipo": "isca",
+    "_obs": "Versao basica. Cliente que compra este pode receber upsell de Personalizado."
+  },
+
+  "mapa-astral-personalizado": {
+    "ativo": true,
+    "titulo": "Mapa Astral Personalizado",
+    "preco": 197.97,
+    "preco_teste": 1.00,
+    "preco_de": 297.97,
+    "parcelas_max": 12,
+    "tipo": "premium",
+    "_obs": "Premium. Contem o Mapa Astral simples - nunca oferecer simples pra quem comprou este."
+  },
+
+  "revolucao-solar": {
+    "ativo": true,
+    "titulo": "Revolucao Solar",
+    "preco": 47.97,
+    "preco_teste": 1.00,
+    "preco_de": 67.97,
+    "parcelas_max": 3
+  },
+
+  "mapa-profissional": {
+    "ativo": true,
+    "titulo": "Mapa Profissional",
+    "preco": 47.97,
+    "preco_teste": 1.00,
+    "preco_de": 67.97,
+    "parcelas_max": 3
+  },
+
+  "sinastria": {
+    "ativo": true,
+    "titulo": "Sinastria Amorosa",
+    "preco": 47.97,
+    "preco_teste": 1.00,
+    "preco_de": 67.97,
+    "parcelas_max": 3,
+    "_obs": "Requer dados do parceiro: nome2, data2, hora2, cidade2, lat2, lon2."
+  },
+
+  "mapa-karmico": {
+    "ativo": true,
+    "titulo": "Mapa Karmico",
+    "preco": 47.97,
+    "preco_teste": 1.00,
+    "preco_de": 67.97,
+    "parcelas_max": 3
+  },
+
+  "mapa-previsoes": {
+    "ativo": true,
+    "titulo": "Mapa de Previsoes",
+    "preco": 47.97,
+    "preco_teste": 1.00,
+    "preco_de": 67.97,
+    "parcelas_max": 3,
+    "_obs": "Produto novo no astralia. Aguardando prompt-mapa-previsoes.js."
+  },
+
+  "mapa-da-sorte": {
+    "ativo": true,
+    "titulo": "Mapa da Sorte",
+    "preco": 47.97,
+    "preco_teste": 1.00,
+    "preco_de": 67.97,
+    "parcelas_max": 3,
+    "_obs": "Produto novo no astralia. Aguardando prompt-mapa-da-sorte.js."
+  },
+
+  "combo-completo": {
+    "ativo": true,
+    "titulo": "Guia Astral Completo",
+    "produtos_incluidos": [
+      "mapa-astral-personalizado",
+      "revolucao-solar",
+      "mapa-profissional",
+      "mapa-karmico",
+      "mapa-previsoes",
+      "mapa-da-sorte"
+    ],
+    "_obs_sinastria": "Sinastria NAO incluida por padrao - exige dados do parceiro que o checkout do combo nao captura. Se for incluir, adicione 'sinastria' no array acima e recalcule soma_individual + preco.",
+    "soma_individual": 437.82,
+    "desconto_pct": 25,
+    "preco": 328.37,
+    "preco_teste": 1.00,
+    "parcelas_max": 12,
+    "brinde": "check-up-do-ano",
+    "_obs_brinde": "Brinde Check-up do Ano (valor R$67,97 - gratis com o combo)."
+  }
+}
