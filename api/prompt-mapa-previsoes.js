@@ -1,5 +1,5 @@
 // api/prompt-mapa-previsoes.js
-// MAPA DE PREVISOES 18 MESES - Premium R$47,97 (promo) / R$67,97 (normal)
+// MAPA DE PREVISOES 18 MESES - Premium R$167,97 (promo) / R$97,97 (normal)
 // Documento original 100% preservado - NUNCA sintetizar emocoes em atualizacoes.
 // Conteudo: Filosofia + Estrutura mensal + Exemplos completos (3 meses) + Dicionario + Tecnicas
 // Saida alvo: 18 meses interpretados, alternancia ritmica esperanca/desafio
