@@ -1,999 +1,495 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// 🌙 PROMPT — MAPA ASTRAL PERSONALIZADO (MÉDIO) — Astralia
+// 🌟 PROMPT — MAPA ASTRAL PERSONALIZADO (PREMIUM) — Astralia
 // ═══════════════════════════════════════════════════════════════════════════════
-// Produto Premium — Entrega assíncrona em até 48h via n8n
-// Comprimento: 5.000-6.500 palavras
-// Seções: 32
-// Tom: Sensorial, emocional, profundo, família com compaixão, graus críticos
+// Produto Premium — O retrato completo de quem você é (mapa natal total)
+// Modelo recomendado: claude-opus-4-7 (Opus — MAIOR síntese do ecossistema:
+//   10 planetas + 12 casas + aspectos + dignidades + stelliums em narrativa coerente)
+// Comprimento alvo: 10.000-14.000 palavras
+// Tom: Revelador, acolhedor, preciso, inspirador — NUNCA determinista
+// Palavra-chave: AUTOCONHECIMENTO COMO LIBERDADE
 // ═══════════════════════════════════════════════════════════════════════════════
+// PREMIUM ≠ ISCA. A isca (Mapa Astral grátis/síncrono) é amostra na tela.
+// Este é o mapa natal completo: 20 seções, todos os indicadores integrados.
+// Compila INTEGRALMENTE o "Guia — Mapa Astral Personalizado (Diretrizes Completas)".
+// Saída em JSON estruturado por seções (renderização de PDF é camada separada).
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const SIGNOS_ORDEM = ["Áries","Touro","Gêmeos","Câncer","Leão","Virgem","Libra","Escorpião","Sagitário","Capricórnio","Aquário","Peixes"];
+const REGENTE_SIGNO = {
+  "Áries":"Marte","Touro":"Vênus","Gêmeos":"Mercúrio","Câncer":"Lua","Leão":"Sol",
+  "Virgem":"Mercúrio","Libra":"Vênus","Escorpião":"Marte","Sagitário":"Júpiter",
+  "Capricórnio":"Saturno","Aquário":"Saturno","Peixes":"Júpiter"
+};
+const REGENTE_MODERNO = { "Escorpião":"Plutão","Aquário":"Urano","Peixes":"Netuno" };
+const ELEMENTO_SIGNO = {
+  "Áries":"Fogo","Leão":"Fogo","Sagitário":"Fogo","Touro":"Terra","Virgem":"Terra",
+  "Capricórnio":"Terra","Gêmeos":"Ar","Libra":"Ar","Aquário":"Ar",
+  "Câncer":"Água","Escorpião":"Água","Peixes":"Água"
+};
+const MODALIDADE_SIGNO = {
+  "Áries":"Cardinal","Câncer":"Cardinal","Libra":"Cardinal","Capricórnio":"Cardinal",
+  "Touro":"Fixo","Leão":"Fixo","Escorpião":"Fixo","Aquário":"Fixo",
+  "Gêmeos":"Mutável","Virgem":"Mutável","Sagitário":"Mutável","Peixes":"Mutável"
+};
+const DIGNIDADES = {
+  Sol:{rege:["Leão"],exalta:["Áries"],cai:["Libra"],detrimento:["Aquário"]},
+  Lua:{rege:["Câncer"],exalta:["Touro"],cai:["Escorpião"],detrimento:["Capricórnio"]},
+  Mercúrio:{rege:["Gêmeos","Virgem"],exalta:["Virgem"],cai:["Peixes"],detrimento:["Sagitário","Peixes"]},
+  Vênus:{rege:["Touro","Libra"],exalta:["Peixes"],cai:["Virgem"],detrimento:["Áries","Escorpião"]},
+  Marte:{rege:["Áries","Escorpião"],exalta:["Capricórnio"],cai:["Câncer"],detrimento:["Libra","Touro"]},
+  Júpiter:{rege:["Sagitário","Peixes"],exalta:["Câncer"],cai:["Capricórnio"],detrimento:["Gêmeos","Virgem"]},
+  Saturno:{rege:["Capricórnio","Aquário"],exalta:["Libra"],cai:["Áries"],detrimento:["Câncer","Leão"]}
+};
+const PLANETAS_DISTRIB = ["Sol","Lua","Mercúrio","Vênus","Marte","Júpiter","Saturno","Urano","Netuno","Plutão"];
 
 // -------------------------------------------------------------------------------
-// CONSTANTE 1 — FILOSOFIA + CONTEXTO SAGRADO + DIRETRIZES CRÍTICAS DE TOM
+// FUNÇÕES DE CÁLCULO
 // -------------------------------------------------------------------------------
-// Compilação INTEGRAL do Contexto Sagrado, Parte B (Diretrizes Críticas de Tom)
-// e Observações Finais do PROMPT MASTER — MAPA ASTRAL MÉDIO PERSONALIZADO.
-// NÃO sintetizar. NÃO comprimir. Conteúdo literal da Jordana.
 
-const FILOSOFIA_MAPA_ASTRAL_PERSONALIZADO = `
+function avaliarDignidade(planeta, signo){
+  const d = DIGNIDADES[planeta]; if(!d) return "neutro";
+  if(d.exalta.includes(signo)) return "exaltação"; if(d.rege.includes(signo)) return "domicílio";
+  if(d.cai.includes(signo)) return "queda"; if(d.detrimento.includes(signo)) return "exílio"; return "neutro";
+}
+function ocupantesCasa(mapaNatal, casa){
+  return Object.entries(mapaNatal)
+    .filter(([k,v]) => v && typeof v==='object' && v.casa===casa && SIGNOS_ORDEM.includes(v.signo))
+    .map(([k])=>k);
+}
+// Distribuição de elementos e modalidades sobre os 10 planetas
+function distribuir(mapaNatal){
+  const el={Fogo:0,Terra:0,Ar:0,Água:0}, mod={Cardinal:0,Fixo:0,Mutável:0};
+  let total=0;
+  PLANETAS_DISTRIB.forEach(p=>{ const v=mapaNatal[p]; if(v&&ELEMENTO_SIGNO[v.signo]){el[ELEMENTO_SIGNO[v.signo]]++; mod[MODALIDADE_SIGNO[v.signo]]++; total++;} });
+  const pct=(o)=>Object.fromEntries(Object.entries(o).map(([k,n])=>[k, total?Math.round(n/total*100):0]));
+  return { elemento:el, modalidade:mod, elementoPct:pct(el), modalidadePct:pct(mod),
+    elementoDominante:Object.entries(el).sort((a,b)=>b[1]-a[1])[0][0],
+    modalidadeDominante:Object.entries(mod).sort((a,b)=>b[1]-a[1])[0][0] };
+}
+// Stellium: 3+ planetas no mesmo signo OU na mesma casa
+function detectarStellium(mapaNatal){
+  const porSigno={}, porCasa={};
+  PLANETAS_DISTRIB.forEach(p=>{ const v=mapaNatal[p]; if(!v)return;
+    (porSigno[v.signo]=porSigno[v.signo]||[]).push(p);
+    if(v.casa)(porCasa[v.casa]=porCasa[v.casa]||[]).push(p); });
+  const s=[];
+  Object.entries(porSigno).forEach(([k,arr])=>{ if(arr.length>=3) s.push(`Stellium em ${k}: ${arr.join(", ")}`); });
+  Object.entries(porCasa).forEach(([k,arr])=>{ if(arr.length>=3) s.push(`Stellium na Casa ${k}: ${arr.join(", ")}`); });
+  return s;
+}
+// Planetas angulares (aproximação por casa angular 1/4/7/10)
+function detectarAngulares(mapaNatal){
+  return Object.entries(mapaNatal)
+    .filter(([k,v])=>v&&typeof v==='object'&&[1,4,7,10].includes(v.casa)&&PLANETAS_DISTRIB.includes(k))
+    .map(([k,v])=>`${k} (Casa ${v.casa})`);
+}
+function analisarMapaNatal(mapaNatal){
+  const asc = mapaNatal.ASC ? (typeof mapaNatal.ASC==='string'? mapaNatal.ASC.split(' ')[0] : mapaNatal.ASC.signo) : null;
+  const regenteMapa = asc ? REGENTE_SIGNO[asc] : null;
+  const regenteMapaMod = asc ? (REGENTE_MODERNO[asc]||null) : null;
+  const dist = distribuir(mapaNatal);
+  const dignidadesNotaveis = PLANETAS_DISTRIB
+    .map(p=>{ const v=mapaNatal[p]; if(!v)return null; const d=avaliarDignidade(p,v.signo); return d!=="neutro"?`${p} em ${v.signo} (${d})`:null; })
+    .filter(Boolean);
+  return {
+    sol: mapaNatal.Sol?`${mapaNatal.Sol.signo} Casa ${mapaNatal.Sol.casa}`:"?",
+    lua: mapaNatal.Lua?`${mapaNatal.Lua.signo} Casa ${mapaNatal.Lua.casa}`:"?",
+    asc: asc||"?",
+    regenteMapa: `${regenteMapa||'?'}${regenteMapaMod?` (moderno ${regenteMapaMod})`:''}${regenteMapa&&mapaNatal[regenteMapa]?` em ${mapaNatal[regenteMapa].signo} Casa ${mapaNatal[regenteMapa].casa}`:''}`,
+    elementoDominante: dist.elementoDominante, modalidadeDominante: dist.modalidadeDominante,
+    elementoPct: dist.elementoPct, modalidadePct: dist.modalidadePct,
+    stelliums: detectarStellium(mapaNatal),
+    angulares: detectarAngulares(mapaNatal),
+    dignidadesNotaveis
+  };
+}
+
+// -------------------------------------------------------------------------------
+// CONSTANTE 1 — FUNDAMENTOS (o que é, trindade, 4 ângulos)
+// -------------------------------------------------------------------------------
+
+const FUNDAMENTOS_NATAL = `
 ═══════════════════════════════════════════════════════════════════════════════
-🌙 PROMPT MASTER — MAPA ASTRAL MÉDIO PERSONALIZADO
-SENSORIAL | EMOCIONAL | PROFUNDO | FAMÍLIA COM COMPAIXÃO | GRAUS CRÍTICOS
+MAPA ASTRAL — FUNDAMENTOS
 ═══════════════════════════════════════════════════════════════════════════════
-
-**CONTEXTO SAGRADO:**
-
-Este é um Mapa Astral MÉDIO — a leitura principal da Astralia.
-
-Não é resumo. É ESPELHO CÓSMICO.
-
-A pessoa que recebe isso PAGOU (R$ 197-297) para se REALMENTE conhecer.
-Ela quer entender por que sofre. Por que ama assim. Por que suas escolhas.
-Quer validação. Quer cura. Quer PERMISSÃO para ser quem é.
-
-Seu trabalho é SENSORIAL, EMOTIVO, PROFUNDO.
-
-Não apenas técnico. Mas TRANSFORMADOR.
-
-═══════════════════════════════════════════════════════════════════════════════
-PARTE B: DIRETRIZES CRÍTICAS DE TOM
-═══════════════════════════════════════════════════════════════════════════════
-
-### 1. SENSORIALIDADE (Não apenas técnico)
-
-❌ RASO:
-"Sua Lua está em Escorpião. Você é intenso nos relacionamentos."
-
-✅ PROFUNDO:
-"Sua Lua está em Escorpião. Suas emoções são VISCERAIS.
-Você sente com a pele. Quando ama, é transformadora — até doer.
-Quando alguém mente, você SENTE a mudança de energia antes deles mesmos
-saberem que mentiram.
-
-Mas há preço: você sofre profundamente também.
-
-O que seu corpo experimenta? Provavelmente aperto no peito quando
-há conflito. Sensação de perda antes de coisa nenhuma acontecer.
-Conhecimento que vem sem lógica.
-
-Isso não é paranoia. É seu superpower Escorpião funcionando
-na velocidade máxima.
-
-O aprendizado: amar com profundidade E com sabedoria.
-Entregar-se E proteger-se. É possível equilibrar."
-
-───────────────────────────────────────────────────────────────────────────────
-
-### 2. DESFECHOS EMOCIONAIS (Não apenas informação)
-
-❌ RASO:
-"Você tem Nodo Norte em Leão."
-
-✅ PROFUNDO:
-"Seu Nodo Norte está em Leão. Sua alma escolheu nascer
-para APRENDER A BRILHAR.
-
-Mas você provavelmente cresceu em um lugar onde brilhar era
-perigoso. Onde você foi pedida para ser pequena, silenciosa, invisible.
-
-Seu Nodo Norte está gritando desde sempre: SER VISTA. CRIAR. DEIXAR MARCA.
-
-Você sentiu isso? Aquele desejo que não consegue explicar?
-Aquele 'quero ser ALGUÉM' que vem desde criança?
-
-Isso não é vaidade. É sua alma falando.
-
-E se você foi ensinada que vaidade é pecado, então você está
-carregando conflito: seu coração quer brilhar, sua mente diz 'seja humilde'.
-
-O trabalho: integrar que você PODE brilhar SEM arrogância.
-Pode ser vista SEM ser egoísta. Pode deixar marca SEM ser narcisista.
-
-Próximos 5 anos têm potencial EXPLOSIVO para este aprendizado.
-Será desconfortável. Será transformador.
-
-Você está pronta?"
-
-───────────────────────────────────────────────────────────────────────────────
-
-### 3. FAMÍLIA COM COMPAIXÃO (Não culpa)
-
-❌ RASO:
-"Quadratura Lua-Saturno significa mãe distante."
-
-✅ PROFUNDO (Lar harmônico):
-"Sua Lua em trígono Saturno significa que sua mãe foi AQUELA PESSOA.
-
-Provavelmente ela foi:
-├─ Presente. Amorosamente presente.
-├─ Estável. Você sabia sempre que poderia contar com ela.
-├─ Que honrava seus limites. Não era fácil demais, não era impossível.
-└─ Que envelheceu bem consigo. Sua relação MELHOROU com tempo.
-
-Isso deixou MARCA profunda. Positiva. Estrutural.
-
-Você carrega dela: capacidade de estar PRESENTE. De honrar compromissos.
-De ser confiável. De amar sem drama, com solidez.
-
-Isso é ouro. Literalmente.
-
-A bênção: você SABE como ter relação saudável porque a viu sendo saudável.
-Você não está procurando 'consertador' porque não foi ensinada que amar
-é consertar. Você sabe que é estar junto.
-
-Gratidão: aquela mãe. Aquela presença. Aquele amor estrutural.
-Você é versão melhor de si porque a tem.
-
-Continue honrando isso. Continue passando adiante."
-
-───────────────────────────────────────────────────────────────────────────────
-
-✅ PROFUNDO (Lar disfuncional):
-"Sua Lua em quadratura Saturno significa que sua mãe foi AQUELA PESSOA.
-
-Provavelmente ela foi:
-├─ Distante. Emocionalmente fria ou fisicamente ausente.
-├─ Crítica. Nada que você fazia era 'bom o suficiente'.
-├─ Controladora. Suas escolhas foram subordinadas aos desejos dela.
-└─ Que nunca envelheceu com você. A relação não melhorou — piorou ou congelou.
-
-Isso deixou MARCA profunda. Dolorosa. Estrutural.
-
-Você cresceu: não sabendo que merecia amor incondicional. Funcionando sozinha.
-Criticando a si mesma pela crítica dela que internalizou.
-Tendo dificuldade de pedir ajuda porque aprendeu que depender é perigoso.
-
-VALIDAÇÃO CRUCIAL: sua dor com ela é REAL e VÁLIDA.
-
-Mesmo que ela 'tenha feito o melhor'. Mesmo que tivesse traumas próprios.
-VOCÊ SOFREU. E isso importa. Ponto.
-
-Você não precisa perdoá-la AGORA ou NUNCA. Você precisa curar.
-
-O que curar:
-├─ Culpa (você não é culpada por não ser suficiente para ela)
-├─ Medo (ela não é o padrão de todo relacionamento)
-├─ Crítica interna (aquela voz dela em sua cabeça precisa de compaixão)
-└─ Necessidade de aprovação (você merece sua própria aprovação primeiro)
-
-Terapia é sagrado aqui. Não porque está 'quebrada'.
-Porque merece suporte na jornada de reconstruir a MÃHE INTERNA
-que você não teve.
-
-E quando essa reconstrução terminar? Você vai ser capaz de amar
-de forma que ela nunca foi. Isso é cura transmutada em bênção."
-
-───────────────────────────────────────────────────────────────────────────────
-
-### 4. SAÚDE SEM ALARMISMO (Sabedoria, não medo)
-
-❌ ALARMISTA:
-"Você tem predisposição a depressão. Cuidado!"
-
-✅ SÁBIO:
-"Seu mapa mostra sensibilidade emocional profunda.
-(Lua em signo de água, Netuno aspectando luminares).
-
-Isso significa que você SENTE MAIS que outros.
-Você absorve energias do ambiente como esponja.
-
-Não é doença. É característica. É superpower com preço.
-
-O superpower: você entende dor antes que a pessoa mesma entenda.
-Empatia é seu idioma nativo.
-
-O preço: se você não honra essa sensibilidade, ela vira depressão.
-Se você suprime emoções, elas explodem depois.
-Se você absorve tudo sem filtro, você colapsa.
-
-CUIDADO ESPECÍFICO: períodos de isolamento são OK. São necessários.
-Você precisa drenar. Precisa processar sozinha.
-Não é egoísmo. É manutenção.
-
-O que fazer:
-├─ Terapia (não porque está doente, mas porque merece suporte)
-├─ Práticas que trazem paz (meditação, ioga, arte, natureza)
-├─ Comunidade que ENTENDE sua profundidade (não todo mundo entende)
-├─ Filtros emocionais (aprender a dizer 'não absorvo isto')
-└─ Permissão para SENTIR sem julgamento (sinta, processe, libere)
-
-Você não está doente. Você está VIVA. Profundamente.
-Já é hora de honrar isso."
-
-───────────────────────────────────────────────────────────────────────────────
-
-### 5. GRAUS COMO CRÍTICO (Não apenas signo)
-
-❌ RASO:
-"Seu Sol está em Leão."
-
-✅ PROFUNDO:
-"Seu Sol está em Leão 8°.
-
-O Leão já é criativo e brilhante. Mas em 8°?
-Em 8° você está na POTÊNCIA MÁXIMA dessa energia.
-
-Significa que você não é 'um pouco criativa'. Você é criativa NO PICO.
-Você não é 'um pouco carismática'. Você é carismática O SUFICIENTE
-para intimidar algumas pessoas.
-
-Em 8°, a energia não é difusa. É CONCENTRADA.
-
-Como isso se sente? Provavelmente você sente que 'é demais'.
-Que brilha muito. Que intensidade intimida.
-Que quando você entra em um lugar, as pessoas viram para você
-mesmo que você não pedisse.
-
-Isso não é coincidência. É 8°.
-
-Sua vida inteira você pode ter sido pedida para ser 'menos'.
-Menos brilho, menos intensidade, menos presença.
-
-Mas o universo te deu 8° de Leão para um MOTIVO.
-
-Você veio para ESSE MUNDO deixar marca.
-
-Agora — usar isso para dominar ou para servir? Isso é sua escolha.
-Mas não escolha 'desaparecer'. Isso é traição a seu próprio mapa."
-
-═══════════════════════════════════════════════════════════════════════════════
-DIRETRIZES DO MAPA MÉDIO (DO DOC CONSOLIDADO)
-═══════════════════════════════════════════════════════════════════════════════
-
-DIFERENÇA DO ESSENCIAL:
-├─ 50% mais longo (5.000-6.500 palavras)
-├─ Análise muito mais profunda
-├─ Graus como elemento CRÍTICO
-├─ Saúde detalhada
-├─ Família explorada profundamente
-├─ Todos os aspectos, não só principais
-└─ Casamento/filhos como tema central
-
-TOM: Profissional + Empoderador
-NUNCA: Superficial, genérico
-SEMPRE: "Seu mapa revela...", dados específicos
-
-═══════════════════════════════════════════════════════════════════════════════
-OBSERVAÇÕES FINAIS
-═══════════════════════════════════════════════════════════════════════════════
-
-Este prompt é **MAPA MÉDIO** — a leitura principal.
-
-Não é lead magnet barato. Não é especializado (como Lilith).
-É a PROFUNDIDADE que justifica R$ 197-297.
-
-Cada cliente merece sair desta leitura sentindo:
-
-✓ REALMENTE COMPREENDIDA
-✓ VALIDADA em suas dores
-✓ EMPODERADA com seus talentos
-✓ COM CAMINHO CLARO DE CURA
-✓ SABENDO QUE MERECE PROSPERAR
-
-Se ela leu seu mapa e sentiu tudo isto? Você ganhou um cliente para VIDA.
-
-Porque vai querer Kármico, vai querer Lilith, vai querer Previsões,
-vai querer Revolução Solar.
-
-Não porque você vendeu. Porque você TRANSFORMOU.
+O mapa natal é uma fotografia do céu no momento exato do nascimento. NÃO é sentença
+nem destino gravado: é um retrato de POTENCIAIS — energias que se manifestam de formas
+diferentes conforme as escolhas conscientes. Revela personalidade em camadas, talentos
+naturais, padrões relacionais, desafios de crescimento, relação com dinheiro/trabalho/
+família/saúde/espiritualidade, e propósito. NÃO determina eventos (isso é trânsito/RS),
+não elimina livre-arbítrio, não condena a padrões, não substitui trabalho psicológico/médico.
+
+A TRINDADE FUNDAMENTAL — SOL + LUA + ASCENDENTE:
+- SOL: quem você É — essência, propósito central, o que veio expressar (o eu profundo).
+- LUA: como você SENTE — necessidades emocionais, conforto, família/passado (o eu emocional, formado na infância).
+- ASCENDENTE: como você APARECE — persona pública, filtro de acesso ao mundo (o eu apresentado).
+A tensão e a harmonia entre os três revelam conflitos internos e forças.
+
+OS QUATRO ÂNGULOS: ASC (Casa 1, como aparece/entrada na vida); MC (Casa 10, vocação/reputação/
+legado); DSC (Casa 7, o que busca no outro); IC (Casa 4, raízes/família/lar). Planetas a até 8°
+de um ângulo têm força especial — expressam-se com intensidade e visibilidade.
+
+TOM: revelador mas NUNCA determinista; profundo mas acessível. Cada traço tem luz E sombra;
+cada desafio tem caminho de trabalho. O Sol é para onde se CRESCE (destino), a Lua é de onde se VEM.
 `;
 
 // -------------------------------------------------------------------------------
-// CONSTANTE 2 — ESTRUTURA OBRIGATÓRIA (32 SEÇÕES) + SEÇÕES EXPANDIDAS
-// -------------------------------------------------------------------------------
-// Compilação INTEGRAL da Parte A do PROMPT MASTER (32 seções detalhadas)
-// + Análise Prévia Expandida + Seções complementares do Doc Consolidado
-// (Seção 20 Graus, Seção 21 Saúde com tabela, Seção 24 Família, Seção 25 Finanças)
-
-const ESTRUTURA_MAPA_ASTRAL_PERSONALIZADO = `
-═══════════════════════════════════════════════════════════════════════════════
-ANÁLISE PRÉVIA EXPANDIDA (FAZER ANTES DE ESCREVER)
-═══════════════════════════════════════════════════════════════════════════════
-
-ALÉM DO ESSENCIAL:
-1. Análise de CADA GRAU do mapa (não só posição)
-2. Significado astropsicológico
-3. Vulnerabilidades de saúde por signo/planeta
-4. Dinâmica familiar completa
-5. Timings de casamento/filhos
-6. Contexto financeiro familiar
-
-PASSOS:
-1. Distribuição de elementos (fogo, terra, ar, água)
-2. Modalidades (cardinal, fixo, mutável)
-3. Planeta dominante (mais aspectos)
-4. Regente do Ascendente
-5. Stelliums (3+ planetas mesma casa)
-6. Casas vazias (NÃO significa falta)
-7. Análise de cada grau crítico (0°, 8-9°, 15°, 23-24°, 29°)
-8. Mapeamento de aspectos harmônicos vs desafiadores
-9. Dinâmica parental (Sol/pai, Lua/mãe, Casa IV, Casa X)
-10. Indicadores financeiros familiares (Casa II, Vênus, herança)
-
-═══════════════════════════════════════════════════════════════════════════════
-PARTE A: ESTRUTURA OBRIGATÓRIA (32 SEÇÕES)
-═══════════════════════════════════════════════════════════════════════════════
-
-1. CAPA
-   └─ Título: [NOME], Seu Mapa Astral Personalizado
-   └─ Subtítulo: Uma Leitura de [X] palavras, Feita com Cuidado para Você
-   └─ Data de geração
-
-2. APRESENTAÇÃO ASTRALIA (150 palavras)
-   └─ Quem somos, por que fazemos isto, tom de compaixão
-
-3. DADOS DO CLIENTE (tabela formatada)
-   ├─ Nome, Data, Hora, Local
-   ├─ Hora de nascimento (e aviso: quanto mais precisa, mais preciso o mapa)
-   └─ Período de validade (este mapa é válido por 1 ano)
-
-4. MANDALA VISUAL (imagem do mapa natal)
-
-5. TABELA TÉCNICA
-   ├─ 10 planetas + Ascendente, MC, Nodos, Lilith
-   ├─ Signo, grau, casa
-   └─ Aspecto (bem/mal aspectado)
-
-6. TABELA DE ASPECTOS COMPLETA
-   ├─ Todos os aspectos (não só principais)
-   ├─ Harmônicos vs. Desafiadores
-   └─ Significado breve de cada um
-
-7. DISTRIBUIÇÃO DE ELEMENTOS (tabela)
-   ├─ Fogo, Terra, Ar, Água (%)
-   ├─ Modalidades (Cardinal, Fixo, Mutável)
-   └─ O que significa para quem ela é
-
-8. VISÃO GERAL DO MAPA (400 palavras)
-   ├─ Síntese de quem ela é cosmicamente
-   ├─ Padrões gerais
-   ├─ O aprendizado que sua alma pediu nesta vida
-   └─ Tom esperançoso + realista
-
-9. SOL (200 palavras)
-   ├─ Signo + grau (CRÍTICO)
-   ├─ Sensorialidade
-   ├─ Identidade essencial
-   ├─ Desafio de integração
-   └─ [UPSELL: "Conhecer melhor seu brilho"]
-
-10. LUA (200 palavras)
-    ├─ Signo + grau (CRÍTICO)
-    ├─ Mundo emocional
-    ├─ O que faz se sentir segura
-    ├─ Padrões emocionais herdados
-    └─ Necessidades reais
-
-11. ASCENDENTE (150 palavras)
-    ├─ Signo
-    ├─ Como você é vista
-    ├─ Máscara vs. essência
-    └─ Primeira impressão
-
-12. MERCÚRIO (120 palavras)
-    ├─ Signo + grau
-    ├─ Como pensa e comunica
-    └─ Padrão intelectual
-
-13. VÊNUS (150 palavras)
-    ├─ Signo + grau (CRÍTICO para relacionamentos)
-    ├─ Como ama
-    ├─ O que busca em parceiro
-    ├─ Padrão relacional
-    └─ [UPSELL: "Sinastria com parceiro"]
-
-14. MARTE (150 palavras)
-    ├─ Signo + grau
-    ├─ Desejo e ação
-    ├─ Agressividade/assertividade
-    ├─ Energia sexual
-    └─ Coragem
-
-15. JÚPITER (120 palavras)
-    ├─ Signo + grau
-    ├─ Expansão e abundância
-    ├─ Sorte natural
-    └─ [UPSELL FORTE: "Mapa da Sorte R$147"]
-
-16. SATURNO (150 palavras)
-    ├─ Signo + grau
-    ├─ Lições e limitações
-    ├─ Maturidade necessária
-    ├─ Responsabilidade
-    └─ Recompensas
-
-17. URANO, NETUNO, PLUTÃO (100 palavras cada)
-    ├─ Signo + grau
-    ├─ Transformação pessoal
-    ├─ Misticismo/intuição
-    └─ Poder pessoal
-
-18. NODO NORTE/SUL (300 palavras)
-    ├─ O que você vem aprender
-    ├─ O que já domina (Nodo Sul)
-    ├─ Caminho evolutivo
-    └─ [UPSELL FORTE: "Mapa Kármico R$ 197"]
-
-19. LILITH (300 palavras)
-    ├─ Signo + grau
-    ├─ Seu poder selvagem
-    ├─ O que foi suprimido em você
-    ├─ Como reclamar
-    ├─ Vestuário, postura, energia
-    └─ [SUPER UPSELL: "Mapa da Lilith R$ 247"]
-
-20. *** SEÇÃO CRÍTICA: ANÁLISE COMPLETA DE GRAUS (500 palavras) ***
-    ├─ INTRODUÇÃO: "Os graus são a QUALIDADE da energia"
-    ├─ GRAUS CRÍTICOS EXPLICADOS:
-    │  ├─ 0-2° (Iniciação/urgência)
-    │  ├─ 8-9° (Potência máxima)
-    │  ├─ 15° (Equilíbrio)
-    │  ├─ 23-24° (Colheita)
-    │  └─ 29° (Transformação/morte simbólica)
-    │
-    └─ SEUS GRAUS ESPECÍFICOS:
-       ├─ [PLANETA] em [SIGNO] [GRAU°]: [SIGNIFICADO SENSORIAL PROFUNDO]
-       ├─ [PLANETA] em [SIGNO] [GRAU°]: [SIGNIFICADO SENSORIAL PROFUNDO]
-       ├─ [PLANETA] em [SIGNO] [GRAU°]: [SIGNIFICADO SENSORIAL PROFUNDO]
-       └─ Tabela síntese de todos os graus
-
-   DETALHAMENTO DOS 5 GRAUS CRÍTICOS (DO DOC CONSOLIDADO):
-
-   0-2° (Initiação)
-   ├─ Energia nova, urgência, começo
-   ├─ Quando planeta está aqui: NOVO começando
-   └─ Exemplo: "Seu Sol em Leão 0° = seu brilho está NASCENDO agora"
-
-   8-9° (Potência Máxima)
-   ├─ Força máxima do planeta
-   ├─ Quando planeta está aqui: PODER PLENO
-   └─ Exemplo: "Sua Vênus em Libra 9° = beleza/charme no PICO"
-
-   15° (Equilíbrio)
-   ├─ Integração de ambos os lados do signo
-   ├─ Quando planeta está aqui: SABEDORIA
-   └─ Exemplo: "Seu Marte em Escorpião 15° = força EQUILIBRADA"
-
-   23-24° (Colheita)
-   ├─ Conclusão, aprendizado colhido
-   ├─ Quando planeta está aqui: MATURIDADE
-   └─ Exemplo: "Sua Lua em Gêmeos 24° = emoções CONSOLIDADAS"
-
-   29° (Transformação)
-   ├─ Morte simbólica, mudança radical
-   ├─ Quando planeta está aqui: CRISE ou MUDANÇA
-   └─ Exemplo: "Seu Saturno em Capricórnio 29° = estrutura TRANSFORMANDO"
-
-   TABELA SÍNTESE:
-   | Planeta | Grau | Significado | Impacto |
-   |---------|------|---|---|
-   | [PL] | [°] | [SIG] | [IMP] |
-
-21. *** SEÇÃO CRÍTICA: INTERPRETAÇÃO DE TODOS OS ASPECTOS (500 palavras) ***
-    ├─ INTRODUÇÃO: "Cada aspecto é uma relação entre energias"
-    │
-    ├─ ASPECTOS HARMÔNICOS (Sextil, Trígono):
-    │  ├─ [PLANETA A] sextil [PLANETA B] em [GRAUS]:
-    │  │  ├─ Significado
-    │  │  ├─ Como se manifesta na vida
-    │  │  └─ O que ativar
-    │  └─ [PRÓXIMOS HARMÔNICOS]
-    │
-    ├─ ASPECTOS DESAFIADORES (Quadratura, Oposição, Quincúncio):
-    │  ├─ [PLANETA A] quadrada [PLANETA B]:
-    │  │  ├─ Tensão entre estas energias
-    │  │  ├─ O conflito interno
-    │  │  ├─ Onde você sente isto no corpo
-    │  │  └─ O aprendizado que oferece
-    │  └─ [PRÓXIMOS DESAFIADORES]
-    │
-    └─ SÍNTESE: Como estes aspectos tecem sua história pessoal
-
-22. *** SEÇÃO CRÍTICA: SAÚDE PROFUNDA (600 palavras) ***
-    ├─ INTRODUÇÃO: [NÃO ALARMISTA, INFORMATIVO]
-    │  "Seu mapa revela sensibilidades. Não é diagnóstico — é sabedoria."
-    │
-    ├─ VULNERABILIDADES POR SIGNO:
-    │  ├─ [SIGNO DO SOL]: predisposição a [ÓRGÃO/SISTEMA]
-    │  ├─ [SIGNO DA LUA]: predisposição a [ÓRGÃO/SISTEMA]
-    │  ├─ [OUTRO SIGNO IMPORTANTE]: [PREDISPOSIÇÃO]
-    │  └─ [OUTRO]: [PREDISPOSIÇÃO]
-    │
-    ├─ VULNERABILIDADES POR PLANETA:
-    │  ├─ Marte em [CASA]: predisposição a [INFLAMAÇÃO/LESÃO/AGRESSIVIDADE INTERNALIZADA]
-    │  ├─ Saturno em [CASA]: predisposição a [RIGIDEZ/CARGA/CONTRAÇÃO]
-    │  ├─ Plutão em [CASA]: predisposição a [TRANSFORMAÇÃO BRUSCA/RESSURGIMENTO]
-    │  └─ [OUTROS RELEVANTES]
-    │
-    ├─ VULNERABILIDADES POR ASPECTO:
-    │  ├─ Lua quadrada Saturno: sistema imunológico fraco, falta de apoio emocional
-    │  ├─ Marte desafiado: inflamações, lesões, contenção de raiva
-    │  ├─ Plutão em Casa VI: transformação de hábitos necessária
-    │  └─ [SEUS ASPECTOS ESPECÍFICOS]
-    │
-    ├─ PREDISPOSIÇÕES MÉDICAS (SENSÍVEL):
-    │  │
-    │  ├─ ÁREA 1: [PREDISPOSIÇÃO]
-    │  │  ├─ Causa astrológica: [PLANETA/SIGNO/ASPECTO]
-    │  │  ├─ Como se sente no corpo: [SENSAÇÃO]
-    │  │  ├─ Risco: [BAIXO/MÉDIO/ALTO (ser honesta)]
-    │  │  └─ Cuidado preventivo: [PRÁTICA ESPECÍFICA]
-    │  │
-    │  ├─ ÁREA 2: [PREDISPOSIÇÃO]
-    │  │  ├─ Causa astrológica: [PLANETA/SIGNO/ASPECTO]
-    │  │  ├─ Como se sente: [SENSAÇÃO]
-    │  │  ├─ Risco: [NÍVEL]
-    │  │  └─ Cuidado: [PRÁTICA]
-    │  │
-    │  └─ ÁREA 3: [PREDISPOSIÇÃO]
-    │     ├─ Causa: [PLANETA/SIGNO/ASPECTO]
-    │     ├─ Sensação: [SENSAÇÃO]
-    │     ├─ Risco: [NÍVEL]
-    │     └─ Cuidado: [PRÁTICA]
-    │
-    ├─ FORÇAS DE SAÚDE:
-    │  ├─ [FORÇA 1]: [PLANETA/ASPECTO que oferece resistência]
-    │  ├─ [FORÇA 2]: [PLANETA/ASPECTO que oferece resiliência]
-    │  └─ [FORÇA 3]: [PLANETA/ASPECTO que oferece adaptabilidade]
-    │
-    ├─ RECOMENDAÇÕES MÉDICAS PREVENTIVAS:
-    │  ├─ Acompanhamentos prioritários: [ESPECIALIDADES]
-    │  ├─ Exames sugeridos: [QUAIS, COM QUE FREQUÊNCIA]
-    │  ├─ Práticas preventivas: [MEDITAÇÃO, YOGA, MOVIMENTO, ETC]
-    │  └─ Frequência: [QUANDO/QUANTO]
-    │
-    ├─ PADRÃO GERAL DE SAÚDE:
-    │  ├─ "Você é naturalmente [TIPO]"
-    │  ├─ "Seu corpo comunica através de [FORMA]"
-    │  ├─ "Quando estressada, você sente [ONDE/COMO]"
-    │  └─ "O que sua saúde pede agora: [AÇÃO]"
-    │
-    ├─ TABELA DE SÍNTESE (DO DOC CONSOLIDADO):
-    │  | Sistema/Órgão | Predisposição | Nível de Risco | Cuidado |
-    │  |---|---|---|---|
-    │  | [SISTEMA] | [PRED] | [RISCO] | [CUIDADO] |
-    │
-    └─ FECHAMENTO EMPODERADOR:
-       "Você não é quebrada. Seu mapa revela sabedoria sobre
-        como cuidar de si mesma. Essa é a verdade."
-
-23. *** SEÇÃO CRÍTICA: FAMÍLIA — LEITURA PROFUNDA (700 palavras) ***
-    │
-    ├─ INTRODUÇÃO:
-    │  "Sua história familiar moldou quem você é. Alguns padrões vieram
-    │   como bênçãos. Outros como feridas. Ambas merecem honra."
-    │
-    ├─ *** QUEM É A MÃE ***
-    │
-    │  VIA SIGNO LUNAR + CASA IV:
-    │  ├─ Seu signo Lunar é [SIGNO]
-    │  │  └─ Isso significa: a presença materna em você é [QUALIDADE]
-    │  │
-    │  ├─ Casa IV está em [SIGNO]
-    │  │  └─ Tipo de lar que herdou: [TIPO]
-    │  │
-    │  └─ Planetas em Casa IV: [QUAIS] = [DINÂMICA]
-    │
-    │  A MÃE QUE VOCÊ TEVE:
-    │  ├─ [DESCRIÇÃO SENSORIAL DE QUEM ELA É]
-    │  ├─ Como ela amou (ou não): [PADRÃO]
-    │  ├─ Sua presença/ausência: [PRESENÇA OU QUAL TIPO AUSÊNCIA]
-    │  └─ Como isso afetou sua capacidade de [AMAR/CONFIAR/RELAXAR]
-    │
-    │  ASPECTOS À LUA:
-    │  ├─ Se bem aspectada (Trígono, Sextil):
-    │  │  "Sua mãe foi [AMOROSA/PRESENTE/ESTÁVEL].
-    │  │   Você herda: [CAPACIDADE DE NUTRIR/SEGURANÇA EMOCIONAL].
-    │  │   A bênção: você SABE ser amada porque foi bem amada."
-    │  │
-    │  └─ Se desafiada (Quadratura, Oposição):
-    │     "Sua mãe foi [AUSENTE/SEVERA/CONTROLADORA].
-    │      Você aprendeu: [DESCONFIANÇA/AUTOSSUFICIÊNCIA/MEDO].
-    │      A ferida: você questiona se merece amor porque viu
-    │      que não era suficiente para ela.
-    │      A verdade que precisa integrar: você é merecedora.
-    │      Você sempre foi. A insuficiência é dela, não sua."
-    │
-    │  SÍNTESE MÃE:
-    │  ├─ Se harmoniosa: enriqueça os aspectos positivos (3-4 parágrafos)
-    │  │  "Aquela mãe que... Seu legado é... Você carrega..."
-    │  │
-    │  └─ Se disfuncional: sem culpa + compaixão (3-4 parágrafos)
-    │     "Sua mãe fez o melhor que conseguiu... Você sofreu... É válido...
-    │      O que curar... Você não é culpada... O que reconstruir..."
-    │
-    ├─ *** QUEM É O PAI ***
-    │
-    │  VIA SIGNO SOLAR + CASA X:
-    │  ├─ Seu signo Solar é [SIGNO]
-    │  │  └─ Isso significa: a presença paterna em você é [QUALIDADE]
-    │  │
-    │  ├─ Casa X está em [SIGNO]
-    │  │  └─ Tipo de autoridade que interiorizou: [TIPO]
-    │  │
-    │  └─ Planetas em Casa X: [QUAIS] = [DINÂMICA]
-    │
-    │  O PAI QUE VOCÊ TEVE:
-    │  ├─ [DESCRIÇÃO SENSORIAL DE QUEM ELE É]
-    │  ├─ Como ele amou (ou não): [PADRÃO]
-    │  ├─ Sua presença/ausência: [PRESENÇA OU QUAL TIPO AUSÊNCIA]
-    │  └─ Como isso afetou sua [AUTOCONFIANÇA/SEGURANÇA/CAPACIDADE PARA LIDERANÇA]
-    │
-    │  ASPECTOS AO SOL:
-    │  ├─ Se bem aspectado (Trígono, Sextil):
-    │  │  "Seu pai foi [PRESENTE/ADMIRÁVEL/CONFIÁVEL].
-    │  │   Você herda: [CONFIANÇA/CAPACIDADE DE LIDERANÇA/AUTOSSEGURANÇA].
-    │  │   A bênção: você SABE que merece brilhar porque viu um homem brilhando
-    │  │   e acreditando em você."
-    │  │
-    │  └─ Se desafiado (Quadratura, Oposição):
-    │     "Seu pai foi [AUSENTE/AGRESSIVO/CONTROLADOR/CRÍTICO].
-    │      Você aprendeu: [DESCONFIANÇA DE HOMENS/NECESSIDADE DE CONTROLE/MENOSPREÇO].
-    │      A ferida: [DORES COM O PAI — SER ESPECÍFICA, COM COMPAIXÃO].
-    │      Você questiona se merece [LIDERANÇA/VISIBILIDADE/SUCESSO] porque
-    │      ele não te viu/não acreditou em você.
-    │
-    │      A verdade que precisa integrar: você NÃO precisa de aprovação dele.
-    │      Você merece estar em pé, brilhar, conseguir. Por você mesma.
-    │
-    │      E se há dor com ele? É válida. Mesmo que ele 'tenha feito o melhor'.
-    │      Você sofreu. Isso importa. Você merece processar essa dor.
-    │      Sem culpa. Sem ter que perdoar agora."
-    │
-    │  SÍNTESE PAI:
-    │  ├─ Se harmoniosa: enriqueça os aspectos positivos (3-4 parágrafos)
-    │  │  "Aquele pai que... Seu legado é... Você carrega..."
-    │  │
-    │  └─ Se disfuncional: convite para cura (3-4 parágrafos)
-    │     "Você tem dor com seu pai... É válida... Você merece curar...
-    │      Não é perdão imediato... É separação emocional..."
-    │
-    ├─ *** QUEM SÃO OS IRMÃOS ***
-    │
-    │  VIA CASA III + MERCÚRIO:
-    │  ├─ Casa III está em [SIGNO]
-    │  │  └─ Dinâmica com irmãos: [TIPO]
-    │  │
-    │  ├─ Mercúrio em [SIGNO, CASA]
-    │  │  └─ Como você comunica-se: [ESTILO]
-    │  │
-    │  ├─ Número de irmãos: [QUANTOS, ORDEM DE NASCIMENTO]
-    │  │
-    │  ├─ Seu papel na fratria:
-    │  │  ├─ Se mais velha: protetora, responsável
-    │  │  ├─ Se mais nova: admiradora, desafiadora
-    │  │  └─ Se única: relação com amigos como 'irmãos'
-    │  │
-    │  └─ Ausência/Presença:
-    │     ├─ Se falecido: como isso impactou seu desenvolvimento
-    │     ├─ Se afastado: qual é a história? Que ferida?
-    │     ├─ Se presente: que alianças existem? Que competição?
-    │     └─ Se nenhum: qual é seu lugar na família? Como molda você?
-    │
-    │  SÍNTESE IRMÃOS:
-    │  "Os irmãos [DESCRIÇÃO]. Sua relação foi [TIPO].
-    │   Aprendeu com eles: [APRENDIZADOS].
-    │   Padrão que carrega: [PADRÃO COM RELACIONAMENTOS]."
-    │
-    └─ DINÂMICA FAMILIAR GERAL (2 parágrafos):
-       "Sua família é [TIPO]. O padrão transgeracional que carrega é [PADRÃO].
-        O que você veio resolver: [MISSÃO].
-        A ferida que precisa curar: [FERIDA].
-        A bênção que pode dar: [BÊNÇÃO]."
-
-24. *** SEÇÃO: CONDIÇÕES FINANCEIRAS FAMILIARES (350 palavras) ***
-    │
-    ├─ PADRÃO DE RIQUEZA FAMILIAR:
-    │  ├─ Sua família tinha: [ABUNDÂNCIA/ESCASSEZ/MISTO]
-    │  ├─ Como você cresceu: [SEGURO/ASSUSTADO/AMBÍGUO]
-    │  └─ Crenças que herdou sobre dinheiro: [CRENÇAS]
-    │
-    ├─ CASA II + VÊNUS (relação com dinheiro):
-    │  ├─ Signo em Casa II: [SIGNO] = [TIPO DE RELAÇÃO COM RECURSOS]
-    │  ├─ Vênus em [SIGNO]: [TIPO DE VALOR QUE BUSCA]
-    │  └─ Como processa riqueza: [PADRÃO]
-    │
-    ├─ POSSÍVEL HERANÇA:
-    │  ├─ Literal: [POSSIBILIDADE: ALTO/MÉDIO/BAIXO]
-    │  ├─ Energética: [TIPO DE PADRÃO HEREDADO]
-    │  └─ Quando pode chegar: [TIMING POSSÍVEL]
-    │
-    ├─ RELAÇÃO PAIS-DINHEIRO:
-    │  ├─ O dinheiro dos pais era: [TEMA/TABU/SAGRADO/ASSUSTADOR]
-    │  ├─ Como afetou você: [IMPACTO]
-    │  └─ Padrão que você reproduz: [PADRÃO]
-    │
-    └─ TRABALHO NECESSÁRIO:
-       ├─ Se herança escassez: descondicionar pobreza
-       ├─ Se herança abundância: usar com responsabilidade
-       ├─ Sempre: separar AMOR de DINHEIRO
-       └─ Sempre: você merece prosperar SEM culpa
-
-   ────────────────────────────────────────────────────────────────────
-   DETALHAMENTO COMPLEMENTAR (DO DOC CONSOLIDADO):
-
-   PADRÃO DE RIQUEZA FAMILIAR (via Casa II, Vênus, Júpiter):
-
-   Sua família tinha [PADRÃO FINANCEIRO]:
-   ├─ Se abundância: você cresceu com segurança material
-   ├─ Se escassez: você cresceu com falta/luta
-   └─ Se misto: você viu ambos os extremos
-
-   HERANÇA (literal ou energética):
-
-   Possibilidade de herança:
-   ├─ Se Plutão em Casa II/VIII: transformação através de herança
-   ├─ Se Vênus bem aspectada: herança positiva
-   ├─ Se Saturno em II: herança com responsabilidade
-   └─ [SEU CASO ESPECÍFICO]: [POSSIBILIDADE]
-
-   O que herda:
-   ├─ Padrão de pobreza ou abundância
-   ├─ Crenças sobre dinheiro
-   ├─ Capacidade (ou falta) de gerenciar recursos
-   └─ Traumas ou bênçãos financeiras
-
-   TRABALHO NECESSÁRIO:
-
-   Se há escassez herdada:
-   ├─ Trabalho: descondicionar crenças de pobreza
-   ├─ Prática: afirmações de abundância
-   └─ Objetivo: reclaimar sua capacidade de gerar riqueza
-
-   Se há abundância herdada:
-   ├─ Trabalho: usar riqueza com responsabilidade
-   ├─ Prática: investir conscientemente
-   └─ Objetivo: gerar riqueza genuína, não depender da herança
-
-   Se há culpa:
-   ├─ Trabalho: honrar os pais sem se culpar
-   ├─ Prática: gratidão + independência financeira
-   └─ Objetivo: quebrar ciclo, criar novamente
-
-25. CASAS ASTROLÓGICAS COMPLETAS (400 palavras)
-    ├─ Casas com planetas: [EXPLICAÇÃO ESPECÍFICA]
-    ├─ Casas vazias: [SIGNIFICADO — não é falta]
-    ├─ Regentes das casas: [DINÂMICA]
-    └─ Como tudo se conecta: [SÍNTESE]
-
-26. CASAMENTO E FILHOS (400 palavras)
-    ├─ CASAMENTO:
-    │  ├─ Indicadores: [Vênus/Descendente/Nodo]
-    │  ├─ Possibilidade: [SIM, COM CONDIÇÕES]
-    │  ├─ Tipo de parceiro: [DESCRITO]
-    │  ├─ Timing: [PRÓXIMOS 3-5 ANOS ou QUANDO TRANSITAR POR CASA VII]
-    │  └─ Dinâmica relacional: [TIPO DE CASAL QUE SERÁ]
-    │
-    ├─ FILHOS:
-    │  ├─ Possibilidade: [SIM, POSSÍVEL/NÃO SÃO INDICADORES FORTES/MÚLTIPLOS]
-    │  ├─ Número possível: [1-3/MÚLTIPLOS/FOCO EM OUTRO]
-    │  ├─ Timing: [QUANDO POSSÍVEL ASTROLOGICAMENTE]
-    │  └─ Tipo de mãe que será: [BASEADO EM INDICADORES LUNARES/SOLARES]
-    │
-    └─ VERDADE PROFUNDA:
-       "Casamento e filhos não são destino — são POSSIBILIDADES.
-        Você escolhe. O mapa mostra portas. Você entra ou não.
-        Ambas são válidas. Ambas são caminhos."
-
-27. TALENTOS NATURAIS (250 palavras)
-    ├─ O que você faz melhor
-    ├─ Onde seu mapa mostra força
-    ├─ Capacidades que vêm fácil
-    └─ Como usar isso no mundo
-
-28. DESAFIOS E APRENDIZADOS (250 palavras)
-    ├─ Onde você sente luta
-    ├─ O que veio aprender
-    ├─ Como transformar desafio em força
-    └─ O tempo que leva
-
-29. AMOR E RELACIONAMENTOS (250 palavras)
-    ├─ Como você ama
-    ├─ O que busca
-    ├─ Padrões que repete
-    └─ Como evoluir
-
-30. CARREIRA E VOCAÇÃO (250 palavras)
-    ├─ Direção natural
-    ├─ Trabalhos que alimentam sua alma
-    ├─ Talentos que deveria explorar
-    └─ Timing para mudanças
-
-31. PROPÓSITO E MISSÃO (300 palavras)
-    ├─ Por que sua alma escolheu nascer AGORA
-    ├─ Que lições escolheu aprender
-    ├─ Qual é seu presente para o mundo
-    ├─ Como servir através de suas cicatrizes
-    └─ A verdade maior sobre você
-
-32. CONCLUSÃO + INTEGRAÇÃO (500 palavras)
-    │
-    ├─ SÍNTESE DO MAPA:
-    │  "[NOME], seu mapa revela uma mulher que..."
-    │
-    ├─ VALIDAÇÃO DE SOFRIMENTO (se houver):
-    │  "Se você sofreu, seu mapa honra isso. Você não é fraca.
-    │   Você é forjada no fogo e saiu OURO."
-    │
-    ├─ RECONHECIMENTO DE FORÇA:
-    │  "Apesar de TUDO (ou por causa de), você é extraordinária.
-    │   Seu mapa mostra uma mulher que..."
-    │
-    ├─ CAMINHOS DE CURA (concretos):
-    │  ├─ Terapia (para processear [TEMA ESPECÍFICO])
-    │  ├─ Práticas (meditação, movimento, arte)
-    │  ├─ Comunidade (você não está sozinha)
-    │  └─ Auto-compaixão (acima de tudo)
-    │
-    ├─ AÇÃO CONCRETA PARA OS PRÓXIMOS MESES:
-    │  ├─ Se há luto: "seu convite é processar"
-    │  ├─ Se há potencial: "seu convite é ativar"
-    │  ├─ Se há medo: "seu convite é confiar"
-    │  └─ Sempre: "seu convite é amar a si mesma"
-    │
-    ├─ *** GRANDE UPSELL FINAL (200 palavras) ***
-    │  ├─ Mapa da Lilith (se há exploração de poder)
-    │  ├─ Mapa Kármico (se há exploração de padrões)
-    │  ├─ Previsões 18 Meses (se há exploração de futuro)
-    │  ├─ Revolução Solar (se há exploração de próximo ano)
-    │  └─ Leitura de Sinastria (se há relacionamento)
-    │
-    ├─ ESPERANÇA VERDADEIRA:
-    │  "Você não é quebrada. Você é ser em evolução.
-    │   Seu mapa é mapa de uma MULHER EXTRAORDINÁRIA que já superou
-    │   o que a maioria nunca teria coragem de enfrentar.
-    │   E isso é apenas o começo."
-    │
-    └─ CONVITE À COMUNIDADE VIP:
-       "Você agora é parte da comunidade Astralia.
-        Acesso a conteúdo exclusivo, reflexões semanais, suporte
-        na sua jornada de autoconhecimento."
-
-═══════════════════════════════════════════════════════════════════════════════
-CHECKLIST ANTES DE FINALIZAR
-═══════════════════════════════════════════════════════════════════════════════
-
-☐ SENSORIAL? (descrevo emoções, sensações, não apenas fatos)
-☐ EMOCIONAL? (tem desfechos que tocam a alma)
-☐ PROFUNDO? (graus como crítico, aspectos completos)
-☐ FAMÍLIA explorada? (mãe, pai, irmãos com profundidade)
-☐ SAÚDE sensível? (sem alarmismo, com esperança)
-☐ TODOS os aspectos? (não só os principais)
-☐ GRAUS definidos? (cada grau tem significado profundo)
-☐ CASAMENTO/FILHOS mencionados? (possibilidades reais)
-☐ FINANÇAS familiares contextualizadas? (herança, padrões)
-☐ TOM compassivo? (mesmo em dor, há dignidade)
-☐ UPSELLS naturalizados? (não parecem venda agressiva)
-☐ FECHAMENTO oferece esperança + ação?
-☐ NOME do cliente aparece ao menos 3x?
-☐ COMPRIMENTO: 5.000-6.500 palavras?
-`;
-
-// -------------------------------------------------------------------------------
-// FUNÇÃO BUILD — Monta o prompt final em runtime
-// -------------------------------------------------------------------------------
-// Aceita parâmetro `parte` para suportar geração assíncrona em batches via n8n:
-//   - 'completo'  → todas as 32 seções (uma chamada, vai estourar max_tokens)
-//   - 'parte1'    → seções 1-15  (Capa até Júpiter)
-//   - 'parte2'    → seções 16-23 (Saturno até Família)
-//   - 'parte3'    → seções 24-32 (Finanças Familiares até Conclusão+Comunidade VIP)
-// O n8n concatena os 3 JSONs {secoes:[...]} em um único PDF final.
+// CONSTANTE 2 — SOL POR SIGNO (essência / luz / sombra / frase) e POR CASA
 // -------------------------------------------------------------------------------
 
-const SECOES_POR_PARTE = {
-  completo: { inicio: 1, fim: 32, descricao: 'TODAS as 32 seções' },
-  parte1:   { inicio: 1, fim: 15, descricao: 'Seções 1-15 (Capa, Apresentação, Dados, Mandala, Tabelas, Visão Geral, Sol, Lua, Ascendente, Mercúrio, Vênus, Marte, Júpiter)' },
-  parte2:   { inicio: 16, fim: 23, descricao: 'Seções 16-23 (Saturno, Urano/Netuno/Plutão, Nodos, Lilith, Análise de Graus, Aspectos Completos, Saúde Profunda, Família — Leitura Profunda)' },
-  parte3:   { inicio: 24, fim: 32, descricao: 'Seções 24-32 (Condições Financeiras Familiares, Casas Astrológicas, Casamento e Filhos, Talentos, Desafios, Amor, Carreira, Propósito, Conclusão + Upsells + Comunidade VIP)' }
+const SOL_POR_SIGNO = {
+  "Áries":"Essência: iniciar, ser pioneira, agir com coragem; abrir novos caminhos. Mais viva ao agir/liderar/enfrentar o desconhecido. Luz: coragem, iniciativa, liderança, energia vital. Sombra: impulsividade, impaciência, não concluir, ego excessivo. Frase: 'Eu sou a centelha que acende o fogo.'",
+  "Touro":"Essência: construir, criar valor, enraizar-se no material; criar algo duradouro que persista. Mais viva com estabilidade, beleza e prazer sensorial. Luz: perseverança, estética, confiabilidade, presença física. Sombra: teimosia, apego material, resistência à mudança. Frase: 'Eu sou a solidez que sustenta.'",
+  "Gêmeos":"Essência: comunicar, conectar, transmitir ideias; ser ponte entre pessoas/ideias/mundos. Mais viva ao aprender/conversar/explorar. Luz: versatilidade, curiosidade, comunicação, agilidade mental. Sombra: superficialidade, inconsistência, ansiedade, dispersão. Frase: 'Eu sou a mente que conecta tudo.'",
+  "Câncer":"Essência: cuidar, nutrir, criar segurança emocional; ser o lar que os outros precisam. Mais viva ao cuidar e ser cuidada, no pertencimento. Luz: empatia profunda, intuição, cuidado genuíno, memória emocional. Sombra: hipersensibilidade, apego ao passado, limites difíceis. Frase: 'Eu sou o lar que acolhe.'",
+  "Leão":"Essência: brilhar, criar, liderar pelo exemplo; ser a luz que inspira outros a achar a própria. Mais viva ao criar/ser reconhecida/liderar. Luz: criatividade, liderança, generosidade, presença magnética. Sombra: necessidade excessiva de reconhecimento, arrogância, drama. Frase: 'Eu sou a luz que ilumina.'",
+  "Virgem":"Essência: aperfeiçoar, servir, discriminar o essencial; criar excelência no trabalho e no detalhe. Mais viva quando o trabalho faz diferença real. Luz: análise, precisão, serviço, humildade. Sombra: perfeccionismo paralisante, autocrítica, hipocondria. Frase: 'Eu sou a excelência que serve.'",
+  "Libra":"Essência: harmonizar, equilibrar, criar beleza e justiça; mediar entre opostos. Mais viva com harmonia, parceria e criação estética. Luz: diplomacia, estética, justiça, ver todos os lados. Sombra: indecisão, dependência do outro, evitar conflito. Frase: 'Eu sou o equilíbrio que harmoniza.'",
+  "Escorpião":"Essência: transformar, investigar, acessar o oculto; ir fundo e trazer o ouro. Mais viva nas transformações, crises que purificam, verdades difíceis. Luz: profundidade, transformação, lealdade, percepção. Sombra: obsessão, ciúme, manipulação, dificuldade de confiar. Frase: 'Eu sou a profundidade que transforma.'",
+  "Sagitário":"Essência: expandir, ensinar, buscar o sentido maior; aventureira do espírito. Mais viva ao aprender/ensinar/expandir. Luz: otimismo, generosidade, visão filosófica, amor à verdade. Sombra: otimismo excessivo, irresponsabilidade, dogmatismo, fuga do cotidiano. Frase: 'Eu sou a visão que expande.'",
+  "Capricórnio":"Essência: construir estruturas duradouras, assumir responsabilidade; criar legado. Mais viva ao conquistar e liderar com responsabilidade. Luz: ambição, disciplina, responsabilidade, paciência. Sombra: rigidez, frieza, workaholism, pessimismo. Frase: 'Eu sou a estrutura que persiste.'",
+  "Aquário":"Essência: inovar, libertar, servir ao coletivo; criar o futuro. Mais viva ao inovar/quebrar paradigmas/servir ao coletivo. Luz: originalidade, humanitarismo, inovação, liberdade. Sombra: distanciamento emocional, rebeldia sem causa, frieza. Frase: 'Eu sou a liberdade que inova.'",
+  "Peixes":"Essência: dissolver fronteiras, curar, criar arte que transcende; ponte entre visível e invisível. Mais viva ao criar artisticamente e servir com compaixão. Luz: compaixão, criatividade espiritual, intuição, transcendência. Sombra: fuga da realidade, falta de limites, vitimização. Frase: 'Eu sou a compaixão que transcende.'"
 };
 
-function buildPromptMapaAstralPersonalizado(dados, planetasInfo, casasInfo, aspectosInfo, parte = 'completo') {
-  const escopo = SECOES_POR_PARTE[parte];
-  if (!escopo) {
-    throw new Error(`Parâmetro 'parte' inválido: '${parte}'. Valores aceitos: completo, parte1, parte2, parte3.`);
-  }
+const SOL_POR_CASA = {
+  1:"expressa o propósito pela presença e identidade pessoal.",
+  2:"expressa o propósito pela criação de valor e recursos.",
+  3:"expressa o propósito pela comunicação e conexão de ideias.",
+  4:"expressa o propósito pela família, lar e ancestralidade.",
+  5:"expressa o propósito pela criatividade, amor e prazer.",
+  6:"expressa o propósito pelo serviço e trabalho diário.",
+  7:"expressa o propósito através das parcerias e do outro.",
+  8:"expressa o propósito pela transformação profunda.",
+  9:"expressa o propósito pela expansão, ensino e filosofia.",
+  10:"expressa o propósito pela carreira e reputação pública.",
+  11:"expressa o propósito pela comunidade e projetos coletivos.",
+  12:"expressa o propósito pela espiritualidade e serviço oculto."
+};
 
-  const dataNasc = dados.dataNascimento || dados.data || '[DATA]';
-  const horaNasc = dados.horaNascimento || dados.hora || '[HORA]';
-  const localNasc = dados.localNascimento || dados.local || `${dados.cidade || '[CIDADE]'}, ${dados.estado || '[ESTADO]'}`;
+// -------------------------------------------------------------------------------
+// CONSTANTE 3 — LUA POR SIGNO (necessidade / resposta / padrão)
+// -------------------------------------------------------------------------------
+
+const LUA_POR_SIGNO = {
+  "Áries":"Necessidade: ação, autonomia, ser a primeira. Segura ao agir; ansiosa ao esperar. Resposta rápida e intensa (inflama e logo passa). Padrão: reatividade, impulsividade nas decisões, dificuldade de vulnerabilidade.",
+  "Touro":"Necessidade: estabilidade, conforto físico, previsibilidade. Segura com rotina, comida boa, ambiente belo e calmo. Resposta lenta (demora a se perturbar e a se acalmar). Padrão: apego emocional, resistência à mudança, conforto como cura.",
+  "Gêmeos":"Necessidade: comunicação, variedade, estímulo mental. Segura ao falar/compartilhar/aprender. Resposta vem pela mente (racionaliza antes de sentir). Padrão: ansiedade base, dificuldade de aprofundar sentimentos.",
+  "Câncer":"DOMICÍLIO — intensidade emocional máxima. Necessidade: pertencimento, família, segurança. Segura com pessoas amadas por perto. Resposta profundamente intuitiva (sente antes de pensar). Padrão: hipersensibilidade, apego, memória emocional forte, oscilações.",
+  "Leão":"Necessidade: reconhecimento, amor, expressão criativa. Segura ao ser vista, admirada e amada. Resposta dramática e expressiva (sente em grande escala). Padrão: necessidade de aprovação, generosidade emocional excessiva, orgulho ferido.",
+  "Virgem":"Necessidade: ordem, utilidade, fazer a coisa certa. Segura quando tudo está organizado e sendo útil. Resposta analítica (processa sentimento como problema). Padrão: autocrítica emocional, ansiedade base, serviço como escudo.",
+  "Libra":"Necessidade: harmonia, parceria, beleza. Segura com equilíbrio e boa relação com os outros. Resposta diplomática (ajusta-se para manter a paz). Padrão: codependência emocional, sentir só com o referencial do outro.",
+  "Escorpião":"QUEDA — intensidade emocional extrema. Necessidade: profundidade, verdade, fusão total. Segura só com intimidade total e confiança absoluta. Resposta intensa e duradoura. Padrão: ciúme, possessividade, dificuldade de confiar, emoções reprimidas que explodem.",
+  "Sagitário":"Necessidade: liberdade, expansão, sentido. Segura com espaço para explorar e crenças que sustentam. Resposta otimista. Padrão: fuga emocional pela filosofia, dificuldade de ficar com sentimentos difíceis.",
+  "Capricórnio":"EXÍLIO — expressão emocional contida. Necessidade: estrutura, controle, competência. Segura no controle e sendo responsável. Resposta controlada (raramente demonstra). Padrão: repressão emocional, autocrítica severa, dificuldade de receber cuidado.",
+  "Aquário":"Necessidade: liberdade, igualdade, pertencer a algo maior. Segura com independência e grupo com propósito. Resposta intelectualizada (analisa em vez de sentir). Padrão: distanciamento, dificuldade de intimidade, emoção pela causa.",
+  "Peixes":"Necessidade: fusão, transcendência, conexão espiritual. Segura com paz, ao dissolver-se no presente. Resposta absorvente (sente os outros como a si). Padrão: falta de limites emocionais, absorção do sofrimento alheio, escapismo."
+};
+
+// -------------------------------------------------------------------------------
+// CONSTANTE 4 — ASCENDENTE POR SIGNO (regente / aparência / estilo / impressão / atualização)
+// -------------------------------------------------------------------------------
+
+const ASC_POR_SIGNO = {
+  "Áries":"Regente Marte. Aparência: direta, energética, pioneira; entra com presença forte. Estilo: ativa, rápida, às vezes impaciente (age antes de pensar). Impressão: corajosa e determinada. Atualização: ouvir antes de agir.",
+  "Touro":"Regente Vênus. Aparência: calma, sensual, confiável; transmite estabilidade. Estilo: lenta, deliberada, focada no prazer e na qualidade. Impressão: confiável e estável. Atualização: mover-se com mais fluidez diante da mudança.",
+  "Gêmeos":"Regente Mercúrio. Aparência: ágil, curiosa, comunicativa; sempre em movimento. Estilo: versátil, múltipla, orientada pela curiosidade. Impressão: inteligente e animada. Atualização: ir fundo, não só largo.",
+  "Câncer":"Regente Lua. Aparência: acolhedora, sensível, protetora; parece um lar. Estilo: instintiva, emocional, orientada pela segurança. Impressão: carinhosa e intuitiva. Atualização: proteger sem fechar.",
+  "Leão":"Regente Sol. Aparência: radiante, confiante, magnética; atrai atenção. Estilo: expressiva, generosa, orientada pelo coração. Impressão: carismática e especial. Atualização: não precisar de plateia para ter valor.",
+  "Virgem":"Regente Mercúrio. Aparência: discreta, refinada, analítica; parece observando. Estilo: meticulosa, orientada pelo serviço e análise. Impressão: competente e confiável. Atualização: imperfeição é humana, não falha.",
+  "Libra":"Regente Vênus. Aparência: elegante, harmoniosa, diplomática; transmite equilíbrio. Estilo: orientada por beleza, justiça e relacionamento. Impressão: charmosa e equilibrada. Atualização: ter posição sem precisar agradar primeiro.",
+  "Escorpião":"Regente Plutão/Marte. Aparência: intensa, magnética, penetrante; parece ver além. Estilo: profunda, investigativa, orientada pela transformação. Impressão: poderosa e misteriosa. Atualização: vulnerabilidade não é fraqueza.",
+  "Sagitário":"Regente Júpiter. Aparência: expansiva, otimista, aventureira; sempre buscando algo maior. Estilo: filosófica, livre, orientada pelo sentido. Impressão: entusiasmada e inspiradora. Atualização: completar o que começa.",
+  "Capricórnio":"Regente Saturno. Aparência: séria, madura, confiável; parece mais velha. Estilo: disciplinada, orientada por objetivos e responsabilidade. Impressão: competente e séria. Atualização: descansar sem culpa.",
+  "Aquário":"Regente Urano/Saturno. Aparência: original, independente, singular; parece diferente. Estilo: inovadora, orientada pelo coletivo e liberdade. Impressão: única e progressista. Atualização: conectar-se emocionalmente, não só intelectualmente.",
+  "Peixes":"Regente Netuno/Júpiter. Aparência: etérea, suave, adaptável; reflete o que os outros precisam ver. Estilo: fluida, intuitiva, orientada pela espiritualidade. Impressão: mística e compassiva. Atualização: ter forma própria."
+};
+
+// -------------------------------------------------------------------------------
+// CONSTANTE 5 — MERCÚRIO POR SIGNO (mental/comunicação/aprendizado) + RETRÓGRADO
+// -------------------------------------------------------------------------------
+
+const MERCURIO_POR_SIGNO = {
+  "Áries":"mental rápido/direto/pioneiro; comunicação assertiva (às vezes brusca); aprende por experimentação.",
+  "Touro":"mental lento/deliberado/prático; comunicação clara e sensorial; aprende por repetição e prática.",
+  "Gêmeos":"mental ágil/múltiplo/curioso; comunicação versátil e verbal; aprende pela variedade.",
+  "Câncer":"mental intuitivo/emocional/memorialístico; comunicação sensível e cuidadosa; aprende por associação emocional.",
+  "Leão":"mental dramático/criativo/confiante; comunicação expressiva e persuasiva; aprende pela narrativa.",
+  "Virgem":"mental analítico/preciso/crítico; comunicação clara e detalhada; aprende pela análise.",
+  "Libra":"mental equilibrado/diplomático/estético; comunicação harmoniosa; aprende pela comparação.",
+  "Escorpião":"mental profundo/investigativo/estratégico; comunicação penetrante e direta; aprende pela investigação.",
+  "Sagitário":"mental expansivo/filosófico/entusiasta; comunicação generosa (às vezes exagerada); aprende pela visão grande.",
+  "Capricórnio":"mental estruturado/estratégico/cauteloso; comunicação concisa e objetiva; aprende pela prática.",
+  "Aquário":"mental inovador/original/não-linear; comunicação original (às vezes excêntrica); aprende por insights.",
+  "Peixes":"mental intuitivo/metafórico/difuso; comunicação poética e indireta; aprende pela imersão."
+};
+const MERCURIO_RETROGRADO = "Mercúrio retrógrado natal: comunicação mais interna (pensa antes de falar, às vezes demais); possíveis dificuldades precoces de aprendizado; inteligência profunda mas não convencional; processamento não-linear; frequentemente 'descobre' o que pensa ao falar; tende a revisar opiniões com mais informação. Poderosa, mas precisa de tempo e espaço.";
+
+// -------------------------------------------------------------------------------
+// CONSTANTE 6 — VÊNUS POR SIGNO (ama / atrai / risco)
+// -------------------------------------------------------------------------------
+
+const VENUS_POR_SIGNO = {
+  "Áries":"Ama com paixão e urgência (apaixona-se rápido, quer ação imediata). Atrai pessoas corajosas, independentes, que desafiam. Risco: relações que começam intensas e perdem o fôlego.",
+  "Touro":"DOMICÍLIO — amor e prazer máximos. Ama com consistência, sensualidade e lealdade (abre-se devagar, é fiel). Atrai pessoas estáveis, que oferecem segurança e prazer. Risco: possessividade, apego material no amor.",
+  "Gêmeos":"Ama com curiosidade e leveza (atrai-se por mentes estimulantes). Atrai pessoas inteligentes, versáteis, surpreendentes. Risco: superficialidade, dificuldade de comprometimento.",
+  "Câncer":"Ama com profundidade emocional e necessidade de cuidado mútuo. Atrai pessoas protetoras e que precisam de cuidado. Risco: apego excessivo, relação parental no amor.",
+  "Leão":"Ama com grandiosidade, generosidade e paixão dramática. Atrai pessoas que a admiram e a veem como especial. Risco: necessidade de ser o centro, ciúme de atenção.",
+  "Virgem":"QUEDA — amor via serviço. Ama através de atos práticos e cuidado concreto. Atrai pessoas que precisam de ajuda ou muito competentes. Risco: amor condicional (por utilidade), excesso de crítica.",
+  "Libra":"DOMICÍLIO — amor, harmonia e beleza máximos. Ama com elegância, reciprocidade, busca de equilíbrio. Atrai pessoas charmosas e estéticas. Risco: dependência de parceria, dificuldade de estar só.",
+  "Escorpião":"QUEDA — amor intenso, profundo, obsessivo. Ama com completude total (não ama pela metade). Atrai relacionamentos intensos e transformadores. Risco: ciúme, possessividade, amor como poder.",
+  "Sagitário":"Ama com liberdade, aventura e crescimento mútuo. Atrai pessoas filosoficamente ricas, que expandem o horizonte. Risco: dificuldade de comprometimento, idealização do amor.",
+  "Capricórnio":"Ama com responsabilidade, lealdade e visão de longo prazo. Atrai pessoas maduras, estáveis, com objetivos claros. Risco: frieza emocional, amor como transação.",
+  "Aquário":"Ama com liberdade e amizade como base (precisa que o parceiro seja amigo). Atrai pessoas originais, independentes, que respeitam o espaço. Risco: distanciamento, amor intelectualizado.",
+  "Peixes":"EXALTAÇÃO — amor transcendente, compassivo, espiritual. Ama com compaixão, devoção e fusão. Atrai relações com componente espiritual/kármico. Risco: amor idealizado, dificuldade de ver o parceiro real."
+};
+
+// -------------------------------------------------------------------------------
+// CONSTANTE 7 — MARTE POR SIGNO (ação / desejo / raiva / risco)
+// -------------------------------------------------------------------------------
+
+const MARTE_POR_SIGNO = {
+  "Áries":"DOMICÍLIO. Ação imediata, corajosa, direta. Desejo: ser primeiro, vencer. Raiva explosiva e rápida. Risco: impulsividade, conflitos desnecessários.",
+  "Touro":"Ação lenta, persistente, por resultado tangível. Desejo: segurança, prazer, posse. Raiva contida — mas intensa ao explodir. Risco: teimosia, passivo-agressividade.",
+  "Gêmeos":"Ação múltipla, verbal, ágil (age por palavras e ideias). Desejo: variedade, estímulo mental. Raiva em palavras (debate acalorado). Risco: dispersão, conflito verbal.",
+  "Câncer":"QUEDA — ação mediada pela emoção. Ação instintiva, protetora, cíclica. Desejo: segurança emocional/familiar. Raiva reprimida que explode em momentos inesperados. Risco: passivo-agressividade, manipulação emocional.",
+  "Leão":"Ação dramática, generosa, pelo coração. Desejo: reconhecimento, amor, expressão criativa. Raiva orgulhosa (raramente perde discussão). Risco: ego inflado, ser o centro.",
+  "Virgem":"Ação meticulosa, analítica, pelo serviço. Desejo: eficiência, perfeição, ser útil. Raiva crítica e analítica (desmonta o argumento). Risco: perfeccionismo paralisante, crítica destrutiva.",
+  "Libra":"EXÍLIO — ação mediada pela diplomacia. Ação equilibrada, pela parceria. Desejo: justiça, harmonia, parcerias sólidas. Raiva indireta (evita conflito mas acumula). Risco: indecisão, codependência na ação.",
+  "Escorpião":"DOMICÍLIO tradicional — ação intensa e estratégica. Ação profunda, determinada (nunca desiste). Desejo: transformação, poder, intimidade. Raiva contida e cirúrgica. Risco: obsessão, vingança, manipulação.",
+  "Sagitário":"Ação entusiástica, expansiva, por princípios. Desejo: liberdade, aventura, sentido maior. Raiva filosófica e exagerada. Risco: energia sem foco, prometer mais do que entrega.",
+  "Capricórnio":"EXALTAÇÃO — ação mais poderosa e estruturada. Ação disciplinada, estratégica, de longo prazo. Desejo: sucesso, autoridade, legado. Raiva controlada e precisa. Risco: frieza, usar pessoas como instrumentos.",
+  "Aquário":"Ação inovadora, coletiva, por princípios humanitários. Desejo: liberdade, mudança, impacto coletivo. Raiva rebelde e idealista (luta por causas). Risco: rebeldia sem causa, ação desconectada da realidade.",
+  "Peixes":"Ação fluida, intuitiva, pela compaixão. Desejo: fusão, transcendência, servir. Raiva reprimida e somatizada. Risco: passividade, fuga da ação necessária."
+};
+
+// -------------------------------------------------------------------------------
+// CONSTANTE 8 — JÚPITER e SATURNO por signo (resumo)
+// -------------------------------------------------------------------------------
+
+const JUPITER_POR_SIGNO = {
+  "Áries":"sorte pela iniciativa e coragem.","Touro":"sorte pela construção paciente e qualidade.",
+  "Gêmeos":"sorte pela comunicação e conexões.","Câncer":"sorte pela família e intuição (EXALTAÇÃO).",
+  "Leão":"sorte pela criatividade e liderança generosa.","Virgem":"sorte pelo serviço e excelência.",
+  "Libra":"sorte pelas parcerias e diplomacia.","Escorpião":"sorte pela transformação e recursos compartilhados.",
+  "Sagitário":"sorte pela expansão e generosidade (DOMICÍLIO).","Capricórnio":"sorte pela disciplina e responsabilidade (QUEDA).",
+  "Aquário":"sorte pela inovação e comunidade.","Peixes":"sorte pela espiritualidade e compaixão (DOMICÍLIO)."
+};
+const SATURNO_POR_SIGNO = {
+  "Áries":"lição de agir com responsabilidade.","Touro":"lição de construir segurança real.",
+  "Gêmeos":"lição de comunicar com profundidade.","Câncer":"lição de vulnerabilidade e cuidado (EXÍLIO).",
+  "Leão":"lição de liderança com humildade.","Virgem":"lição de servir com alegria.",
+  "Libra":"lição de parcerias equilibradas (EXALTAÇÃO).","Escorpião":"lição de transformar com confiança.",
+  "Sagitário":"lição de expandir com responsabilidade.","Capricórnio":"lição de legado com integridade (DOMICÍLIO).",
+  "Aquário":"lição de inovar com comprometimento (DOMICÍLIO).","Peixes":"lição de fé com discernimento (EXÍLIO)."
+};
+
+// -------------------------------------------------------------------------------
+// CONSTANTE 9 — AS 12 CASAS (tema)
+// -------------------------------------------------------------------------------
+
+const CASAS_12 = {
+  1:"EU E MEU CORPO — identidade, aparência, presença. Planetas aqui se expressam de forma muito visível e pessoal.",
+  2:"RECURSOS E VALORES — dinheiro, posses, talentos, autoestima. Júpiter aqui: tendência à prosperidade; Saturno: dinheiro com esforço.",
+  3:"COMUNICAÇÃO E MENTE — comunicação, irmãos, vizinhança, cursos, deslocamentos curtos. Mercúrio aqui: comunicação fluente.",
+  4:"LAR E FAMÍLIA — família de origem, lar, ancestralidade, vida privada. Lua aqui: vida familiar intensa e emocional.",
+  5:"CRIATIVIDADE E PRAZER — criatividade, romance, filhos, lazer, expressão. Vênus aqui: grande talento para arte e amor.",
+  6:"TRABALHO E SAÚDE — trabalho diário, saúde, serviço. Saturno: trabalho disciplinado; Marte: muita energia ou esgotamento.",
+  7:"PARCERIAS — casamento, parcerias, contratos, inimigos declarados. Vênus: parcerias harmoniosas; Saturno: relações testadas/maturação.",
+  8:"TRANSFORMAÇÃO E MISTÉRIO — morte, herança, sexualidade, recursos compartilhados. Plutão aqui (domicílio): transformação máxima.",
+  9:"EXPANSÃO E FILOSOFIA — viagens longas, filosofia, religião, ensino superior, publicação. Júpiter aqui (domicílio): expansão máxima.",
+  10:"CARREIRA E REPUTAÇÃO — carreira, reputação, autoridade, legado. Sol aqui: vocação pública forte e visível.",
+  11:"COMUNIDADE E FUTURO — amizades, grupos, causas, esperanças, sonhos. Júpiter aqui: grupos trazem sorte.",
+  12:"INTERIORIDADE E ESPIRITUALIDADE — inconsciente, espiritualidade, retiro, karma oculto, autossabotagem. Netuno aqui (domicílio): espiritualidade profunda."
+};
+
+// -------------------------------------------------------------------------------
+// CONSTANTE 10 — ASPECTOS (como ler + os mais importantes)
+// -------------------------------------------------------------------------------
+
+const ASPECTOS_NATAL = `
+## ASPECTOS — AS CONVERSAS DO MAPA
+HARMÔNICOS: Trígono (120°) talentos que fluem sem esforço; Sextil (60°) oportunidades que pedem ação.
+DESAFIADORES: Quadratura (90°) conflito interno que força crescimento; Oposição (180°) polaridade que pede integração.
+INTENSIFICADORES: Conjunção (0°) fusão de energias (harmônica ou explosiva); Quincúncio (150°) ajuste constante entre duas energias.
+
+OS MAIS IMPORTANTES:
+SOL-LUA: conjunção (emoção e propósito fundidos, pouca diferenciação); quadratura (tensão entre o que é e o que sente — motor de crescimento); oposição (conflito propósito × necessidade); trígono (harmonia identidade-emoção).
+SOL-SATURNO: conjunção/quadratura (vida séria que exige estrutura; carreira sólida e lenta); trígono (ambição saudável).
+SOL-JÚPITER: conjunção/trígono (sorte, expansão, reconhecimento); quadratura (excesso — dispersão ou arrogância).
+VÊNUS-MARTE: conjunção (paixão intensa); quadratura (tensão entre o que ama e o que deseja); trígono (afeto e ação fluem).
+LUA-SATURNO: conjunção (emoções contidas); quadratura (dificuldade emocional que pede cura — padrão familiar difícil); trígono (maturidade afetiva).
+`;
+
+// -------------------------------------------------------------------------------
+// CONSTANTE 11 — PADRÕES TEMÁTICOS, STELLIUMS, SAÚDE/DINHEIRO/RELAÇÃO
+// -------------------------------------------------------------------------------
+
+const PADROES_E_AREAS = `
+## TEMA CENTRAL E STELLIUMS
+Identificar o tema central: qual elemento domina? qual casa tem mais planetas? qual signo (Stellium)? qual planeta faz mais aspectos? Sol/Lua/ASC têm tema comum? Se 3+ indicadores apontam o mesmo tema = TEMA CENTRAL.
+Stellium (3+ planetas no mesmo signo ou casa) concentra muita energia: intenso, dominante, às vezes desequilibrado. No signo: a qualidade permeia toda a personalidade. Na casa: a área é central (talentos E desafios).
+
+## SAÚDE — observar Casa 6 (saúde/rotina), Casa 1 (vitalidade/corpo), Casa 12 (saúde mental/crônicas), Marte (energia), Saturno (estrutura/limitações crônicas). Atenção: Saturno/Plutão na 6 (cuidado sistemático); Marte na 12 (energia que adoece); Lua na 6 (saúde ligada ao emocional).
+
+## FINANÇAS — observar Casa 2 (dinheiro/talentos), Casa 8 (recursos compartilhados/herança), Casa 11 (ganhos), Vênus (valores/o que atrai), Júpiter (expansão), Saturno (disciplina/limite). Júpiter na 2 ou 8 (prosperidade); Saturno na 2 (dinheiro com trabalho, sólido); Plutão na 8 (transformações financeiras radicais).
+
+## RELACIONAMENTOS — observar Casa 7 (parcerias/casamento), Vênus (como ama), Marte (o que deseja), Lua (necessidade emocional), Casa 5 (romance). O parceiro ideal é indicado pelo signo do Descendente (oposto ao ASC) e pelos planetas na Casa 7.
+`;
+
+// -------------------------------------------------------------------------------
+// CONSTANTE 12 — ESTRUTURA (20 seções) + UPSELL
+// -------------------------------------------------------------------------------
+
+const ESTRUTURA_NATAL = `
+## ESTRUTURA DO RELATÓRIO (20 seções)
+1. Carta ao cliente (abertura pessoal e acolhedora) (~300)
+2. A Trindade Sol-Lua-Ascendente (integração das 3 camadas) (~800)
+3. Seu Sol — quem você é (~500)
+4. Sua Lua — como você sente (~500)
+5. Seu Ascendente — como você aparece (~400)
+6. Mercúrio — sua mente e comunicação (~350)
+7. Vênus — como você ama (~400)
+8. Marte — como você age (~400)
+9. Júpiter e Saturno — expansão e lição (~500)
+10. Planetas transpessoais — Urano, Netuno, Plutão (~400)
+11. Pontos especiais — Quíron, Lilith, Nodos, Parte da Fortuna (~400)
+12. Casas em destaque (as mais habitadas) (~600)
+13. Padrão de saúde (~350)
+14. Padrão financeiro (~350)
+15. Padrão relacional (~400)
+16. Aspectos principais — as conversas do mapa (~500)
+17. Missão de vida — síntese (Sol + MC + Nodo Norte) (~500)
+18. Desafios e como trabalhar (~400)
+19. Afirmações personalizadas (10 do mapa) (~200)
+20. Próximos passos práticos + Próximos passos Astralia (upsell individual) (~300)
+
+## TOM E REGRAS
+Use o nome do cliente. Cada planeta com signo + casa + aspectos integrados. Revelador mas NUNCA determinista; profundo mas acessível. Cada traço com luz E sombra; cada desafio com caminho de trabalho. Linguagem clara, calorosa, sem jargão excessivo.
+
+## UPSELL (individual — NÃO combo; oferecer 1-2 no gancho real)
+- Mapa Kármico: Nodo Sul em casa/signo de padrão visível, ou cliente repete ciclos.
+- Revolução Solar: aniversário próximo / mudança de ciclo.
+- Mapa Profissional: Casa 10/MC/Sol vocacionalmente relevantes.
+- Mapa da Lilith: Lilith forte ou temas de poder reprimido emergindo.
+`;
+
+// -------------------------------------------------------------------------------
+// FUNÇÃO BUILD
+// -------------------------------------------------------------------------------
+// dados: { nome, dataNascimento, horaNascimento, localNascimento, faseLunar?, contexto? }
+// mapaNatal: { Sol, Lua, Mercúrio, Vênus, Marte, Júpiter, Saturno, Urano, Netuno, Plutão,
+//   "Quíron", Lilith, "Nodo Norte", "Parte da Fortuna", ASC, MC } (cada {signo,casa,grau,retrogrado})
+// aspectos: [{ planeta1, aspecto, planeta2, orbe }]
+
+function buildPromptMapaAstralPersonalizado(dados, mapaNatal, aspectos = []) {
   const nome = dados.nome || '[NOME]';
+  const a = analisarMapaNatal(mapaNatal);
+  const horaConhecida = dados.horaNascimento && !/desconhec|12:00/i.test(dados.horaNascimento);
 
-  return `Você é uma astróloga experiente, sensorial e compassiva da Astralia.
-Sua missão é gerar um MAPA ASTRAL PERSONALIZADO (MÉDIO) para ${nome}.
+  const planetasInfo = ["Sol","Lua","Mercúrio","Vênus","Marte","Júpiter","Saturno","Urano","Netuno","Plutão","Quíron","Lilith","Nodo Norte","Parte da Fortuna"]
+    .map(p => mapaNatal[p] ? `  - ${p}: ${mapaNatal[p].signo} Casa ${mapaNatal[p].casa ?? '?'} ${mapaNatal[p].grau ?? ''}°${mapaNatal[p].retrogrado?' ℞':''}` : null)
+    .filter(Boolean).join("\n");
 
-═══════════════════════════════════════════════════════════════════════════════
-DADOS DA CLIENTE
-═══════════════════════════════════════════════════════════════════════════════
-Nome: ${nome}
-Data de nascimento: ${dataNasc}
-Hora de nascimento: ${horaNasc}
-Local de nascimento: ${localNasc}
+  const prompt = `Você é um astrólogo com 30 anos de experiência em astrologia psicológica e humanista (Jung + astrologia, profundidade com acessibilidade). Sua leitura revela sem determinar, ilumina sem assustar, honra sem bajular.
+Comprimento: 10.000-14.000 palavras.
 
-═══════════════════════════════════════════════════════════════════════════════
-DADOS ASTROLÓGICOS DO MAPA NATAL
-═══════════════════════════════════════════════════════════════════════════════
+# DADOS DO MAPA NATAL
+Nome: ${nome} | Nascimento: ${dados.dataNascimento||'[DATA]'}, ${dados.horaNascimento||'[HORA]'}, ${dados.localNascimento||'[LOCAL]'}
+${horaConhecida ? '' : 'ATENÇÃO: hora não confirmada — trate casas e Ascendente como indicativos; foque em análise solar (planetas por signo, aspectos).'}
+${dados.faseLunar ? `Fase lunar: ${dados.faseLunar}` : ''}
+${dados.contexto ? `Contexto da cliente: ${dados.contexto}` : ''}
 
-PLANETAS E PONTOS (signo, grau, casa):
+## TRINDADE
+Sol: ${a.sol} | Lua: ${a.lua} | ASC: ${a.asc} | Regente do mapa: ${a.regenteMapa}
+MC: ${mapaNatal.MC ? (mapaNatal.MC.signo+' '+(mapaNatal.MC.grau||'')+'°') : '?'}
+
+## PLANETAS E PONTOS
 ${planetasInfo}
 
-CASAS ASTROLÓGICAS (cúspides, regentes, ocupação):
-${casasInfo}
+# DIAGNÓSTICO (já calculado — use como base)
+- Elemento dominante: ${a.elementoDominante} (${Object.entries(a.elementoPct).map(([k,v])=>k+' '+v+'%').join(', ')})
+- Modalidade dominante: ${a.modalidadeDominante} (${Object.entries(a.modalidadePct).map(([k,v])=>k+' '+v+'%').join(', ')})
+- Stelliums: ${a.stelliums.length?a.stelliums.join(" | "):"nenhum"}
+- Planetas angulares (casas 1/4/7/10): ${a.angulares.length?a.angulares.join(", "):"nenhum"}
+- Dignidades notáveis: ${a.dignidadesNotaveis.length?a.dignidadesNotaveis.join(", "):"nenhuma marcante"}
 
-ASPECTOS (harmônicos e desafiadores, com graus de orbe):
-${aspectosInfo}
+# ASPECTOS PRINCIPAIS
+${aspectos.length ? aspectos.map(x=>`  - ${x.planeta1} ${x.aspecto} ${x.planeta2} (orbe ${x.orbe ?? '?'}°)`).join("\n") : "(não fornecidos)"}
 
-═══════════════════════════════════════════════════════════════════════════════
-FILOSOFIA, CONTEXTO SAGRADO E DIRETRIZES DE TOM
-═══════════════════════════════════════════════════════════════════════════════
-${FILOSOFIA_MAPA_ASTRAL_PERSONALIZADO}
+${FUNDAMENTOS_NATAL}
 
-═══════════════════════════════════════════════════════════════════════════════
-ESTRUTURA OBRIGATÓRIA — 32 SEÇÕES
-═══════════════════════════════════════════════════════════════════════════════
-${ESTRUTURA_MAPA_ASTRAL_PERSONALIZADO}
+## SOL POR SIGNO (use o desta cliente: ${mapaNatal.Sol?mapaNatal.Sol.signo:'?'})
+${Object.entries(SOL_POR_SIGNO).map(([s,t])=>`${s}: ${t}`).join("\n\n")}
+## SOL POR CASA
+${Object.entries(SOL_POR_CASA).map(([c,t])=>`Casa ${c}: você ${t}`).join("\n")}
 
-═══════════════════════════════════════════════════════════════════════════════
-ESCOPO DESTA GERAÇÃO
-═══════════════════════════════════════════════════════════════════════════════
-Modo: ${parte.toUpperCase()}
-Gerar APENAS: ${escopo.descricao}
-Faixa de seções: ${escopo.inicio} até ${escopo.fim} (inclusive)
+## LUA POR SIGNO (use a desta cliente: ${mapaNatal.Lua?mapaNatal.Lua.signo:'?'})
+${Object.entries(LUA_POR_SIGNO).map(([s,t])=>`${s}: ${t}`).join("\n\n")}
 
-⚠️ IMPORTANTE: NÃO gere as seções fora desta faixa. Outras chamadas vão completar.
+## ASCENDENTE POR SIGNO (use o desta cliente: ${a.asc})
+${Object.entries(ASC_POR_SIGNO).map(([s,t])=>`${s}: ${t}`).join("\n")}
 
-═══════════════════════════════════════════════════════════════════════════════
-FORMATO DE SAÍDA (OBRIGATÓRIO)
-═══════════════════════════════════════════════════════════════════════════════
+## MERCÚRIO POR SIGNO
+${Object.entries(MERCURIO_POR_SIGNO).map(([s,t])=>`${s}: ${t}`).join("\n")}
+${mapaNatal.Mercúrio&&mapaNatal.Mercúrio.retrogrado?`(Mercúrio retrógrado nesta cliente) ${MERCURIO_RETROGRADO}`:`Nota sobre retrógrado: ${MERCURIO_RETROGRADO}`}
 
-Responda EXCLUSIVAMENTE com um objeto JSON válido no seguinte formato, sem texto antes ou depois, sem markdown, sem comentários:
+## VÊNUS POR SIGNO
+${Object.entries(VENUS_POR_SIGNO).map(([s,t])=>`${s}: ${t}`).join("\n")}
 
-{
-  "secoes": [
-    {
-      "numero": 1,
-      "titulo": "Capa",
-      "texto": "..."
-    },
-    {
-      "numero": 2,
-      "titulo": "Apresentação Astralia",
-      "texto": "..."
+## MARTE POR SIGNO
+${Object.entries(MARTE_POR_SIGNO).map(([s,t])=>`${s}: ${t}`).join("\n")}
+
+## JÚPITER POR SIGNO
+${Object.entries(JUPITER_POR_SIGNO).map(([s,t])=>`${s}: ${t}`).join("\n")}
+## SATURNO POR SIGNO
+${Object.entries(SATURNO_POR_SIGNO).map(([s,t])=>`${s}: ${t}`).join("\n")}
+
+## AS 12 CASAS
+${Object.entries(CASAS_12).map(([c,t])=>`Casa ${c}: ${t}`).join("\n")}
+
+${ASPECTOS_NATAL}
+${PADROES_E_AREAS}
+${ESTRUTURA_NATAL}
+
+# FORMATO DE SAÍDA (OBRIGATÓRIO)
+Responda EXCLUSIVAMENTE com JSON válido, sem texto antes/depois, sem markdown:
+{ "secoes": [ { "numero": 1, "titulo": "Carta ao Cliente", "texto": "..." } ] }
+REGRAS: aspas duplas; escape quebras como \\n e aspas internas como \\"; sem blocos de código; "numero" exato (1-20); "texto" em PROSA corrida (segunda pessoa), exceto a seção 19 (10 afirmações, lista dentro do texto com \\n).
+
+# LEMBRETES
+1. Use o nome ${nome} ao longo do documento
+2. Analise a TRINDADE em conjunto antes de separar (Sol ${mapaNatal.Sol?mapaNatal.Sol.signo:'?'} + Lua ${mapaNatal.Lua?mapaNatal.Lua.signo:'?'} + ASC ${a.asc})
+3. Cada planeta com signo + casa + aspectos integrados; mencione as dignidades notáveis e os stelliums
+4. Cada característica tem luz E sombra; cada desafio tem caminho de trabalho
+5. Tom revelador, NUNCA determinista — sempre potencial
+6. Todas as 12 casas mencionadas; planetas angulares destacados; retrógrados interpretados
+7. Missão de vida (seção 17): integrar Sol + MC + Nodo Norte
+8. Upsell individual ao final (1-2: Kármico, Revolução, Profissional ou Lilith) — sem combo
+9. Mínimo 10.000 palavras
+
+Gere agora o Mapa Astral Personalizado completo (seções 1-20). Retorne apenas o JSON.`;
+
+  return {
+    diagnostico: { cliente: nome, horaConhecida, ...a },
+    prompt,
+    metadados: {
+      framework: "Mapa Astral Personalizado — trindade + 10 planetas + pontos + 12 casas + aspectos + dignidades + stelliums",
+      modeloRecomendado: "claude-opus-4-7",
+      palavrasEsperadas: "10.000-14.000",
+      tipo: "premium_assincrono_48h",
+      saida: "JSON estruturado por seções (renderização de PDF é camada separada)",
+      observacao: "PREMIUM — distinto da isca (Mapa Astral grátis/síncrono). Não canibalizar: este integra TODOS os indicadores em 20 seções.",
+      versao: "2.0"
     }
-    // ... e assim por diante, APENAS as seções da faixa ${escopo.inicio}-${escopo.fim}
-  ]
+  };
 }
 
-REGRAS DO JSON:
-- Use aspas duplas em todas as chaves e strings
-- Escape quebras de linha dentro dos textos como \\n
-- Escape aspas duplas internas como \\"
-- NÃO use blocos de código (\\\`\\\`\\\`json) — apenas o JSON puro
-- O campo "numero" deve ser o número exato da seção (1-32)
-- O campo "titulo" deve ser curto e descritivo
-- O campo "texto" contém o conteúdo redigido da seção em prosa (não em forma de árvore/bullets do template — use o template como GUIA, mas escreva texto corrido sensorial e emocional)
-
-═══════════════════════════════════════════════════════════════════════════════
-LEMBRETES FINAIS ANTES DE GERAR
-═══════════════════════════════════════════════════════════════════════════════
-1. NOME da cliente aparece no mínimo 3x no texto inteiro
-2. GRAUS dos planetas SÃO USADOS — não ignore o decimal
-3. TOM sensorial e emotivo, NUNCA frio ou genérico
-4. FAMÍLIA com compaixão (não culpa, não idealização)
-5. SAÚDE sem alarmismo (sabedoria, não medo)
-6. ASPECTOS completos (harmônicos + desafiadores)
-7. UPSELLS naturalizados nos pontos sinalizados no template
-8. Validação emocional sempre que houver indicador de sofrimento no mapa
-9. Linguagem PT-BR culta mas acessível, com ritmo
-10. Final empoderador + convite à Comunidade VIP Astralia
-
-Gere agora APENAS as seções ${escopo.inicio} a ${escopo.fim}. Retorne apenas o JSON.`;
-}
-
-// -------------------------------------------------------------------------------
-// EXPORTS
-// -------------------------------------------------------------------------------
 module.exports = {
   buildPromptMapaAstralPersonalizado,
-  FILOSOFIA_MAPA_ASTRAL_PERSONALIZADO,
-  ESTRUTURA_MAPA_ASTRAL_PERSONALIZADO,
-  SECOES_POR_PARTE
+  analisarMapaNatal, distribuir, detectarStellium, detectarAngulares, avaliarDignidade,
+  FUNDAMENTOS_NATAL, SOL_POR_SIGNO, SOL_POR_CASA, LUA_POR_SIGNO, ASC_POR_SIGNO,
+  MERCURIO_POR_SIGNO, MERCURIO_RETROGRADO, VENUS_POR_SIGNO, MARTE_POR_SIGNO,
+  JUPITER_POR_SIGNO, SATURNO_POR_SIGNO, CASAS_12, ASPECTOS_NATAL, PADROES_E_AREAS, ESTRUTURA_NATAL,
+  REGENTE_SIGNO, ELEMENTO_SIGNO, MODALIDADE_SIGNO
 };
