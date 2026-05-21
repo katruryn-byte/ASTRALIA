@@ -2,7 +2,7 @@
 ## Sistema Astralia.online — Compatibilidade, Dinâmica e Evolução de Casal
 
 **Tipo:** Mapa de compatibilidade, dinâmica relacional e potencial de casal  
-**Preço:** Base (R$ 197-297) | Intermediária (R$ 397-497) | Premium (R$ 697-897)  
+**Preço:** Base (R$ 97-197) )  
 **Comprimento:** 6.000-8.000 (Base) | 10.000-12.000 (Int) | 15.000-18.000 (Prem)  
 **Objetivo:** Revelar compatibilidade real, dinâmica de casal e caminho evolutivo  
 **Tom:** Honesto, construtivo, aprofundador — NUNCA romantizado  
