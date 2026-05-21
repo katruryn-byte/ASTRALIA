@@ -292,7 +292,7 @@ PERSONALIZAÇÃO OBRIGATÓRIA:
 - Cada conselho vinculado ao mapa real
 - Zero generalidades
 
-TAMANHO: Entre 3.500 e 4.000 palavras.
+TAMANHO: Entre 9.500 e 11.000 palavras.
 
 === FORMATO DA RESPOSTA ===
 Responda APENAS com JSON válido, sem markdown, sem texto fora do JSON.
