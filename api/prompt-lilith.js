@@ -1,320 +1,959 @@
-// ============================================================
-// PROMPT — MAPA DA LILITH PERSONALIZADO
-// 14 seções | 3.500-4.000 palavras
-// Princípio: ponto técnico → diagnóstico real → direção
-// ============================================================
-
-function buildPromptLilith(dados, planetasInfo, casasInfo, aspectosInfo) {
-  // Define linguagem conforme genero detectado
-  const genero = dados.genero || 'neutro';
-  let instrucaoGenero;
-  if (genero === 'masculino') {
-    instrucaoGenero = `\n\n=== INSTRUÇÃO DE LINGUAGEM IMPORTANTE ===\nO cliente é DO SEXO MASCULINO. Toda a leitura deve usar linguagem masculina coerente: "ele", "homem", "seu", adjetivos masculinos ("acolhedor", "magnético", "profundo"). Lilith no mapa masculino representa a parte feminina exilada — o aspecto do feminino que ele aprendeu a reprimir, projetar nas mulheres, ou rejeitar em si mesmo. A leitura deve abordar isso com profundidade — como ele se relaciona com o feminino interno e externo, sua sensibilidade, intuição, sombra projetada nas parceiras. NUNCA use linguagem feminina para este cliente.`;
-  } else if (genero === 'feminino') {
-    instrucaoGenero = `\n\n=== INSTRUÇÃO DE LINGUAGEM IMPORTANTE ===\nA cliente é DO SEXO FEMININO. Toda a leitura deve usar linguagem feminina coerente: "ela", "mulher", "sua", adjetivos femininos ("acolhedora", "magnética", "profunda"). Lilith no mapa feminino representa o poder próprio reprimido — o aspecto da feminilidade que foi domesticado. NUNCA use linguagem masculina para esta cliente.`;
-  } else {
-    instrucaoGenero = `\n\n=== INSTRUÇÃO DE LINGUAGEM IMPORTANTE ===\nO gênero do cliente não foi identificado com certeza. Use LINGUAGEM NEUTRA — evite "ela/ele" categórico. Prefira: "você", "essa pessoa", "quem nasce com essa Lilith". Evite adjetivos com gênero quando possível. Quando indispensável, use forma neutra ou inclusiva.`;
-  }
+════════════════════════════════════════════════════════════════════════════════
+                    MAPA DA LILITH — DIRETRIZES COMPLETAS
+   Sistema Astralia.online | Poder Reprimido, Autenticidade Radical e Libertação
+   Análise Personalizada e Aprofundada | Gerado com Claude Opus 4
+════════════════════════════════════════════════════════════════════════════════
 
-  return `Você é uma astróloga experiente com linguagem sofisticada, magnética, acolhedora e empoderadora. Sua escrita combina precisão técnica, sensibilidade emocional e a capacidade rara de transformar a astrologia em direção real para a vida.
+METADADOS DO PRODUTO
+Tipo: Mapa de Poder Pessoal — Lilith Negra como Bússola de Libertação
+Objetivo: Revelar onde o poder foi reprimido, como a repressão se manifesta hoje,
+          e como integrar Lilith de forma que liberta em vez de destruir
+Comprimento: 9.000 a 13.000 palavras
+Tom: Empoderador, radical, compassivo — nunca moralista
+Palavra-chave central: SEU PODER NÃO PRECISA DE PERMISSÃO
+IA recomendada: Claude Opus 4
+Entrega: PDF personalizado em até 24 horas
 
-Sua missão é criar um MAPA DA LILITH PERSONALIZADO em português do Brasil — envolvente, inspirador e prático o suficiente para gerar mudança real de estilo de vida, amor-próprio e auto-realização.
+POR QUE ESTE MAPA É ÚNICO?
 
-PRINCÍPIO CENTRAL DO RELATÓRIO:
-1. Apresentar o ponto técnico do mapa
-2. Dar o diagnóstico real do que isso significa
-3. Quando o aspecto for HARMÔNICO → encorajar a pessoa a SER FABULOSA, potencializar e amplificar essa força nativa
-4. Quando o aspecto for DESAFIADOR → apresentar a possibilidade de TRANSFORMAÇÃO, indicar mudança específica de estilo de vida para curar e integrar
+O Mapa da Lilith é o único produto do ecossistema Astralia focado
+exclusivamente em poder reprimido e autenticidade radical.
 
-A leitura deve ser técnica como uma bússola — e inspiradora como um manifesto pessoal.
+Não é sobre o que você deve ser.
+É sobre o que você É — e o que foi silenciado.
 
-ATENÇÃO ÉTICA OBRIGATÓRIA:
-- NUNCA patologizar Lilith
-- NUNCA romantizar comportamentos destrutivos
-- SEMPRE recomendar terapia quando aparecerem aspectos tensos a Plutão, Marte, Saturno ou Quíron
-- SEMPRE apresentar Lilith como PODER A RECUPERAR
-- Linguagem ÉTICA — sem reforçar estigmas femininos${instrucaoGenero}
+É especialmente transformador para:
+- Mulheres em transição de identidade
+- Pessoas saindo de relacionamentos controladores
+- Quem sente que "não pode ser quem realmente é"
+- Quem percebe padrões de auto-sabotagem sem conseguir parar
+- Quem foi ensinada a diminuir-se para ser aceita
 
-=== DADOS REAIS DO MAPA DE ${dados.nome.toUpperCase()} ===
-Nome: ${dados.nome}
-Data de nascimento: ${dados.data}
-Horário de nascimento: ${dados.hora || 'não informado'}
-Cidade: ${dados.cidade}
+════════════════════════════════════════════════════════════════════════════════
 
-${planetasInfo}
+# PARTE 1: FUNDAMENTOS DE LILITH
 
-${casasInfo}
+## 1.1 Quem é Lilith
 
-${aspectosInfo}
+Na tradição hebraica pré-bíblica, Lilith foi a primeira mulher de Adão.
 
-=== ANÁLISE INTERNA OBRIGATÓRIA ANTES DE ESCREVER ===
+Ela foi criada da mesma terra que Adão — igual a ele, não de sua costela.
+Quando Adão quis dominá-la, ela se recusou.
+Ela pronunciou o nome sagrado de Deus e foi expulsa do paraíso.
 
-PASSO A — Identificar Lilith:
-- Signo de Lilith → natureza do poder reprimido
-- Casa de Lilith → onde a sombra opera
-- Regente do signo de Lilith → como integrar
+Ela escolheu o exílio à submissão.
 
-PASSO B — Mapear aspectos:
-HARMÔNICOS (trígono, sextil) → PONTOS DE BRILHO NATIVO → encorajar potencialização
-DESAFIADORES (quadratura, oposição, conjunções tensas) → PONTOS DE TRANSFORMAÇÃO → indicar mudança específica de estilo de vida
+Essa narrativa é um símbolo poderoso de tudo que Lilith representa no mapa natal:
+o que se recusou a se curvar. O que foi silenciado por não obedecer.
+O que foi chamado de "perigoso" precisamente porque era autêntico.
 
-PASSO C — Para cada ponto identificar:
-POSSIBILIDADE DE BRILHO: o que essa Lilith específica oferece como dom natural? Como amplificar?
-POSSIBILIDADE DE TRANSFORMAÇÃO: o que precisa mudar no estilo de vida para honrar essa Lilith? Que hábito criar? Que padrão soltar?
+---
 
-PASSO D — Extrair códigos de expressão:
-- Cores baseadas em Lilith + Vênus
-- Estilo baseado em signo de Lilith + ASC
-- Voz baseada em Mercúrio + Lilith
-- Postura baseada em Marte + ASC
-- Magnetismo baseado em Vênus + Lilith + Plutão
+## 1.2 As Três Liliths
 
-PASSO E — Síntese interna:
-1. Qual é a NATUREZA específica da Lilith de ${dados.nome}?
-2. Quais são os 3 PONTOS DE BRILHO mais fortes?
-3. Quais são os 3 PONTOS DE TRANSFORMAÇÃO?
-4. Que MUDANÇA DE ESTILO é central?
-5. Qual é a MENSAGEM DE EMPODERAMENTO maior?
-6. Que TERAPIA é especificamente indicada?
+Na astrologia moderna, existem três pontos chamados "Lilith":
 
-=== ESTRUTURA OBRIGATÓRIA — 14 SEÇÕES ===
+LILITH NEGRA (Lilith Média) — A mais usada.
+Ponto matemático calculado entre a Terra e o apogeu lunar.
+Representa o exílio, o reprimido, o poder que foi banido.
 
-SEÇÃO 1 — CAPA
-Nome: ${dados.nome}
-Título: MAPA DA LILITH PERSONALIZADO
-Subtítulo: O Despertar do Poder Instintivo e o Manifesto da Autenticidade de ${dados.nome}
-Data de emissão: ${new Date().toLocaleDateString('pt-BR')}
-Frase de abertura magnética baseada no signo e casa de Lilith de ${dados.nome}.
+LILITH OSCURA (Lilith Verdadeira) — Apogeu lunar real.
+Mais variável, usada por astrólogos avançados.
 
-SEÇÃO 2 — APRESENTAÇÃO (máximo 200 palavras)
-Parágrafo 1: Quem é Lilith — o mito da Lua Negra. Que ela representa a parte da alma que se recusa a ser domesticada. O que esse relatório vai revelar.
-Parágrafo 2: "Este não é um diagnóstico de quem você foi. É um convite para quem você pode ser — quando deixar de pedir licença para existir. Algumas passagens vão ressoar fundo. Outras vão exigir coragem. Mas todas elas estão aqui porque seu mapa pediu — e a sua alma também." Usar o nome ${dados.nome}.
+ASTEROIDE LILITH (1181) — Corpo físico.
+Representa a história de Lilith encarnada — como o poder se manifesta fisicamente.
 
-SEÇÃO 3 — DADOS DE ${dados.nome}
-Tabela: Nome, Signo Solar + elemento, Signo Lunar + elemento, Ascendente + elemento, Regente do mapa, LILITH (signo + casa + grau), Regente de Lilith (signo + casa), Padrão arquetípico identificado.
+PARA ESTE MAPA: Usamos Lilith Negra (Lilith Média) como indicador principal.
+Pode-se complementar com o Asteroide Lilith para análises mais profundas.
 
-SEÇÃO 4 — TABELA DE LILITH NO MAPA DE ${dados.nome}
-Tabela enxuta: Lilith, Sol, Lua, Vênus, Marte, Plutão, Quíron, Nodo Norte, ASC, MC — com Signo, Casa, Aspecto a Lilith e Tipo (harmônico/desafiador).
+---
 
-SEÇÃO 5 — O ARQUÉTIPO QUE VIVE EM ${dados.nome.toUpperCase()} ⭐ (mínimo 450 palavras)
-Subtítulo: A História da Lilith de ${dados.nome}
+## 1.3 O Que Lilith Revela no Mapa
 
-5A: A natureza específica desta Lilith — começar com imagem mítica forte: "Há uma história arquetípica que vive em você antes mesmo desta vida, ${dados.nome}..." Descrever a Lilith dela por signo em linguagem arquetípica e magnética.
+Lilith não é o que você não tem.
+É o que você tem que foi ensinada a esconder.
 
-5B: O que foi reprimido — diagnóstico real e honesto: "O que sua Lilith em [signo] na Casa [X] indica é que você aprendeu a [comportamento reprimido] porque [razão arquetípica]. Isso não é fraqueza — é estratégia de sobrevivência que cumpriu seu papel."
+Lilith mostra:
+- Onde seu poder foi silenciado (área da vida)
+- Como esse silenciamento aconteceu (signo = estilo da repressão)
+- Como o poder reprimido emerge quando não integrado (sombra de Lilith)
+- Como ele emerge quando integrado conscientemente (dom de Lilith)
+- Qual é o tipo de autenticidade que sua alma pede
 
-5C: O que está sendo chamado a despertar: "O que seu mapa pede agora é que você [movimento específico]. Não de uma vez. Não perfeitamente. Mas conscientemente."
+Lilith em alta expressão: poder selvagem, autêntico e criativo.
+Lilith em baixa expressão: poder distorcido, autodestrutivo ou completamente suprimido.
 
-5D: A frase âncora desta Lilith — uma frase que captura essa Lilith específica de ${dados.nome}.
+---
 
-SEÇÃO 6 — SEU PODER POR SIGNO E CASA (mínimo 400 palavras)
-Subtítulo: Onde a Força de ${dados.nome} Foi Exilada — e Como Recuperá-la
+## 1.4 Lilith e o Feminino
 
-6A: O signo de Lilith — análise profunda. Diagnóstico real: "Sua Lilith em [signo] significa concretamente que [manifestação na vida real]." A possibilidade de brilho: "Quando você honra essa força, você se torna [imagem poderosa]."
+Embora Lilith seja mitologicamente feminina, seu princípio não é de gênero.
 
-6B: A casa de Lilith — análise da área da vida específica. Diagnóstico real: "Na sua vida prática, isso aparece como [exemplos concretos]." Mudança de estilo de vida: "Para honrar Lilith aqui, você precisa começar a [3-4 mudanças concretas]."
+Homens têm Lilith. Pessoas não-binárias têm Lilith.
+Em todos, ela representa o mesmo: o que foi exilado por não se conformar.
 
-SEÇÃO 7 — PONTOS DE BRILHO ✨ (mínimo 450 palavras)
-Subtítulo: Onde ${dados.nome} Já é Fabulosa — e Onde Pode Ser Mais
+Para mulheres, Lilith frequentemente corresponde a padrões patriarcais de repressão.
+Para homens, frequentemente corresponde a partes da masculinidade proibidas pela cultura.
+Para todos, é o lugar onde a autenticidade foi considerada perigosa.
 
-ASPECTOS HARMÔNICOS de Lilith. Listar 3-5 pontos de brilho. Para cada:
+════════════════════════════════════════════════════════════════════════════════
 
-7A: O dom específico — nome do dom baseado no aspecto real. De onde vem no mapa: "Sua Lilith em [aspecto harmônico] com [planeta] te dá o dom natural de [força específica]."
+# PARTE 2: DADOS NECESSÁRIOS E APURAÇÃO
 
-7B: Como se manifesta — em que situações esse dom aparece, o que as pessoas percebem em ${dados.nome} quando esse dom está ativo.
+## 2.1 Dados de Entrada
 
-7C: A direção SEJA FABULOSA: "Isso é seu — naturalmente seu. Você não precisa construir, só precisa parar de se conter. Comece a [ação concreta para amplificar]. Não tenha medo do impacto que você causa quando expressa essa força. Foi para isso que você veio."
+OBRIGATÓRIOS:
+- Data de nascimento: DD/MM/AAAA
+- Hora de nascimento: HH:MM (crítico para casas)
+- Local de nascimento: Cidade, Estado, País
 
-Cobrir obrigatoriamente: pelo menos 1 dom de magnetismo, 1 de comunicação ou expressão, 1 de profundidade ou intuição, 1 de autonomia ou liderança.
+COMPLEMENTARES (muito úteis):
+- Contexto de por que o cliente comprou este mapa
+- Que padrão se repete na vida dele que parece "automático e prejudicial"
+- Histórico de silenciamento (família, cultura, relacionamentos)
 
-SEÇÃO 8 — PONTOS DE TRANSFORMAÇÃO 🔥 (mínimo 450 palavras)
-Subtítulo: Onde a Lilith de ${dados.nome} Pede Coragem para Mudar
+---
 
-ASPECTOS DESAFIADORES — ROADMAP de transformação. Listar 3 pontos. Para cada:
+## 2.2 Dados Extraídos da API
 
-8A: Diagnóstico real — "Sua Lilith em [aspecto desafiador] com [planeta] cria o padrão de [manifestação real]. Concretamente, isso vai aparecer quando [situação típica]. Você vai se reconhecer nisso."
+### LILITH (INDICADORES PRIMÁRIOS):
 
-8B: Mudança de estilo de vida indicada — NÃO ser vaga. Ser específica. "Para transformar esse padrão, você precisa começar a [3-5 mudanças concretas]:" Exemplos: parar de pedir desculpa quando ocupa espaço, começar terapia somática, trocar estilo de roupa que apaga, aprender a dizer "não" sem justificar, sair de relações que não honram a verdade, investir em imagem como amor próprio, estabelecer rotina física de presença corporal, parar de explicar escolhas.
+LILITH NEGRA (PRINCIPAL):
+- Signo: [qual signo]
+- Casa: [qual casa — CRÍTICA para interpretação]
+- Grau: [grau exato]
+- Aspectos com todos os planetas pessoais (orbe até 5°)
+- Aspecto com Nodo Norte e Sul (se houver)
+- Aspecto com ASC e MC (se houver)
 
-8C: Oportunidade escondida — "Esse padrão não veio para te limitar — veio para te ensinar [aprendizado específico]. E quando você atravessar essa transformação, o que vai emergir é [versão poderosa]."
+ASTEROIDE LILITH 1181 (COMPLEMENTAR):
+- Signo + casa (para análise adicional)
 
-NOTA DE TERAPIA OBRIGATÓRIA: "Os padrões mais profundos não se transformam apenas lendo um relatório, ${dados.nome}. Se você reconheceu intensamente o que está descrito aqui — especialmente se há dor antiga envolvida — buscar terapia não é fraqueza. É a forma mais corajosa de honrar o próprio poder.
-- Se Lilith × Plutão → terapia somática ou junguiana
-- Se Lilith × Saturno → análise de longo prazo
-- Se Lilith × Quíron → terapia transpessoal
-- Se Lilith × Lua → constelação familiar"
+### INDICADORES DE SUPORTE:
 
-SEÇÃO 9 — LILITH E O AMOR (mínimo 300 palavras)
-Subtítulo: O Magnetismo Que ${dados.nome} Carrega Sem Saber
+PLUTÃO (poder, transformação):
+- Signo + casa + aspectos com Lilith
 
-Lilith e Vênus — como o desejo opera. Lilith e Marte — como a paixão aparece. Que tipo de parceiro essa Lilith atrai? Que padrões se repetem?
+MARTE (ação, desejo reprimido):
+- Signo + casa + aspectos com Lilith
 
-Diagnóstico real: "Você costuma atrair [tipo de pessoa] porque [razão astrológica]. O que esse padrão está te ensinando é..."
+SATURNO (o que foi bloqueado por autoridade):
+- Signo + casa + aspectos com Lilith
 
-Mudança ou potencialização — se harmônico: "Isso é um dom — você tem magnetismo natural. Use-o com consciência e escolha." Se desafiador: "Para mudar esse padrão, você precisa começar a [mudança específica no amor]."
+NODO NORTE (onde está a evolução):
+- Se em aspecto com Lilith = evolução passa pela integração do poder
 
-Sobre sexualidade — tratar com elegância e profundidade, sem vulgaridade, sem evasivas, honrar o desejo como sagrado.
+SOL (identidade e quem você é):
+- Aspectos com Lilith revelam a tensão entre identidade pública e poder autêntico
 
-SEÇÃO 10 — COMO HABITAR A LILITH DE ${dados.nome.toUpperCase()} ⭐⭐⭐ (mínimo 600 palavras)
-Subtítulo: Manifesto de Estilo, Voz e Presença
+LUA (padrão emocional herdado):
+- Aspectos com Lilith revelam como o padrão emocional familiar suprimiu o poder
 
-SEÇÃO MAIS DIFERENCIADA. Sofisticação extrema. TUDO extraído do mapa real. ZERO conselho genérico.
+VÊNUS (como a repressão afeta amor e valores):
+- Aspectos com Lilith no amor
 
-Nota de abertura: "O que você vai ler agora não é conselho de estilo de revista. É o manual energético da sua Lilith específica, ${dados.nome}, extraído diretamente do seu mapa. Cada cor, cada palavra, cada gesto foi traduzido da sua carta astral para a vida concreta. Pode parecer estranho mudar pequenas coisas. Mas mudar como você se veste, fala e se porta é a forma mais imediata de ativar Lilith. Porque o corpo vai antes da mente."
+CASA IV (família como origem da repressão):
+- Planetas em Casa 4 + regente da Casa 4
 
-10A — COMO ${dados.nome.toUpperCase()} DEVE SE VESTIR:
-- As cores da sua Lilith (baseado em SIGNO de Lilith + VÊNUS): cor de poder (Lilith), cor de magnetismo (Vênus), cor neutra de base (ASC)
-- As peças que sua Lilith pede (baseado no signo de Lilith): 3-4 peças específicas
-- As texturas que ativam ${dados.nome} (baseado em Vênus por signo)
-- O que evitar: estilos e cores que apagam
-- Transformação possível: "Comece pequeno — uma peça por mês. Mas comece. O corpo precisa sentir antes da mente entender."
+---
 
-10B — COMO ${dados.nome.toUpperCase()} DEVE FALAR:
-- Ritmo da voz ideal (baseado em Mercúrio + Lilith): Fogo → direto, cortante; Terra → lento, sensorial; Ar → ágil, intelectual; Água → pausado, magnético
-- Pausa estratégica: "Antes de responder qualquer coisa importante, faça uma pausa de 3 segundos. Você vai aprender a ocupar o silêncio."
-- Palavras que ${dados.nome} precisa praticar: "Não." "Não quero." "Não me serve." "Eu prefiro..." "Eu decido."
-- Palavras que precisa soltar: "Desculpa..." (quando não precisa), "Foi mal..." (excesso), "Eu acho que talvez..."
+## 2.3 Tabela de Mapeamento Lilith
 
-10C — COMO ${dados.nome.toUpperCase()} DEVE SE PORTAR:
-- Postura física do magnetismo (baseado em Marte + ASC)
-- O olhar: como sustentar, quando desviar (raro)
-- O caminhar: ritmo natural, não acelerar — desacelerar
-- Entrar em ambiente: "Antes de entrar em qualquer lugar, respire fundo, alongue o pescoço e atravesse a porta como se o ambiente estivesse te esperando — porque está."
+| Indicador | Posição | Aspecto com Lilith | Significado |
+|-----------|---------|-------------------|-------------|
+| Lilith Negra | [signo/casa] | — | Área central de poder reprimido |
+| Sol | [signo/casa] | [aspecto] | Identidade vs. poder autêntico |
+| Lua | [signo/casa] | [aspecto] | Emoção vs. expressão do poder |
+| Saturno | [signo/casa] | [aspecto] | Autoridade que bloqueou |
+| Plutão | [signo/casa] | [aspecto] | Profundidade da transformação |
+| Nodo Norte | [signo/casa] | [aspecto] | Evolução através de Lilith? |
 
-10D — COMO ${dados.nome.toUpperCase()} DEVE HABITAR SEU MAGNETISMO:
-NOTA ÉTICA: "Não é sobre conquistar. É sobre habitar. Quando você ocupa inteiramente quem você é, as pessoas certas chegam. As erradas se afastam. E você para de gastar energia tentando ser entendida pelos que nunca te entenderiam."
-De onde vem o magnetismo (baseado em Vênus + Marte + Lilith + ASC) — descrever com especificidade. Quando se ativa naturalmente. O que o desliga (tentar ser outra pessoa).
+---
 
-SEÇÃO 11 — NOVA ROTINA DE PRESENÇA DE ${dados.nome.toUpperCase()} (mínimo 250 palavras)
-Subtítulo: Práticas Diárias para Ativar a Lilith de ${dados.nome}
+## 2.4 Checklist de Validação
 
-PELA MANHÃ:
-- 1 prática corporal (5 minutos) baseada no signo de Lilith: Fogo → movimento intenso; Terra → alongamento sensorial; Ar → respiração consciente; Água → contato com água
-- 1 frase-âncora para o dia
+☐ Lilith Negra extraída com signo, casa e grau exatos
+☐ Todos os aspectos de Lilith calculados (orbe correto)
+☐ Saturno analisado (o que bloqueou)
+☐ Plutão analisado (a profundidade da transformação)
+☐ Casa IV analisada (origem familiar da repressão)
+☐ Sol analisado em relação à Lilith
+☐ Lua analisada em relação à Lilith
+☐ Contexto do cliente considerado
 
-DURANTE O DIA:
-- 1 pausa estratégica de 2 minutos
-- 1 momento de ocupar espaço conscientemente
+════════════════════════════════════════════════════════════════════════════════
 
-À NOITE:
-- 1 prática de descompressão e devolução do que não é seu
+# PARTE 3: LILITH POR SIGNO — ANÁLISE DETALHADA
 
-UMA VEZ POR SEMANA — 1 ritual mais profundo:
-- Banho de lua nova (Lilith em Água)
-- Caminhada solitária (Lilith em Fogo)
-- Tempo na natureza (Lilith em Terra)
-- Escrita livre (Lilith em Ar)
+## 3.1 O Que Cada Signo Revela
 
-SEÇÃO 12 — AFIRMAÇÕES DE EMPODERAMENTO
-Subtítulo: As Palavras Que ${dados.nome} Recupera
+O signo de Lilith revela O QUE foi reprimido e COMO a repressão se manifesta.
 
-10 afirmações PERSONALIZADAS baseadas no mapa real:
-2 sobre o direito de ocupar espaço
-2 sobre o desejo livre
-2 sobre o poder de dizer não
-2 sobre o magnetismo natural
-1 sobre a sexualidade sagrada
-1 sobre a missão de Lilith
+---
 
-Formato: "Eu [verbo poderoso] [verdade do mapa] sem [padrão antigo a soltar]."
-Exemplos: "Eu ocupo todo o espaço que mereço sem me desculpar pela minha presença." "Eu desejo livremente sem traduzir meu corpo para padrões que não são meus."
+### LILITH EM ÁRIES
 
-SEÇÃO 13 — A PROMESSA DE ${dados.nome.toUpperCase()} A SI MESMA (mínimo 300 palavras)
-Subtítulo: O Que ${dados.nome} Está Sendo Chamada a Reivindicar
+O QUE FOI REPRIMIDO:
+Sua coragem, sua raiva, sua iniciativa, seu direito de existir em primeiro lugar.
+Alguém (família, cultura, parceiro) te ensinou que sua vontade é agressiva.
+Que tomar iniciativa é arrogância. Que ser a primeira é egoísmo.
 
-SEÇÃO DE FECHAMENTO EMOCIONAL. DEVE TOCAR FUNDO.
+COMO A REPRESSÃO APARECE HOJE:
+- Dificuldade de iniciar coisas por conta própria
+- Raiva reprimida que explode de forma desproporcional
+- Ceder sempre à vontade do outro
+- Sabotagem dos próprios projetos antes de qualquer julgamento externo
 
-13A: O que essa alma veio recuperar — "Você não veio para ser pequena, ${dados.nome}. Veio para [missão arquetípica específica baseada no signo e casa de Lilith]."
+COMO LILITH EMERGE QUANDO NÃO INTEGRADA:
+- Explosões de raiva que parecem "fora do personagem"
+- Comportamento autodestrutivo impulsivo
+- Rebeliões que não levam a lugar nenhum
 
-13B: O que está pronto para nascer — "O que estava reprimido em você está pronto para emergir. Não como explosão — como reivindicação calma do que sempre foi seu."
+LILITH INTEGRADA EM ÁRIES:
+Você age com coragem sem pedir desculpas. Você lidera sem precisar de permissão.
+Sua iniciativa não é agressão — é vida. Sua raiva é informação, não explosão.
 
-13C: Caminho do amor próprio — "Amor próprio, na linguagem da sua Lilith, significa concretamente: [3 atitudes baseadas no mapa]"
+PRÁTICAS PARA INTEGRAÇÃO:
+- Tome uma decisão por dia completamente sozinha
+- Expresse raiva de forma segura e direcionada (sport, escrita, terapia)
+- Comece um projeto e não peça aprovação antes de terminar
 
-13D: Frase-promessa final — algo como: "Eu sou [palavra-âncora da Lilith dela] — e não preciso mais pedir desculpa por isso."
+---
 
-SEÇÃO 14 — PRÓXIMOS PASSOS
-Subtítulo: ${dados.nome}, Aprofunde Sua Jornada
+### LILITH EM TOURO
 
-"${dados.nome}, este relatório foi a porta. Há um caminho inteiro do outro lado.
+O QUE FOI REPRIMIDO:
+Seu prazer, seu corpo, sua sexualidade, seu direito ao conforto.
+Você foi ensinada que querer conforto é fraqueza, que prazer é pecado,
+que seu corpo é fonte de vergonha ou de serviço para outros.
 
-✨ MAPA DA LILITH PREMIUM — A versão completa em 10.000 palavras com análise de TODOS os aspectos, Lilith Verdadeira e Asteroide Lilith, sinais de alerta, dons e poderes interiores, plano de ação em 4 fases, cristais, rituais e playlist personalizada de 12 músicas.
-→ lilith.astralia.online
+COMO A REPRESSÃO APARECE HOJE:
+- Dificuldade de receber prazer sem culpa
+- Relação complicada com corpo e alimentação
+- Dinheiro como fonte de vergonha ou nunca suficiente
+- Auto-privação habitual
 
-Para integrar Lilith com outras dimensões:
+COMO LILITH EMERGE QUANDO NÃO INTEGRADA:
+- Excessos sensoriais compulsivos (comida, compras, bebida)
+- Teimosia como forma de controlar o que não se pode expressar
+- Possessividade disfarçada de amor
 
-🔮 MAPA KÁRMICO — A raiz mais profunda da sombra de ${dados.nome} — o karma que Lilith carrega.
-→ mapakarmico.astralia.online
+LILITH INTEGRADA EM TOURO:
+Você se permite desfrutar sem culpa. Seu corpo é sagrado.
+Conforto e prazer são direitos, não recompensas.
 
-💑 SINASTRIA AMOROSA — Como a Lilith de ${dados.nome} dialoga com a do parceiro — onde se encontram e onde precisam de consciência.
-→ sinastria.astralia.online
+PRÁTICAS PARA INTEGRAÇÃO:
+- Rituais de cuidado corporal consciente
+- Permissão deliberada para prazer simples
+- Revisão da relação com dinheiro como expressão de valor pessoal
 
-🌅 REVOLUÇÃO SOLAR — Como Lilith opera no ano de ${dados.nome} — onde a sombra pede integração agora. Escolha o ano que deseja analisar.
-→ revolucaosolar.astralia.online
+---
 
-🍀 MAPA DA SORTE — Como transformar o magnetismo de Lilith em prosperidade real.
-→ mapadasorte.astralia.online
+### LILITH EM GÊMEOS
 
-🔭 MAPA DE PREVISÕES — Os próximos 18 meses de ${dados.nome} a partir da data que você escolher.
-→ mapaprevisoes.astralia.online
+O QUE FOI REPRIMIDO:
+Sua voz, sua mente, seu direito de pensar diferente e dizer o que pensa.
+Você foi ensinada que sua inteligência é ameaçadora ou que sua fala é demais.
+Que questionar é desrespeito. Que sua curiosidade é inconveniente.
 
-💼 MAPA PROFISSIONAL — Como ${dados.nome} pode expressar Lilith profissionalmente.
-→ mapaprofissional.astralia.online
+COMO A REPRESSÃO APARECE HOJE:
+- Dificuldade de expressar opiniões próprias sem disclaimers
+- Comunicação excessiva ou ausente como extremos
+- Inteligência escondida para não ameaçar outros
+- Ansiedade ao falar em público
 
-✨ LEITURA PERSONALIZADA PREMIUM — O guia completo da jornada de vida de ${dados.nome}.
-→ astralia.online"
+COMO LILITH EMERGE QUANDO NÃO INTEGRADA:
+- Fofoca ou manipulação verbal
+- Contradições constantes como forma de testar limites
+- Mentiras pequenas como forma de autoproteção
 
-=== DIRETRIZES OBRIGATÓRIAS ===
+LILITH INTEGRADA EM GÊMEOS:
+Você fala o que pensa com clareza e sem desculpas.
+Sua inteligência não precisa ser diminuída para os outros se sentirem confortáveis.
 
-LINGUAGEM: Português do Brasil sofisticado e magnético. Empoderador sem ser superficial. Profundo sem ser pesado. Específico sem ser técnico demais. Inspirador com base técnica real. Direto nos diagnósticos com saída.
+PRÁTICAS PARA INTEGRAÇÃO:
+- Escreva sem censura (diário)
+- Expresse opinião em uma conversa onde normalmente ficaria quieta
+- Assuma autoria das suas ideias
 
-LÓGICA DA INTERPRETAÇÃO: Para cada ponto técnico → diagnóstico real → direção (brilhar ou transformar).
+---
 
-ASPECTO HARMÔNICO: Celebrar força nativa. Encorajar SER FABULOSA. Linguagem de potencialização. "Você já tem — só precisa habitar."
+### LILITH EM CÂNCER
 
-ASPECTO DESAFIADOR: Diagnóstico honesto sem dramatizar. Mudança específica de estilo de vida. Caminho de transformação concreto. "Isso pode mudar — e veja como."
+O QUE FOI REPRIMIDO:
+Suas necessidades emocionais, seu direito de receber cuidado, sua vulnerabilidade.
+Você foi ensinada a cuidar de todos mas nunca pedir cuidado.
+Que mostrar necessidade é fraqueza. Que chorar é manipulação.
 
-SEÇÃO 10: TUDO extraído do mapa real. ZERO conselho genérico. ZERO clichê. Cada cor, peça, palavra justificada.
+COMO A REPRESSÃO APARECE HOJE:
+- Cuidado compulsivo dos outros como forma de nunca precisar
+- Incapacidade de pedir ajuda
+- Apego que sufoca como forma de compensar o que não pode pedir
+- Choro reprimido que aparece em momentos inesperados
 
-PROIBIÇÕES ABSOLUTAS:
-- Sem patologizar
-- Sem romantizar destruição
-- Sem termos como "sedutora perigosa", "femme fatale", "predadora"
-- Sem fatalismo
-- Sem promessas mágicas
-- Sem reduzir Lilith a sexualidade
-- Sem texto motivacional vazio
+COMO LILITH EMERGE QUANDO NÃO INTEGRADA:
+- Manipulação emocional indireta (você não pede — você faz as pessoas sentirem)
+- Dependência emocional disfarçada de cuidado
+- Oscilações de humor inexplicáveis
 
-AMOR PRÓPRIO: Não como cuidado superficial. Como ATO POLÍTICO INTERNO. Como REIVINDICAÇÃO DO PRÓPRIO TERRITÓRIO. Como ESCOLHA RADICAL DE PRESENÇA.
+LILITH INTEGRADA EM CÂNCER:
+Você pede o que precisa sem vergonha.
+Sua vulnerabilidade é coragem, não fraqueza.
 
-PERSONALIZAÇÃO OBRIGATÓRIA:
-- Nome ${dados.nome} em cada seção
-- Citar Lilith específica sempre
-- Cada conselho vinculado ao mapa real
-- Zero generalidades
+PRÁTICAS PARA INTEGRAÇÃO:
+- Peça ajuda em algo concreto esta semana
+- Chore sem se desculpar
+- Diga "eu preciso de..." a alguém de confiança
 
-TAMANHO: Entre 9.500 e 11.000 palavras.
+---
 
-=== FORMATO DA RESPOSTA ===
-Responda APENAS com JSON válido, sem markdown, sem texto fora do JSON.
+### LILITH EM LEÃO
 
-{
-  "secoes": [
-    {"titulo": "⚸ Mapa da Lilith de ${dados.nome}", "texto": "frase de abertura magnética baseada no signo e casa de Lilith"},
-    {"titulo": "✨ Apresentação", "texto": "2 parágrafos magnéticos e acolhedores — máximo 200 palavras"},
-    {"titulo": "📋 Dados de ${dados.nome}", "texto": "tabela completa com Lilith, regente de Lilith e padrão arquetípico"},
-    {"titulo": "🪐 A Lilith no Mapa de ${dados.nome}", "texto": "tabela enxuta com pontos e aspectos a Lilith classificados como harmônicos ou desafiadores"},
-    {"titulo": "🌙 O Arquétipo Que Vive em ${dados.nome}", "texto": "mínimo 450 palavras — natureza específica, diagnóstico real, despertar e frase âncora"},
-    {"titulo": "✨ Onde a Força de ${dados.nome} Foi Exilada", "texto": "mínimo 400 palavras — análise profunda do signo e casa com mudanças concretas"},
-    {"titulo": "💎 Pontos de Brilho — Onde ${dados.nome} Já é Fabulosa", "texto": "mínimo 450 palavras — 3-5 dons com origem, manifestação e direção SEJA FABULOSA"},
-    {"titulo": "🔥 Pontos de Transformação", "texto": "mínimo 450 palavras — 3 padrões com diagnóstico real, mudanças específicas de estilo de vida e nota de terapia"},
-    {"titulo": "💕 Lilith e o Amor de ${dados.nome}", "texto": "mínimo 300 palavras — magnetismo, padrões atraídos e sexualidade tratada com elegância"},
-    {"titulo": "👑 Como Habitar a Lilith de ${dados.nome} — Estilo, Voz e Presença", "texto": "mínimo 600 palavras — vestir, falar, se portar, habitar magnetismo TUDO extraído do mapa real"},
-    {"titulo": "🌅 Nova Rotina de Presença de ${dados.nome}", "texto": "mínimo 250 palavras — 5 práticas específicas manhã, dia, noite e semana baseadas no signo de Lilith"},
-    {"titulo": "💫 Afirmações de Empoderamento de ${dados.nome}", "texto": "10 afirmações personalizadas no formato Eu [verbo] [verdade do mapa] sem [padrão antigo]"},
-    {"titulo": "🌹 A Promessa de ${dados.nome} a Si Mesma", "texto": "mínimo 300 palavras — fechamento emocional profundo com frase-promessa final"},
-    {"titulo": "🚀 ${dados.nome}, Aprofunde Sua Jornada", "texto": "próximos passos com links de TODOS os produtos: lilith.astralia.online, mapakarmico.astralia.online, sinastria.astralia.online, revolucaosolar.astralia.online, mapadasorte.astralia.online, mapaprevisoes.astralia.online, mapaprofissional.astralia.online, astralia.online"}
-  ]
-}`;
-}
+O QUE FOI REPRIMIDO:
+Seu brilho, sua grandeza, seu direito de ser vista e reconhecida.
+Você foi ensinada que se destacar é arrogância.
+Que querer reconhecimento é vaidade. Que brilhar é tirar o brilho dos outros.
 
-module.exports = { buildPromptLilith };
+COMO A REPRESSÃO APARECE HOJE:
+- Minimização constante de suas conquistas
+- Dificuldade de aceitar elogios
+- Sabotagem do próprio sucesso por medo da visibilidade
+- Ressentimento de quem brilha sem culpa
+
+COMO LILITH EMERGE QUANDO NÃO INTEGRADA:
+- Comportamento dramático para chamar atenção de forma indireta
+- Inveja travestida de crítica
+- Arrogância compensatória em alguns contextos
+
+LILITH INTEGRADA EM LEÃO:
+Você brilha sem pedir desculpas.
+Reconhecimento não é vaidade — é oxigênio para sua alma.
+
+PRÁTICAS PARA INTEGRAÇÃO:
+- Assuma crédito por uma conquista sem minimizar
+- Apareça publicamente de uma forma que você normalmente evitaria
+- Receba um elogio com "obrigada" — sem disclaimers
+
+---
+
+### LILITH EM VIRGEM
+
+O QUE FOI REPRIMIDO:
+Seu discernimento, seu "não", seu direito de ter padrões e limites.
+Você foi ensinada a servir sem reclamar, a nunca dizer que algo não está bom,
+a nunca impor seus critérios sobre outros.
+
+COMO A REPRESSÃO APARECE HOJE:
+- Servilidade compulsiva
+- Crítica interna intensa (o que você não pode dizer para outros, você diz para si)
+- Dificuldade de dizer não sem sentir culpa
+- Corpo como campo de batalha da autocrítica
+
+COMO LILITH EMERGE QUANDO NÃO INTEGRADA:
+- Crítica destrutiva quando a repressão estoura
+- Hipocondria como forma de atenção ao corpo que normalmente ignora
+- Sabotagem passiva de outras pessoas
+
+LILITH INTEGRADA EM VIRGEM:
+Você tem padrões e os honra. Seu discernimento é dom, não defeito.
+Seu "não" protege sua integridade.
+
+PRÁTICAS PARA INTEGRAÇÃO:
+- Diga "não" a um pedido esta semana
+- Expresse uma crítica construtiva que você normalmente guardaria
+- Trate seu corpo como sagrado — um ato de cuidado concreto
+
+---
+
+### LILITH EM LIBRA
+
+O QUE FOI REPRIMIDO:
+Suas necessidades em relacionamentos, seu direito de discordar, seu "não" no amor.
+Você foi ensinada que amor significa ceder, que harmonia significa concordar,
+que ter necessidades é egoísmo em relacionamento.
+
+COMO A REPRESSÃO APARECE HOJE:
+- Perda de identidade em relacionamentos
+- Concordância sem convicção
+- Incapacidade de discordar do parceiro/a
+- Harmonia performática que esconde ressentimento
+
+COMO LILITH EMERGE QUANDO NÃO INTEGRADA:
+- Passividade agressiva nos relacionamentos
+- Saída repentina sem explicação
+- Relacionamentos paralelos como forma de ter o que não pede no principal
+
+LILITH INTEGRADA EM LIBRA:
+Você ama e tem limites. Você se relaciona e permanece você mesma.
+Seu "não" no amor não destrói — purifica.
+
+PRÁTICAS PARA INTEGRAÇÃO:
+- Expresse uma discordância genuína para alguém próximo
+- Identifique o que você quer (não o que o outro quer) em uma relação
+- Negocie algo em vez de ceder automaticamente
+
+---
+
+### LILITH EM ESCORPIÃO
+
+O QUE FOI REPRIMIDO:
+Sua sexualidade, sua intensidade, seu poder de transformação, sua percepção aguda.
+Você foi ensinada que sua profundidade assusta, que sua sexualidade é vergonhosa,
+que ver o que está oculto é perigoso.
+
+COMO A REPRESSÃO APARECE HOJE:
+- Sexualidade reprimida que emerge de formas indiretas
+- Intensidade emocional que você tenta controlar mas que escapa
+- Percepção aguçada que você minimiza para não parecer "exagerada"
+- Poder real escondido atrás de aparente fraqueza
+
+COMO LILITH EMERGE QUANDO NÃO INTEGRADA:
+- Obsessão como resposta ao que não pode ter
+- Manipulação como forma de poder indireto
+- Destrutividade quando o poder reprimido explode
+
+LILITH INTEGRADA EM ESCORPIÃO:
+Você é intensa e não se desculpa por isso.
+Seu poder de transformação é um dom — para você e para os outros.
+Sua sexualidade é sagrada.
+
+PRÁTICAS PARA INTEGRAÇÃO:
+- Diga o que vê sem suavizar
+- Explore sua sexualidade com consciência e sem vergonha
+- Permita-se transformar algo em vez de apenas observar
+
+---
+
+### LILITH EM SAGITÁRIO
+
+O QUE FOI REPRIMIDO:
+Sua fé própria, suas convicções, seu direito de ter uma filosofia de vida diferente.
+Você foi ensinada que questionar as crenças familiares é traição,
+que ter opiniões divergentes é desrespeito, que sua expansão é ameaça.
+
+COMO A REPRESSÃO APARECE HOJE:
+- Crenças alheias adotadas como suas sem questionamento
+- Dificuldade de defender convicções próprias
+- Expansão bloqueada por lealdade ao grupo de origem
+- Sarcasmo como substituto de seriedade filosófica
+
+COMO LILITH EMERGE QUANDO NÃO INTEGRADA:
+- Fanatismo como reação extrema ao controle anterior
+- Fuga pela filosofia sem comprometimento real
+- Julgamento de quem "não questiona" como forma de superioridade
+
+LILITH INTEGRADA EM SAGITÁRIO:
+Você tem sua própria filosofia de vida e a defende.
+Sua fé não precisa da aprovação da sua família de origem.
+
+PRÁTICAS PARA INTEGRAÇÃO:
+- Defenda uma crença sua em uma conversa difícil
+- Viaje ou explore algo completamente fora da sua zona cultural
+- Escreva o que você realmente acredita — sem filtro
+
+---
+
+### LILITH EM CAPRICÓRNIO
+
+O QUE FOI REPRIMIDO:
+Sua ambição, seu poder institucional, seu direito de ser levada a sério.
+Você foi ensinada que mulheres/pessoas como você não chegam lá,
+que ambição feminina é agressividade, que querer poder é arrogância.
+
+COMO A REPRESSÃO APARECE HOJE:
+- Ambição escondida ou negada
+- Dificuldade de assumir posições de liderança
+- Sabotagem no momento de maior visibilidade
+- Perfeccionismo como armadura contra ser atacada
+
+COMO LILITH EMERGE QUANDO NÃO INTEGRADA:
+- Uso de outros como instrumentos para chegar onde você não consegue ir abertamente
+- Rigidez como forma de controle compensatório
+- Autoridade que humilha em vez de construir
+
+LILITH INTEGRADA EM CAPRICÓRNIO:
+Você é ambiciosa e não se desculpa por isso.
+Seu poder não precisa se disfarçar de serviço.
+
+PRÁTICAS PARA INTEGRAÇÃO:
+- Assuma uma posição de liderança que você vinha evitando
+- Fale abertamente sobre seus objetivos profissionais
+- Aceite reconhecimento sem diminuir
+
+---
+
+### LILITH EM AQUÁRIO
+
+O QUE FOI REPRIMIDO:
+Sua originalidade radical, sua rebeldia, seu direito de ser completamente diferente.
+Você foi ensinada que ser diferente é estar errada, que questionar as regras é ingratidão,
+que sua visão de futuro é utopia.
+
+COMO A REPRESSÃO APARECE HOJE:
+- Originalidade que você esconde para pertencer
+- Ideias revolucionárias guardadas por medo de rejeição
+- Conformidade performática que cobre individualidade radical
+- Rebeldia sem causa como resposta ao controle
+
+COMO LILITH EMERGE QUANDO NÃO INTEGRADA:
+- Rebeldia destrutiva sem direção
+- Afastamento de todos como forma de nunca ser controlada
+- Cinismo sobre qualquer sistema como defesa
+
+LILITH INTEGRADA EM AQUÁRIO:
+Você é genuinamente original e isso é contribuição, não desvio.
+Sua visão do futuro não precisa de validação do presente.
+
+PRÁTICAS PARA INTEGRAÇÃO:
+- Compartilhe uma ideia radical publicamente
+- Vista, aja ou se expresse de forma completamente original — sem filtro social
+- Crie algo novo sem precisar que seja aprovado primeiro
+
+---
+
+### LILITH EM PEIXES
+
+O QUE FOI REPRIMIDO:
+Sua intuição, sua misticidade, seu acesso ao invisível, sua sensibilidade espiritual.
+Você foi ensinada que intuição não é real, que espiritualidade é fraqueza,
+que sentir demais é doença.
+
+COMO A REPRESSÃO APARECE HOJE:
+- Intuição que você ignora sistematicamente
+- Espiritualidade vivida em segredo ou com vergonha
+- Sensibilidade que você medica ou anestesia
+- Criatividade espiritual bloqueada
+
+COMO LILITH EMERGE QUANDO NÃO INTEGRADA:
+- Escapismo espiritual (espiritualidade como fuga da realidade)
+- Manipulação através de "insights" ou "mensagens"
+- Dependência de substâncias como acesso ao invisível sem o trabalho real
+
+LILITH INTEGRADA EM PEIXES:
+Sua intuição é real e confiável. Sua sensibilidade é dom.
+Sua espiritualidade é sua — não precisa de validação.
+
+PRÁTICAS PARA INTEGRAÇÃO:
+- Confie em uma intuição e aja de acordo
+- Crie algo espiritual sem pedir permissão ou desculpa
+- Medite ou ore da forma que faz sentido para você — não do jeito que outros ensinam
+
+════════════════════════════════════════════════════════════════════════════════
+
+# PARTE 4: LILITH POR CASA — ONDE O PODER FOI SILENCIADO
+
+## 4.1 A Casa Como Palco
+
+O signo mostra como o poder foi silenciado.
+A casa mostra ONDE — em que área da vida.
+
+---
+
+### LILITH EM CASA 1
+O poder de SER VOCÊ foi silenciado.
+Sua presença, sua identidade, seu direito de ocupar espaço.
+Integração: Você existe. Sua presença não precisa de justificativa.
+
+---
+
+### LILITH EM CASA 2
+O poder de TER e VALORIZAR a si mesma foi silenciado.
+Seu valor pessoal, seu direito a recursos, sua autoestima material.
+Integração: Você merece. Seus recursos são expressão do seu valor real.
+
+---
+
+### LILITH EM CASA 3
+O poder da sua VOZ foi silenciado.
+Sua inteligência, sua comunicação, seu direito de ser ouvida.
+Integração: Sua voz tem valor. Suas palavras mudam coisas.
+
+---
+
+### LILITH EM CASA 4
+O poder da sua ORIGEM foi silenciado.
+Sua família, seu passado, seus padrões ancestrais.
+Integração: Você pode honrar sua origem E quebrar o que não serve.
+
+---
+
+### LILITH EM CASA 5
+O poder de CRIAR e SE EXPRESSAR foi silenciado.
+Sua criatividade, seu prazer, seu amor, sua expressão individual.
+Integração: Você cria porque existe. Seu prazer não precisa de mérito.
+
+---
+
+### LILITH EM CASA 6
+O poder de DIZER NÃO ao serviço compulsivo foi silenciado.
+Seu corpo, sua saúde, seus limites no trabalho.
+Integração: Você serve por escolha, não por obrigação. Seu corpo é sagrado.
+
+---
+
+### LILITH EM CASA 7
+O poder de ter necessidades em RELACIONAMENTOS foi silenciado.
+Seu direito a parcerias igualitárias, seu "não" no amor.
+Integração: Você se relaciona e permanece inteira. Amor não exige dissolução.
+
+---
+
+### LILITH EM CASA 8
+O poder de TRANSFORMAR e de ter INTIMIDADE PROFUNDA foi silenciado.
+Sua sexualidade, seu acesso a recursos compartilhados, seu poder de morte e renascimento.
+Integração: Sua profundidade não é perigosa. Ela é transformação necessária.
+
+---
+
+### LILITH EM CASA 9
+O poder de ter CONVICÇÕES PRÓPRIAS foi silenciado.
+Sua filosofia de vida, suas crenças, seu direito de expandir além do grupo.
+Integração: Sua fé é sua. Sua expansão não precisa de aprovação.
+
+---
+
+### LILITH EM CASA 10
+O poder de AUTORIDADE PÚBLICA foi silenciado.
+Sua ambição, seu lugar no mundo, seu direito ao reconhecimento profissional.
+Integração: Sua autoridade é legítima. Seu nome pode ser grande.
+
+---
+
+### LILITH EM CASA 11
+O poder de PERTENCER SENDO DIFERENTE foi silenciado.
+Sua originalidade dentro do grupo, seu lugar em comunidades.
+Integração: Você pertence e é diferente. Não são excludentes.
+
+---
+
+### LILITH EM CASA 12
+O poder de ESPIRITUALIDADE E INTUIÇÃO foi silenciado.
+Seu acesso ao invisível, seu inconsciente, sua misticidade.
+Integração: O que está no escuro em você não é seu inimigo. É seu maior poder latente.
+
+════════════════════════════════════════════════════════════════════════════════
+
+# PARTE 5: ASPECTOS DE LILITH
+
+## 5.1 Lilith em Aspecto com Planetas Pessoais
+
+### LILITH CONJUNÇÃO SOL
+Sua identidade e seu poder reprimido estão fundidos.
+Você é intensamente marcada por Lilith — seja como alguém que foi muito reprimida
+ou alguém que naturalmente encarna autenticidade radical.
+Desafio: separar poder real de rebeldia compensatória.
+Dom: liderança autêntica que inspira outros a serem quem são.
+
+### LILITH CONJUNÇÃO LUA
+O padrão emocional e o poder reprimido estão entrelaçados.
+Sua família foi o campo principal de silenciamento.
+Padrão: emoções que "não podem ser sentidas" + poder que "não pode ser exercido".
+Dom: quando integrado, cura emocional profunda que ajuda outros.
+
+### LILITH CONJUNÇÃO VÊNUS
+Amor e poder reprimido colidem.
+Seus relacionamentos são o campo onde Lilith se manifesta com mais força.
+Padrão: sedução intensa + repressão intensa nos relacionamentos.
+Dom: quando integrado, amor que liberta em vez de prender.
+
+### LILITH CONJUNÇÃO MARTE
+Sua ação e poder reprimido se fundem.
+Você age com intensidade quando Lilith é ativada — às vezes de forma explosiva.
+Padrão: raiva reprimida + explosões que você mesma não entende.
+Dom: quando integrado, ação corajosa e transformadora.
+
+### LILITH CONJUNÇÃO SATURNO
+A autoridade (Saturno) foi o agente principal de repressão (Lilith).
+Frequentemente indica pai, figura de autoridade ou sistema que silenciou.
+Padrão: medo de poder por associação com punição.
+Dom: quando integrado, estrutura que liberta em vez de aprisionar.
+
+### LILITH CONJUNÇÃO PLUTÃO
+Poder reprimido e poder transformador se fusionam.
+Este é um dos aspectos mais intensos — potencial de transformação radical
+ou de destrutividade quando não integrado.
+Dom: quando integrado, capacidade de transformar realidades de forma profunda.
+
+### LILITH QUADRATURA SOL
+Tensão entre quem você é publicamente e seu poder autêntico.
+Você performa uma versão diminuída de si para ser aceita.
+Trabalho: descobrir quem você é quando não precisa agradar.
+
+### LILITH QUADRATURA LUA
+Tensão entre suas necessidades emocionais e seu poder autêntico.
+Padrão: você suprime poder para manter segurança emocional.
+Trabalho: descobrir que você pode ser poderosa E se sentir segura.
+
+### LILITH TRÍGONO SOL
+Fluxo entre identidade e poder autêntico.
+Você tem acesso mais fácil à integração de Lilith.
+Seu poder se expressa de forma mais natural e menos traumatizada.
+
+### LILITH SEXTIL SOL
+Oportunidade de integração entre identidade e poder.
+Quando você age, a integração de Lilith flui mais facilmente.
+Precisa de ação — o sextil não se ativa sozinho.
+
+════════════════════════════════════════════════════════════════════════════════
+
+# PARTE 6: LILITH E OS RELACIONAMENTOS
+
+## 6.1 Como Lilith Afeta o Amor
+
+Lilith não reprimida em relacionamentos cria padrões específicos.
+
+PADRÃO 1: REPRESSÃO TOTAL
+Você desaparece no relacionamento. Suas necessidades não existem.
+Você concorda, cede, serve. E ama esse alguém que a diminui — porque é familiar.
+
+PADRÃO 2: EXPLOSÃO
+Você reprime por muito tempo e então explode.
+O relacionamento tem ciclos de submissão + explosão.
+Você ama intensamente e depois corta completamente.
+
+PADRÃO 3: ESCOLHA DE LILITH COMO PARCEIRO
+Você atrai pessoas que encarnam Lilith — intensas, poderosas, "perigosas".
+Porque o que foi reprimido em você, você busca no outro.
+
+PADRÃO 4: LILITH COMO ESTRATÉGIA
+Você usa sedução, mistério ou intensidade como forma de poder no amor.
+É um poder indireto — porque o direto foi bloqueado.
+
+INTEGRAÇÃO:
+Quando Lilith está integrada, você se relaciona com poder genuíno.
+Você é intensamente você mesma E amorosa. Você tem limites E acolhimento.
+Você escolhe quem ficar — não precisa de quem ficar.
+
+════════════════════════════════════════════════════════════════════════════════
+
+# PARTE 7: LILITH E A JORNADA DE INTEGRAÇÃO
+
+## 7.1 As 5 Fases da Integração de Lilith
+
+### FASE 1: INCONSCIÊNCIA
+Você não sabe que Lilith existe em você.
+Você sofre os padrões sem entender de onde vêm.
+
+### FASE 2: RECONHECIMENTO
+Você começa a ver o padrão.
+"Ah. Eu sempre faço isso. Eu sempre aceito isso."
+Pode vir com raiva, dor ou alívio.
+
+### FASE 3: EXÍLIO CONSCIENTE
+Você sabe mas ainda não sabe como mudar.
+É quando a terapia, o mapa, as práticas são mais importantes.
+
+### FASE 4: INTEGRAÇÃO ATIVA
+Você começa a fazer escolhas diferentes.
+O desconforto diminui. O poder autêntico emerge.
+
+### FASE 5: INCORPORAÇÃO
+Lilith não é mais "o que foi reprimido".
+É simplesmente quem você é.
+Você nem pensa mais nela — porque ela é sua expressão natural.
+
+---
+
+## 7.2 Obstáculos na Integração
+
+### OBSTÁCULO 1: MEDO DE SER REJEITADA
+"Se eu for quem realmente sou, serei abandonada."
+Trabalho: descobrir que a rejeição de quem requer sua diminuição é libertação.
+
+### OBSTÁCULO 2: IDENTIFICAÇÃO COM A REPRESSÃO
+"Mas eu não sou assim. Eu sou mais calma/submissa/discreta."
+Trabalho: reconhecer que esse "jeito de ser" foi aprendido, não inato.
+
+### OBSTÁCULO 3: CONFUSÃO ENTRE PODER E VIOLÊNCIA
+"Se eu for poderosa, vou machucar as pessoas."
+Trabalho: distinguir poder autêntico de poder destrutivo.
+
+### OBSTÁCULO 4: SABOTAGEM NO MOMENTO DE BRILHAR
+Você chega perto da expressão plena e recua.
+Trabalho: reconhecer o padrão de sabotagem e interrompê-lo conscientemente.
+
+════════════════════════════════════════════════════════════════════════════════
+
+# PARTE 8: ESTRUTURA DO RELATÓRIO ENTREGUE AO CLIENTE
+
+## 8.1 Estrutura Completa
+
+```
+MAPA DA LILITH — [NOME DO CLIENTE]
+Análise Cuidadosa do Seu Poder e da Sua Libertação
+
+DADOS TÉCNICOS:
+Lilith Negra: [signo] Casa [X] [grau]
+Aspectos principais: [lista]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. CARTA AO CLIENTE
+   Abertura que honra a coragem de olhar para este material.
+
+2. QUEM É LILITH (para este cliente)
+   Não genérico — baseado nos indicadores do mapa dele.
+
+3. O QUE FOI REPRIMIDO EM VOCÊ
+   Baseado no signo + casa + aspectos.
+   "Isso foi silenciado. Isso foi chamado de demais. Isso foi banido."
+
+4. COMO A REPRESSÃO ACONTECEU
+   Origem (família, cultura, relacionamentos).
+   A narrativa específica do silenciamento.
+
+5. COMO LILITH APARECE HOJE (sombra)
+   Os padrões que emergem quando o poder não é integrado.
+   Sem julgamento — com compreensão.
+
+6. LILITH EM RELACIONAMENTOS
+   Como o poder reprimido afeta amor e parcerias.
+
+7. LILITH E SEU TRABALHO/CARREIRA
+   Como o poder reprimido bloqueia ou distorce a expressão profissional.
+
+8. LILITH E SEU CORPO
+   Como a repressão do poder se manifesta fisicamente.
+
+9. A INTEGRAÇÃO — LILITH COMO DOM
+   O que surge quando o poder é integrado conscientemente.
+   A versão de você que emerge quando Lilith é honrada.
+
+10. ASPECTOS DE LILITH NO SEU MAPA
+    Como Lilith conversa com outros planetas — detalhado.
+
+11. AS 5 FASES DA SUA INTEGRAÇÃO
+    Onde você está agora e o que vem a seguir.
+
+12. PRÁTICAS DE INTEGRAÇÃO
+    7-10 práticas específicas para este signo/casa de Lilith.
+
+13. AFIRMAÇÕES DE PODER
+    10 afirmações baseadas no Lilith específico do cliente.
+
+14. MENSAGEM FINAL
+    Não se trata de "consertar" Lilith. Trata-se de reconhecê-la.
+
+15. CHAMADAS PARA OUTROS PRODUTOS ASTRALIA
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+════════════════════════════════════════════════════════════════════════════════
+
+# PARTE 9: CHAMADAS PARA OUTROS PRODUTOS ASTRALIA.ONLINE
+
+### Indicar MAPA KÁRMICO quando:
+Lilith conecta com Saturno ou Nodo Sul — a repressão tem raiz kármica/transgeracional.
+
+```
+"O que revelamos aqui sobre Lilith tem raízes mais profundas do que você pensa.
+O Mapa Kármico da Astralia investiga de onde vieram os padrões que silenciaram seu poder:
+qual foi o padrão familiar, qual foi a herança ancestral,
+e qual é a missão evolutiva que inclui justamente integrar o que foi reprimido.
+Juntos, Lilith e Kármico formam o mapa mais completo de libertação disponível."
+```
+
+### Indicar MAPA ASTRAL quando:
+Cliente é novo ou quando Lilith conecta com muitos planetas pessoais.
+
+```
+"Lilith revela uma camada específica do seu mapa — o poder reprimido.
+Mas existe toda uma arquitetura de quem você é além de Lilith.
+O Mapa Astral Personalizado da Astralia revela o quadro completo:
+seus talentos, padrões relacionais, vocação e a integração de todas as energias
+que compõem sua personalidade."
+```
+
+### Indicar SINASTRIA quando:
+Lilith em Casa 7 ou forte aspecto com Vênus — relacionamentos são o campo.
+
+```
+"Seu Lilith tem forte conexão com relacionamentos.
+Se há uma pessoa específica com quem esses padrões se ativam com mais intensidade,
+a Sinastria da Astralia pode revelar a dinâmica entre os dois mapas:
+onde há gatilho, onde há crescimento e se este relacionamento apoia
+ou desafia a integração do seu poder."
+```
+
+### Indicar REVOLUÇÃO SOLAR quando:
+Cliente está em processo ativo de mudança.
+
+```
+"Você está em processo real de transformação.
+A Revolução Solar da Astralia revela o que este ano oferece para essa jornada:
+quando as energias apoiam sua integração,
+quais meses serão de maior desafio e quais de maior florescimento."
+```
+
+════════════════════════════════════════════════════════════════════════════════
+
+# PARTE 10: PROMPT FINAL PARA CLAUDE OPUS 4
+
+```
+Você é um astrólogo especialista em Lilith Negra com formação em psicologia
+do poder feminino, mitologia e astrologia evolutiva. Você combina rigor técnico
+com profunda compreensão de como os sistemas de repressão funcionam.
+
+Sua missão: revelar onde o poder foi silenciado, como isso afeta a vida hoje
+e o caminho de integração — sem moralismo, sem vitimização, sem julgamento.
+Apenas clareza corajosa e compaixão real.
+
+═══════════════════════════════════
+DADOS DO MAPA:
+Nome: [NOME]
+Data: [DD/MM/AAAA]
+Hora: [HH:MM]
+Local: [CIDADE, ESTADO, PAÍS]
+
+Lilith Negra: [signo] Casa [X] [grau]
+Sol: [signo] Casa [X]
+Lua: [signo] Casa [X]
+Saturno: [signo] Casa [X]
+Plutão: [signo] Casa [X]
+Nodo Norte: [signo] Casa [X]
+
+Aspectos de Lilith:
+[TODOS OS ASPECTOS COM PLANETAS E ORBE]
+
+Contexto do cliente:
+[O QUE MOTIVOU A COMPRA / PADRÃO QUE SE REPETE]
+
+═══════════════════════════════════
+INSTRUÇÕES:
+
+Gere o Mapa da Lilith completo com esta estrutura:
+
+1. CARTA AO CLIENTE (300 palavras — honra a coragem)
+2. O QUE LILITH É (para este cliente específico, 400 palavras)
+3. O QUE FOI REPRIMIDO EM VOCÊ (700 palavras — baseado em signo + casa)
+4. COMO A REPRESSÃO ACONTECEU (500 palavras — origem e mecanismo)
+5. COMO LILITH APARECE HOJE — A SOMBRA (500 palavras — sem julgamento)
+6. LILITH NOS RELACIONAMENTOS (500 palavras)
+7. LILITH NO TRABALHO E CARREIRA (400 palavras)
+8. LILITH E SEU CORPO (350 palavras)
+9. INTEGRAÇÃO — LILITH COMO DOM (600 palavras)
+10. ASPECTOS DE LILITH — ANÁLISE DETALHADA (500 palavras)
+11. AS 5 FASES DA SUA INTEGRAÇÃO (400 palavras — onde está agora)
+12. PRÁTICAS DE INTEGRAÇÃO (500 palavras — 7-10 práticas específicas)
+13. AFIRMAÇÕES DE PODER (200 palavras — 10 afirmações personalizadas)
+14. MENSAGEM FINAL (300 palavras — honra, não conserta)
+
+TOTAL: 9.000-13.000 palavras
+
+REGRAS:
+- Use o nome do cliente
+- Tom: empoderador, não vitimizante
+- Nunca moralista (Lilith não é "problema" — é poder não integrado)
+- Cada padrão de sombra tem equivalente de dom
+- Práticas são específicas para o signo/casa deste cliente
+- Linguagem: forte, clara, corajosa
+```
+
+════════════════════════════════════════════════════════════════════════════════
+
+MATERIAL PERSONALIZADO — ANÁLISE CUIDADOSA COM TODOS OS INDICADORES
+Gerado com Claude Opus 4 | Entrega em até 24 horas
+Sistema Astralia.online — www.astralia.online
+
+════════════════════════════════════════════════════════════════════════════════
