@@ -32,7 +32,7 @@ Este não é um mapa astrológico comum.
 
 Este é ALQUIMIA CÓSMICA.
 
-A pessoa que recebe isso pagou (R$ 397-1.197) para ENTENDER sua prisão
+A pessoa que recebe isso pagou (R$ 197) para ENTENDER sua prisão
 e descobrir que LIBERTAÇÃO é possível.
 
 Ela vem porque está ENROSCADA.
@@ -1646,14 +1646,14 @@ Faixa de seções: ${escopo.inicio} até ${escopo.fim} (inclusive)
 META DE PALAVRAS PARA ESTA PARTE: ${escopo.metaPalavras} palavras (NÃO ULTRAPASSAR)
 
 ⚠️ REGRAS CRÍTICAS DE COMPRIMENTO:
-1. O Mapa Kármico TOTAL tem teto de 10.000 palavras (soma das 3 partes)
+1. O Mapa Kármico TOTAL tem teto de 20.000 palavras (soma das 3 partes)
 2. PRIORIZE PROFUNDIDADE nas Seções 6-8.5 (os 3 Pilares Alquímicos) — elas SÃO o produto
 3. CORTE PALAVRAS das seções 9-42 conforme necessário — elas complementam, mas não são o núcleo
-4. Seção 6 (Karma): aproximadamente 500 palavras
-5. Seção 7 (Samsara): aproximadamente 1.200 palavras
+4. Seção 6 (Karma): aproximadamente 1000 palavras
+5. Seção 7 (Samsara): aproximadamente 1.800 palavras
 6. Seção 8 (Serpente Kármica): aproximadamente 700 palavras
-7. Seção 8.5 (Integração): aproximadamente 200 palavras
-8. Seções 1-5 (apresentação): no máximo 400 palavras totais (são técnicas/cabeçalho)
+7. Seção 8.5 (Integração): aproximadamente 300 palavras
+8. Seções 1-5 (apresentação): no máximo 600 palavras totais (são técnicas/cabeçalho)
 9. Seções 9-42 (astrologia + padrões + relacionamentos + práticas + conclusão): distribuir o restante de forma proporcional, priorizando o que mais conecta ao caso específico da cliente
 10. NÃO gere as seções fora desta faixa. Outras chamadas vão completar.
 
