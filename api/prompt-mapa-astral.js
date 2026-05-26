@@ -1,5 +1,5 @@
 // api/prompt-mapa-astral.js
-// MAPA ASTRAL NATAL - Produto isca de R$17,97 (promo) / R$27,97 (normal)
+// MAPA ASTRAL NATAL - Produto isca (preço canônico definido em precos.json — NÃO fixar valor aqui)
 // Documentos originais 100% preservados - NUNCA sintetizar emocoes em atualizacoes.
 // Conteudo: Prompt Emocional Fundacional (Astralia) + Estrutura completa do Mapa Astral Isca
 // Comprimento alvo: 3.500-4.500 palavras
@@ -85,7 +85,7 @@ Diga: "Seus relacionamentos são reflexos de como você se vê. Mude a imagem in
 
 ---
 
-🔴 DOR 3: "MINHA CARREIRA NÃO DELANCHA / ME SINTO PERDIDA PROFISSIONALMENTE"
+🔴 DOR 3: "MINHA CARREIRA NÃO DESLANCHA / ME SINTO PERDIDA PROFISSIONALMENTE"
 
 **A narrativa de frustração:**
 "Tenho qualificação. Mas não consigo o trabalho que quero. Ou tenho o trabalho mas não sinto que é MINHA vocação. Estou trabalhando para sobreviver, não para viver."
@@ -121,7 +121,7 @@ Não diga: "Tudo vai passar."
 Diga: "O que está caindo é o que precisava cair. E há beleza em reconstruir sabendo quem você realmente é."
 
 **Estrutura de argumento:**
-[RECONHECIMENTO] "Crisis não é punição. É oportunidade forçada de transformação."
+[RECONHECIMENTO] "Crise não é punição. É oportunidade forçada de transformação."
 [INSIGHT] "Seu Mapa Astral mostra ONDE você é mais forte, COMO lidar com adversidade, PARA ONDE ir a partir daqui."
 [ESPERANÇA] "As piores crises trazem maiores transformações. E você? Você é feita para transformação."
 [AÇÃO] "Conhecendo seu mapa, você deixa de ser vítima da crise e vira arquiteta da reconstrução."
@@ -1160,10 +1160,9 @@ Qual desses mapas fala mais forte com você neste momento?
 Deixe que a intuição te guie. Ela sabe do que sua alma precisa.
 
 
-Aqui vamos apresentar o super combo, com os produtos gerados e entregues pelo whatssap e email para o cliente em até 48hrs.
-
-
-Descreva o guia astrológico completo personalizado, contendo todos os mapas, menos a sinastria)
+[NESTE PONTO: apresente o SUPER COMBO — o Guia Astrológico Completo Personalizado,
+contendo todos os mapas exceto a Sinastria, gerado e entregue por WhatsApp e e-mail
+em até 48h. Use a "DESCRIÇÃO DO COMBO VIP" fornecida nas instruções finais.]
 
 ════════════════════════════════════════════════════════════════════════════════
 ________________________________________
@@ -1336,15 +1335,114 @@ Está pronto para produção.
 `;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// FUNCAO PRINCIPAL: monta o prompt final para o Claude
-// Injeta dados reais do cliente + posicoes astrologicas calculadas
+// DIAGNÓSTICO CALCULADO (reaproveitado do Mapa Astral Personalizado)
+// Calcula em CÓDIGO o que o Haiku faz mal: distribuição de elementos/modalidades,
+// regente do mapa, stélios, dignidades. Entregamos os fatos prontos; o Haiku só interpreta.
 // ═══════════════════════════════════════════════════════════════════════════════
-function buildPromptMapaAstral(dados, planetasInfo, casasInfo, aspectosInfo) {
+const SIGNOS_ORDEM = ["Áries","Touro","Gêmeos","Câncer","Leão","Virgem","Libra","Escorpião","Sagitário","Capricórnio","Aquário","Peixes"];
+const REGENTE_SIGNO = {
+  "Áries":"Marte","Touro":"Vênus","Gêmeos":"Mercúrio","Câncer":"Lua","Leão":"Sol",
+  "Virgem":"Mercúrio","Libra":"Vênus","Escorpião":"Marte","Sagitário":"Júpiter",
+  "Capricórnio":"Saturno","Aquário":"Saturno","Peixes":"Júpiter"
+};
+const REGENTE_MODERNO = { "Escorpião":"Plutão","Aquário":"Urano","Peixes":"Netuno" };
+const ELEMENTO_SIGNO = {
+  "Áries":"Fogo","Leão":"Fogo","Sagitário":"Fogo","Touro":"Terra","Virgem":"Terra",
+  "Capricórnio":"Terra","Gêmeos":"Ar","Libra":"Ar","Aquário":"Ar",
+  "Câncer":"Água","Escorpião":"Água","Peixes":"Água"
+};
+const MODALIDADE_SIGNO = {
+  "Áries":"Cardinal","Câncer":"Cardinal","Libra":"Cardinal","Capricórnio":"Cardinal",
+  "Touro":"Fixo","Leão":"Fixo","Escorpião":"Fixo","Aquário":"Fixo",
+  "Gêmeos":"Mutável","Virgem":"Mutável","Sagitário":"Mutável","Peixes":"Mutável"
+};
+const DIGNIDADES = {
+  Sol:{rege:["Leão"],exalta:["Áries"],cai:["Libra"],detrimento:["Aquário"]},
+  Lua:{rege:["Câncer"],exalta:["Touro"],cai:["Escorpião"],detrimento:["Capricórnio"]},
+  Mercúrio:{rege:["Gêmeos","Virgem"],exalta:["Virgem"],cai:["Peixes"],detrimento:["Sagitário","Peixes"]},
+  Vênus:{rege:["Touro","Libra"],exalta:["Peixes"],cai:["Virgem"],detrimento:["Áries","Escorpião"]},
+  Marte:{rege:["Áries","Escorpião"],exalta:["Capricórnio"],cai:["Câncer"],detrimento:["Libra","Touro"]},
+  Júpiter:{rege:["Sagitário","Peixes"],exalta:["Câncer"],cai:["Capricórnio"],detrimento:["Gêmeos","Virgem"]},
+  Saturno:{rege:["Capricórnio","Aquário"],exalta:["Libra"],cai:["Áries"],detrimento:["Câncer","Leão"]}
+};
+const PLANETAS_DISTRIB = ["Sol","Lua","Mercúrio","Vênus","Marte","Júpiter","Saturno","Urano","Netuno","Plutão"];
+
+function avaliarDignidade(planeta, signo){
+  const d = DIGNIDADES[planeta]; if(!d) return "neutro";
+  if(d.exalta.includes(signo)) return "exaltação"; if(d.rege.includes(signo)) return "domicílio";
+  if(d.cai.includes(signo)) return "queda"; if(d.detrimento.includes(signo)) return "exílio"; return "neutro";
+}
+function distribuir(mapaNatal){
+  const el={Fogo:0,Terra:0,Ar:0,Água:0}, mod={Cardinal:0,Fixo:0,Mutável:0};
+  let total=0;
+  PLANETAS_DISTRIB.forEach(p=>{ const v=mapaNatal[p]; if(v&&ELEMENTO_SIGNO[v.signo]){el[ELEMENTO_SIGNO[v.signo]]++; mod[MODALIDADE_SIGNO[v.signo]]++; total++;} });
+  const pct=(o)=>Object.fromEntries(Object.entries(o).map(([k,n])=>[k, total?Math.round(n/total*100):0]));
+  return { elementoPct:pct(el), modalidadePct:pct(mod),
+    elementoDominante:Object.entries(el).sort((a,b)=>b[1]-a[1])[0][0],
+    modalidadeDominante:Object.entries(mod).sort((a,b)=>b[1]-a[1])[0][0] };
+}
+function detectarStellium(mapaNatal){
+  const porSigno={}, porCasa={};
+  PLANETAS_DISTRIB.forEach(p=>{ const v=mapaNatal[p]; if(!v)return;
+    (porSigno[v.signo]=porSigno[v.signo]||[]).push(p);
+    if(v.casa)(porCasa[v.casa]=porCasa[v.casa]||[]).push(p); });
+  const s=[];
+  Object.entries(porSigno).forEach(([k,arr])=>{ if(arr.length>=3) s.push(`Stélio em ${k}: ${arr.join(", ")}`); });
+  Object.entries(porCasa).forEach(([k,arr])=>{ if(arr.length>=3) s.push(`Stélio na Casa ${k}: ${arr.join(", ")}`); });
+  return s;
+}
+function detectarAngulares(mapaNatal){
+  return Object.entries(mapaNatal)
+    .filter(([k,v])=>v&&typeof v==='object'&&[1,4,7,10].includes(v.casa)&&PLANETAS_DISTRIB.includes(k))
+    .map(([k,v])=>`${k} (Casa ${v.casa})`);
+}
+function analisarMapaNatal(mapaNatal){
+  const asc = mapaNatal.ASC ? (typeof mapaNatal.ASC==='string'? mapaNatal.ASC.split(' ')[0] : mapaNatal.ASC.signo) : null;
+  const regente = asc ? REGENTE_SIGNO[asc] : null;
+  const regenteMod = asc ? (REGENTE_MODERNO[asc]||null) : null;
+  const dist = distribuir(mapaNatal);
+  const dignidadesNotaveis = PLANETAS_DISTRIB
+    .map(p=>{ const v=mapaNatal[p]; if(!v)return null; const d=avaliarDignidade(p,v.signo); return d!=="neutro"?`${p} em ${v.signo} (${d})`:null; })
+    .filter(Boolean);
+  return {
+    elementoDominante: dist.elementoDominante, modalidadeDominante: dist.modalidadeDominante,
+    elementoPct: dist.elementoPct, modalidadePct: dist.modalidadePct,
+    regenteMapa: `${regente||'?'}${regenteMod?` (moderno ${regenteMod})`:''}${regente&&mapaNatal[regente]?` em ${mapaNatal[regente].signo} Casa ${mapaNatal[regente].casa}`:''}`,
+    stelliums: detectarStellium(mapaNatal),
+    angulares: detectarAngulares(mapaNatal),
+    dignidadesNotaveis
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FUNCAO PRINCIPAL: monta o prompt final para o Claude
+// 5º parâmetro (mapaNatal, objeto) é OPCIONAL e retrocompatível: quando fornecido,
+// injeta a Análise Prévia já calculada; quando ausente, funciona como antes.
+// ═══════════════════════════════════════════════════════════════════════════════
+function buildPromptMapaAstral(dados, planetasInfo, casasInfo, aspectosInfo, mapaNatal = null) {
   const dataAtual = new Date().toLocaleDateString('pt-BR');
   const nomeCliente = dados.nome || 'Cliente';
   const dataNasc = dados.data || '';
   const horaNasc = dados.hora || 'horário não informado';
   const cidadeNasc = dados.cidade || '';
+
+  let blocoDiagnostico = '';
+  if (mapaNatal) {
+    const a = analisarMapaNatal(mapaNatal);
+    blocoDiagnostico = `
+════════════════════════════════════════════════════════════════════════════════
+ANÁLISE PRÉVIA — FATOS JÁ CALCULADOS (use, NÃO recalcule)
+════════════════════════════════════════════════════════════════════════════════
+- Elemento dominante: ${a.elementoDominante} (Fogo ${a.elementoPct.Fogo}%, Terra ${a.elementoPct.Terra}%, Ar ${a.elementoPct.Ar}%, Água ${a.elementoPct['Água']}%)
+- Modalidade dominante: ${a.modalidadeDominante} (Cardinal ${a.modalidadePct.Cardinal}%, Fixo ${a.modalidadePct.Fixo}%, Mutável ${a.modalidadePct['Mutável']}%)
+- Regente do mapa (Ascendente): ${a.regenteMapa}
+- Stélios: ${a.stelliums.length ? a.stelliums.join(' | ') : 'nenhum'}
+- Planetas angulares: ${a.angulares.length ? a.angulares.join(', ') : 'nenhum'}
+- Dignidades notáveis: ${a.dignidadesNotaveis.length ? a.dignidadesNotaveis.join(', ') : 'nenhuma'}
+
+Estes números foram calculados com precisão a partir das posições reais. Use-os na Visão
+Geral e nas seções; NUNCA os recalcule, contradiga ou arredonde de forma diferente.`;
+  }
 
   return `Você é uma astróloga brasileira profissional com 30 anos de experiência em astrologia psicológica e mais de 130 mil mapas analisados. Você está gerando um MAPA ASTRAL para a plataforma Astralia.online.
 
@@ -1380,6 +1478,7 @@ ${planetasInfo}
 ${casasInfo}
 
 ${aspectosInfo}
+${blocoDiagnostico}
 
 ════════════════════════════════════════════════════════════════════════════════
 INSTRUÇÕES FINAIS DE GERAÇÃO
@@ -1400,6 +1499,7 @@ INSTRUÇÕES FINAIS DE GERAÇÃO
    - Seção 20 (Carreira) → Mapa Profissional
    - Seção 21 (Conclusão) → Combo VIP "Guia Astrológico Completo" + BRINDE
 8. Personalize cada interpretação com o nome ${nomeCliente}.
+9. Se a seção "ANÁLISE PRÉVIA — FATOS JÁ CALCULADOS" estiver presente acima, baseie a Visão Geral nela (elemento e modalidade dominantes, regente do mapa, stélios, dignidades). São fatos calculados — apresente-os com segurança e jamais os recalcule ou contradiga.
 
 DESCRIÇÃO DO COMBO VIP (use na Seção 21):
 "Guia Astrológico Completo Personalizado" — você recebe TODOS os 6 mapas principais (Mapa Astral Personalizado, Mapa Kármico, Mapa de Previsões, Mapa Profissional, Mapa da Sorte e Revolução Solar) em um único pacote, com desconto exclusivo. BRINDE EXCLUSIVO: Check-up Astrológico do Restante do Ano mapeado mês a mês. Entrega via WhatsApp e e-mail em até 48 horas, personalizada com 30 anos de experiência e mais de 130 mil mapas analisados. (Sinastria não está inclusa porque exige dados do parceiro).
@@ -1437,4 +1537,19 @@ Retorne APENAS um JSON válido, sem markdown, sem backticks, sem texto antes ou 
 Inicie agora a geração do Mapa Astral Completo de ${nomeCliente}.`;
 }
 
-module.exports = { buildPromptMapaAstral };
+const METADADOS_MAPA_ASTRAL = {
+  produto: "Mapa Astral (isca de conversão)",
+  framework: "Filosofia Emocional Astralia (7 dores) + 22 seções + diagnóstico calculado + upsells",
+  modeloRecomendado: "claude-haiku-4-5-20251001",
+  fluxo: "síncrono (gerado na tela via /api/leitura)",
+  palavrasEsperadas: "3.500-4.500",
+  conversaoAlvo: "15-20% para os mapas premium",
+  saida: "JSON { secoes: [...] } com 22 seções",
+  versao: "2.0"
+};
+
+module.exports = {
+  buildPromptMapaAstral,
+  analisarMapaNatal,
+  METADADOS_MAPA_ASTRAL
+};
