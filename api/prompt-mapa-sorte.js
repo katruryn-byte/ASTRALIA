@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // Produto Premium — Entrega assíncrona em até 48h via n8n
 // Pilares: ENREDO | FORMA | PERSUASÃO | ABUNDÂNCIA ACESSÍVEL
-// Modelo recomendado: claude-sonnet-4-6
+// Modelo recomendado: claude-opus-4-7 (promovido de Sonnet — uniformidade premium em Opus)
 // Comprimento alvo: 13.000-16.000 (Premium) — INCLUI Parte da Fortuna
 // Seções: 33 (32 originais + Parte da Fortuna integrada)
 // Tom: Prático, esperançoso, empoderador, segunda pessoa, timeline de 90 dias
@@ -506,11 +506,24 @@ Gere agora APENAS as seções ${escopo.inicio} a ${escopo.fim}, dentro de ~${esc
 }
 
 // -------------------------------------------------------------------------------
+// METADADOS (declaração de modelo, alinhada aos demais prompts)
+// -------------------------------------------------------------------------------
+const METADADOS_MAPA_SORTE = {
+  framework: "Mapa da Sorte — Júpiter + Casa 2 + Nodo Norte + Parte da Fortuna + abundância acessível",
+  modeloRecomendado: "claude-opus-4-7",
+  palavrasEsperadas: "13.000-16.000",
+  tipo: "premium_assincrono_48h",
+  saida: "JSON por seções — gerado POR PARTES (chunked); renderização de PDF é camada separada",
+  versao: "2.0"
+};
+
+// -------------------------------------------------------------------------------
 // EXPORTS
 // -------------------------------------------------------------------------------
 module.exports = {
   buildPromptMapaDaSorte,
   calcularParteFortuna,
+  METADADOS_MAPA_SORTE,
   FILOSOFIA_MAPA_SORTE,
   ANALISE_ASTROLOGICA_SORTE,
   ESTRUTURA_MAPA_SORTE,
