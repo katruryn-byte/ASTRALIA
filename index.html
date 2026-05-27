@@ -3,540 +3,759 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Astral IA — Leituras Astrológicas com Inteligência Artificial</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet"/>
+<title>Astral IA — Astrologia Personalizada por IA · 30 anos · +130 mil mapas</title>
+<meta name="description" content="9 mapas astrológicos personalizados. Mapa Astral, Personalizado, Kármico, Lilith, Sorte, Profissional, Sinastria, Revolução Solar e Previsões. Pagamento via PIX ou cartão na própria página."/>
+<meta property="og:title" content="Astral IA — Sua Astrologia Personalizada"/>
+<meta property="og:description" content="9 mapas astrológicos, gerados por IA e supervisionados por astróloga com 30 anos de experiência e +130 mil mapas realizados."/>
+<meta property="og:type" content="website"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body,html{background:#06030e;color:#e5d0ff;font-family:'Cormorant Garamond',serif;scroll-behavior:smooth}
-.nav{background:rgba(6,3,14,.97);border-bottom:1px solid #1c0e40;padding:.85rem 1.5rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;backdrop-filter:blur(10px)}
-.nav-logo{font-family:'Cinzel',serif;font-size:1.15rem;color:#c9a84c;letter-spacing:.1em}
-.nav-logo em{color:#a07fff;font-style:normal}
-.nav-pages{display:flex;gap:.4rem}
-.npg{background:transparent;border:none;color:#7a5ea0;font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.12em;padding:.4rem .85rem;cursor:pointer;border-radius:20px;transition:all .2s}
-.npg:hover,.npg.on{background:#1c0e40;color:#c9a84c}
-.page{display:none}.page.on{display:block}
-.hero{background:radial-gradient(ellipse at 50% 0%,#18083a 0%,#06030e 65%);padding:4rem 1.5rem 3rem;text-align:center;position:relative;overflow:hidden}
-.hero-orb{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;opacity:.18}
-.hero-badge{display:inline-block;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);color:#c9a84c;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.2em;padding:.3rem .9rem;border-radius:20px;margin-bottom:1rem}
-.hero-title{font-family:'Cinzel',serif;font-size:clamp(2.2rem,7vw,4rem);color:#f0d080;letter-spacing:.18em;margin-bottom:.4rem;line-height:1.1}
-.hero-sub{font-family:'Cinzel',serif;font-size:clamp(.9rem,2.5vw,1.2rem);color:#a07fff;letter-spacing:.1em;margin-bottom:.8rem}
-.hero-desc{font-size:1rem;color:#7a5ea0;font-style:italic;max-width:520px;margin:0 auto 1.5rem;line-height:1.75}
-.hero-btns{display:flex;gap:.9rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem}
-.btn-gold{background:linear-gradient(135deg,#7a3000,#c9a84c);border:none;color:#fff;font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.12em;padding:.8rem 2rem;border-radius:30px;cursor:pointer;transition:all .2s}
-.btn-gold:hover{opacity:.88;transform:translateY(-2px)}
-.btn-ghost{background:transparent;border:1px solid rgba(201,168,76,.35);color:#c9a84c;font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.12em;padding:.8rem 2rem;border-radius:30px;cursor:pointer;transition:all .2s}
-.btn-ghost:hover{background:rgba(201,168,76,.08)}
-.astrologa-banner{background:linear-gradient(135deg,#0d0620,#1a0a2e);border:1px solid rgba(201,168,76,.2);border-radius:16px;padding:1.2rem 1.5rem;max-width:700px;margin:0 auto;display:flex;align-items:center;gap:1rem}
-.astrologa-icon{font-size:2rem;flex-shrink:0}
-.astrologa-text p{font-size:.85rem;color:#7a5ea0;line-height:1.65;font-style:italic}
-.astrologa-text strong{color:#c9a84c;font-style:normal}
-.section{padding:3rem 1.3rem}.section.alt{background:#09040f}
-.sec-label{font-family:'Cinzel',serif;font-size:.62rem;color:#c9a84c;letter-spacing:.25em;text-align:center;margin-bottom:.4rem}
-.sec-title{font-family:'Cinzel',serif;font-size:clamp(1.3rem,3.5vw,2rem);text-align:center;color:#e5d0ff;margin-bottom:.5rem}
-.sec-sub{font-size:.95rem;color:#6a4d90;text-align:center;font-style:italic;margin-bottom:2rem;line-height:1.7;max-width:520px;margin-left:auto;margin-right:auto}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.1rem;max-width:1100px;margin:0 auto}
-.scard{background:#0d0620;border:1px solid #1c0e40;border-radius:16px;padding:1.6rem;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
-.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#c9a84c,transparent);opacity:0;transition:opacity .3s}
-.scard:hover{transform:translateY(-4px);border-color:rgba(201,168,76,.35)}.scard:hover::before{opacity:1}
-.scard.premium{border-color:rgba(160,127,255,.3);background:linear-gradient(135deg,#0d0620,#130828)}
-.sc-icon{font-size:1.9rem;margin-bottom:.7rem;display:block}
-.sc-title{font-family:'Cinzel',serif;font-size:.9rem;color:#f0d080;letter-spacing:.07em;margin-bottom:.4rem}
-.sc-desc{font-size:.88rem;color:#6a4d90;line-height:1.7;margin-bottom:.8rem;font-weight:300}
-.sc-entrega{font-size:.75rem;color:#5a3d80;margin-bottom:.8rem}
-.sc-preco{margin-bottom:.9rem}
-.sc-preco .de{font-size:.8rem;color:#5a3d80;text-decoration:line-through;display:block}
-.sc-preco .por{font-family:'Cinzel',serif;font-size:1.4rem;color:#c9a84c}
-.sc-preco .promo-badge{display:inline-block;background:linear-gradient(135deg,#7a0000,#c94c4c);color:#fff;font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.1em;padding:.15rem .5rem;border-radius:10px;margin-left:.4rem;vertical-align:middle}
-.sc-badge{position:absolute;top:.85rem;right:.85rem;background:linear-gradient(135deg,#5a20aa,#a07fff);color:#fff;font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.1em;padding:.2rem .6rem;border-radius:20px}
-.sc-limited{position:absolute;top:.85rem;left:.85rem;background:linear-gradient(135deg,#7a0000,#c94c4c);color:#fff;font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.08em;padding:.2rem .6rem;border-radius:20px}
-.sc-btn{display:block;width:100%;padding:.65rem;background:linear-gradient(135deg,#3a1070,#7a3000);border:none;border-radius:9px;color:#fff;font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.1em;cursor:pointer;transition:opacity .2s}
-.sc-btn:hover{opacity:.82}
-.contador-wrap{text-align:center;margin-bottom:1.5rem}
-.contador-label{font-family:'Cinzel',serif;font-size:.65rem;color:#c94c4c;letter-spacing:.15em;margin-bottom:.5rem}
-.contador{display:flex;gap:.5rem;justify-content:center}
-.cnt-box{background:#1a0808;border:1px solid #4a1515;border-radius:8px;padding:.5rem .8rem;text-align:center;min-width:55px}
-.cnt-num{font-family:'Cinzel',serif;font-size:1.4rem;color:#e09090;display:block}
-.cnt-label{font-size:.55rem;color:#7a3030;letter-spacing:.1em}
-.steps{display:grid;gap:.85rem;max-width:650px;margin:0 auto}
-.step{display:flex;gap:1.1rem;align-items:flex-start;background:#0d0620;border:1px solid #1c0e40;border-radius:13px;padding:1.2rem}
-.step-n{flex-shrink:0;width:38px;height:38px;background:linear-gradient(135deg,#5a20aa,#7a3000);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.88rem;color:#fff}
-.step h3{font-family:'Cinzel',serif;font-size:.8rem;color:#f0d080;letter-spacing:.07em;margin-bottom:.3rem}
-.step p{font-size:.88rem;color:#6a4d90;line-height:1.65;font-weight:300}
-.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;max-width:900px;margin:0 auto}
-.testi{background:#0d0620;border:1px solid #1c0e40;border-radius:14px;padding:1.5rem}
-.testi-stars{color:#c9a84c;font-size:.9rem;margin-bottom:.7rem}
-.testi-text{font-size:.93rem;color:#7a5ea0;line-height:1.78;font-style:italic;margin-bottom:.9rem}
-.testi-name{font-family:'Cinzel',serif;font-size:.65rem;color:#5a3d80;letter-spacing:.1em}
-.cta-wrap{max-width:580px;margin:0 auto;background:linear-gradient(135deg,rgba(122,61,221,.08),rgba(201,168,76,.05));border:1px solid rgba(201,168,76,.2);border-radius:22px;padding:2.5rem 2rem;text-align:center}
-.cta-wrap h2{font-family:'Cinzel',serif;font-size:clamp(1.2rem,3.5vw,1.8rem);color:#f0d080;margin-bottom:.8rem;line-height:1.3}
-.cta-wrap p{font-size:.95rem;color:#6a4d90;font-style:italic;line-height:1.75;margin-bottom:1.5rem}
-footer{border-top:1px solid #1c0e40;padding:2rem 1.5rem;text-align:center}
-.footer-logo{font-family:'Cinzel',serif;font-size:1rem;color:#c9a84c;margin-bottom:.4rem}
-.footer-text{font-size:.78rem;color:#5a3d80;line-height:1.7;margin-bottom:.8rem}
-.footer-links{display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap}
-.footer-links a{color:#5a3d80;text-decoration:none;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.1em;transition:color .2s;cursor:pointer}
-.footer-links a:hover{color:#c9a84c}
-.lgpd-bar{background:#0d0620;border-top:1px solid #1c0e40;padding:.8rem 1.5rem;text-align:center;font-size:.72rem;color:#5a3d80;line-height:1.6}
-.lgpd-bar a{color:#7a5ea0;text-decoration:underline;cursor:pointer}
-.form-page{max-width:620px;margin:0 auto;padding:2rem 1.3rem 3rem}
-.form-header{text-align:center;margin-bottom:1.5rem}
-.form-header h2{font-family:'Cinzel',serif;font-size:1.3rem;color:#f0d080;letter-spacing:.1em;margin-bottom:.3rem}
-.form-header p{font-size:.88rem;color:#6a4d90;font-style:italic}
-.tipo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1.3rem}
-.tipo-btn{background:#0d0620;border:1px solid #1c0e40;border-radius:10px;padding:.8rem .4rem;text-align:center;cursor:pointer;transition:all .2s;font-family:'Cinzel',serif;font-size:.58rem;color:#7a5ea0;letter-spacing:.05em;line-height:1.4}
-.tipo-btn:hover,.tipo-btn.on{border-color:#c9a84c;color:#f0d080;background:#130830}
-.tipo-btn .ti{font-size:1.2rem;display:block;margin-bottom:.3rem}
-.fbox{background:#0d0620;border:1px solid #1c0e40;border-radius:16px;padding:1.6rem;margin-bottom:1rem}
-.fbox-title{font-family:'Cinzel',serif;font-size:.72rem;color:#b090e0;letter-spacing:.12em;margin-bottom:1rem;text-align:center}
-.r2{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
-.fd{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.8rem;position:relative}
-.fd label{font-family:'Cinzel',serif;font-size:.56rem;color:#5a3d80;letter-spacing:.12em;text-transform:uppercase}
-.fd input,.fd select,.fd textarea{background:#110830;border:1px solid #2a1650;color:#e5d0ff;border-radius:8px;padding:.55rem .85rem;font-family:'Cormorant Garamond',serif;font-size:.95rem;width:100%;transition:border-color .2s;resize:none}
-.fd input:focus,.fd select:focus,.fd textarea:focus{outline:none;border-color:#8040d0}
-.fd input::placeholder,.fd textarea::placeholder{color:#3a2560}
-.fd select option{background:#110830}
-.autocomplete-results{display:none;position:absolute;top:100%;left:0;right:0;background:#110830;border:1px solid #2a1650;border-radius:8px;z-index:999;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)}
-.autocomplete-item{padding:.6rem .9rem;cursor:pointer;font-size:.85rem;color:#e5d0ff;border-bottom:1px solid #1c0e40;transition:background .15s}
-.autocomplete-item:hover{background:#1c0e40}
-.autocomplete-item:last-child{border-bottom:none}
-.sep{border-top:1px solid #1c0e40;margin:.8rem 0;padding-top:.8rem}
-.preco-box{background:linear-gradient(135deg,#180800,#200c00);border:1px solid rgba(201,168,76,.3);border-radius:12px;padding:1rem 1.3rem;margin-bottom:.8rem}
-.preco-box-inner{display:flex;justify-content:space-between;align-items:center}
-.preco-label{font-family:'Cinzel',serif;font-size:.72rem;color:#7a5030}
-.preco-val-wrap .de-val{font-size:.8rem;color:#5a3d80;text-decoration:line-through;display:block;text-align:right}
-.preco-val{font-family:'Cinzel',serif;font-size:1.4rem;color:#c9a84c}
-.preco-promo{font-size:.7rem;color:#c94c4c;font-family:'Cinzel',serif;letter-spacing:.08em;margin-top:.2rem}
-.entrega-info{font-size:.78rem;color:#5a3d80;font-style:italic;margin-top:.5rem;text-align:center}
-.btn-pagar{width:100%;padding:.88rem;background:linear-gradient(135deg,#7a3000,#c9a84c);border:none;border-radius:11px;color:#fff;font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:.14em;cursor:pointer;transition:opacity .2s;margin-top:.5rem}
-.btn-pagar:hover{opacity:.88}
-.err-msg{background:#1a0808;border:1px solid #4a1515;border-radius:8px;padding:.6rem 1rem;color:#e09090;font-size:.8rem;text-align:center;margin-bottom:.7rem;display:none}
-.form-page-pay{max-width:560px;margin:0 auto;padding:2rem 1.3rem 3rem}
-.pay-box{background:#0d0620;border:1px solid #1c0e40;border-radius:16px;padding:1.8rem;margin-bottom:1rem}
-.pay-title{font-family:'Cinzel',serif;font-size:.8rem;color:#b090e0;letter-spacing:.12em;margin-bottom:1.2rem;text-align:center}
-.pay-aguarda{background:#0d0420;border:1px solid #2a1650;border-radius:12px;padding:1.2rem;text-align:center;margin-bottom:1rem}
-.pay-aguarda p{font-size:.88rem;color:#9070c0;line-height:1.7;margin-bottom:.8rem}
-.pay-link{display:inline-block;background:linear-gradient(135deg,#005c1a,#00a832);color:#fff;font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:.1em;padding:.7rem 1.8rem;border-radius:10px;text-decoration:none;margin-bottom:.8rem;transition:opacity .2s}
-.pay-link:hover{opacity:.88}
-.pay-info{font-size:.8rem;color:#5a3d80;font-style:italic;line-height:1.6;margin-top:.4rem}
-.btn-voltar{display:block;width:100%;padding:.7rem;background:transparent;border:1px solid #2a1650;border-radius:10px;color:#6a4d90;font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.1em;cursor:pointer;text-align:center;transition:all .2s;margin-top:.8rem}
-.btn-voltar:hover{border-color:#c9a84c;color:#f0d080}
-.result-page{max-width:800px;margin:0 auto;padding:2rem 1.3rem 3rem}
-.res-header{text-align:center;margin-bottom:1.5rem}
-.res-title{font-family:'Cinzel',serif;font-size:1.1rem;color:#f0d080;letter-spacing:.1em;margin-bottom:.3rem}
-.res-sub{font-size:.83rem;color:#6a4d90;font-style:italic}
-.res-loading{text-align:center;padding:3rem 1rem}
-.res-loading p{color:#6a4d90;font-style:italic;font-size:.93rem;margin-top:.9rem;line-height:1.6}
-.res-loading svg{animation:spin 3s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.mandala-wrap{margin:1.2rem 0;border-radius:16px;overflow:hidden;border:1px solid #1c0e40;position:relative;background:#06030e}
-.mandala-wrap canvas{display:block;width:100%}
-.mandala-label{position:absolute;bottom:10px;left:0;right:0;text-align:center;font-family:'Cinzel',serif;font-size:.6rem;color:#c9a84c;letter-spacing:.2em;opacity:.8}
-.mandala-nome{position:absolute;top:12px;left:0;right:0;text-align:center;font-family:'Cinzel',serif;font-size:.7rem;color:#f0d080;letter-spacing:.2em;opacity:.7}
-.tabs-wrap{margin:1.2rem 0}
-.tabs-header{display:flex;gap:.4rem;margin-bottom:.8rem;overflow-x:auto;padding-bottom:.3rem}
-.tab-btn{flex-shrink:0;background:#0d0620;border:1px solid #1c0e40;border-radius:20px;padding:.45rem 1rem;font-family:'Cinzel',serif;font-size:.62rem;color:#7a5ea0;letter-spacing:.08em;cursor:pointer;transition:all .2s;white-space:nowrap}
-.tab-btn:hover,.tab-btn.on{background:#1c0e40;border-color:#c9a84c;color:#f0d080}
-.tab-content{display:none}.tab-content.on{display:block}
-.tabela-astral{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.85rem}
-.tabela-astral th{background:#1c0e40;color:#c9a84c;font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.1em;padding:.6rem .8rem;text-align:left;border:1px solid #2a1650}
-.tabela-astral td{padding:.55rem .8rem;border:1px solid #1c0e40;color:#d0b8f5;vertical-align:middle}
-.tabela-astral tr:nth-child(even) td{background:#0d0620}
-.tabela-astral tr:nth-child(odd) td{background:#110830}
-.tabela-astral .sym{font-size:1.1rem;text-align:center}
-.aspectos-list{display:flex;flex-direction:column;gap:.5rem;margin:1rem 0}
-.aspecto-item{background:#0d0620;border:1px solid #1c0e40;border-radius:10px;padding:.8rem 1rem;display:flex;align-items:center;gap:.8rem}
-.asp-cor{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.asp-info{flex:1}
-.asp-titulo{font-family:'Cinzel',serif;font-size:.68rem;color:#f0d080;letter-spacing:.07em;margin-bottom:.2rem}
-.asp-desc{font-size:.8rem;color:#7a5ea0;line-height:1.6}
-.res-card{background:#0d0620;border:1px solid #1c0e40;border-radius:14px;padding:1.4rem;margin-bottom:.8rem}
-.res-card h3{font-family:'Cinzel',serif;font-size:.73rem;color:#b090e0;letter-spacing:.12em;margin-bottom:.6rem;display:flex;align-items:center;gap:.45rem}
-.res-card h3::after{content:'';flex:1;height:1px;background:#1c0e40}
-.res-card p{font-size:.97rem;color:#d0b8f5;line-height:1.88;font-weight:300}
-.download-box{background:linear-gradient(135deg,#0a1828,#0d2030);border:1px solid rgba(144,192,224,.3);border-radius:14px;padding:1.3rem;text-align:center;margin-top:1rem}
-.download-box p{font-size:.85rem;color:#7090c0;margin-bottom:.8rem;line-height:1.6}
-.btn-download{display:inline-block;background:linear-gradient(135deg,#1a3050,#2a5080);border:none;border-radius:10px;color:#90c0e0;font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.12em;padding:.7rem 1.5rem;cursor:pointer;transition:opacity .2s;text-decoration:none}
-.btn-download:hover{opacity:.82}
-.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;padding:1rem}
-.modal-overlay.show{display:flex}
-.modal-box{background:#0d0620;border:1px solid #2a1650;border-radius:16px;padding:2rem;max-width:600px;width:100%;max-height:80vh;overflow-y:auto}
-.modal-box h2{font-family:'Cinzel',serif;font-size:1rem;color:#f0d080;margin-bottom:1rem;letter-spacing:.1em}
-.modal-box p{font-size:.85rem;color:#7a5ea0;line-height:1.8;margin-bottom:.8rem}
-.modal-close{display:block;width:100%;padding:.7rem;background:linear-gradient(135deg,#3a1070,#7a3000);border:none;border-radius:8px;color:#fff;font-family:'Cinzel',serif;font-size:.75rem;cursor:pointer;margin-top:1rem}
-@media(max-width:580px){.tipo-grid{grid-template-columns:repeat(2,1fr)}.r2{grid-template-columns:1fr}.cards{grid-template-columns:1fr}.tabs-header{gap:.3rem}}
+:root{--gold:#c9a84c;--gold-2:#f0d080;--accent:#e07090;--wine:#8a1838;--dark:#06030e;--dark-2:#0a0418;--card:#0d0620;--card-2:#120830;--border:#1c0e40;--border-2:#2a1855;--text:#e5d0ff;--muted:#7a5ea0;--ok:#7ad08c;--err:#f0a0b0}
+html,body{background:var(--dark);color:var(--text);font-family:'Cormorant Garamond',serif;scroll-behavior:smooth;overflow-x:hidden}
+
+/* ===== NAV ===== */
+.nav{background:rgba(6,3,14,.97);border-bottom:1px solid var(--border);padding:.6rem 1.5rem;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.nav-wrap{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
+.nav-brand{display:flex;align-items:center;text-decoration:none;flex-shrink:0}
+.nav-brand-name{font-family:'Cinzel',serif;font-size:1.15rem;color:var(--gold);letter-spacing:.12em;font-weight:600}
+.nav-brand-name em{color:var(--accent);font-style:normal}
+.nav-menu{display:flex;align-items:center;gap:.3rem}
+.nav-menu-btn{background:transparent;border:none;color:#c0a8d0;font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:.12em;padding:.55rem 1rem;cursor:pointer;border-radius:8px;transition:all .2s;text-decoration:none;font-weight:500}
+.nav-menu-btn:hover{color:var(--gold);background:rgba(240,208,128,.06)}
+.nav-menu-btn.dropdown::after{content:'▾';margin-left:.4rem;font-size:.7em}
+.dropdown-container{position:relative}
+.dropdown-content{display:none;position:absolute;top:100%;right:0;background:rgba(10,4,24,.98);border:1px solid var(--border);border-radius:12px;min-width:280px;padding:.5rem;margin-top:.4rem;box-shadow:0 12px 40px rgba(0,0,0,.6);backdrop-filter:blur(20px);z-index:200}
+.dropdown-container:hover .dropdown-content,.dropdown-container.aberto .dropdown-content{display:block}
+.dropdown-item{display:flex;align-items:center;gap:.7rem;padding:.7rem .8rem;color:#c0a8d0;text-decoration:none;border-radius:8px;font-size:.95rem;cursor:pointer}
+.dropdown-item:hover{background:rgba(240,208,128,.06);color:var(--gold)}
+.dropdown-item .icon{font-size:1.05rem;width:1.4rem;text-align:center}
+.menu-mobile-btn{display:none;background:transparent;border:1px solid var(--border);color:var(--gold);width:42px;height:42px;border-radius:8px;cursor:pointer;font-size:1.3rem}
+.menu-mobile{display:none;position:fixed;top:0;right:-100%;width:85%;max-width:340px;height:100vh;background:rgba(6,3,14,.99);z-index:300;padding:5rem 1.5rem 2rem;transition:right .35s ease;overflow-y:auto;border-left:1px solid var(--accent)}
+.menu-mobile.aberto{right:0}
+.menu-mobile-close{position:absolute;top:1.2rem;right:1.2rem;background:transparent;border:none;color:#fff;font-size:1.8rem;cursor:pointer}
+.menu-mobile-item{display:flex;align-items:center;gap:.8rem;padding:.8rem;color:#d0b8e0;text-decoration:none;border-radius:8px;font-size:1rem}
+.menu-mobile-item:hover{background:rgba(240,208,128,.06)}
+.menu-mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:299}
+.menu-mobile-overlay.aberto{display:block}
+@media(max-width:780px){.nav-menu{display:none}.menu-mobile-btn{display:inline-flex;align-items:center;justify-content:center}}
+
+/* ===== HERO ===== */
+.hero{position:relative;padding:5rem 1.5rem 4rem;text-align:center;overflow:hidden;background:radial-gradient(ellipse at 50% 0%,#1a0a30 0%,var(--dark) 70%)}
+.stars{position:absolute;inset:0;pointer-events:none}
+.stars i{position:absolute;background:#fff;border-radius:50%;animation:twinkle var(--d,3s) infinite ease-in-out}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+.hero-badge{display:inline-block;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold-2);font-family:'Cinzel',serif;font-size:.66rem;letter-spacing:.25em;padding:.4rem 1.1rem;border-radius:20px;margin-bottom:1.6rem}
+.hero-title{font-family:'Cinzel',serif;font-size:clamp(2.2rem,6vw,3.8rem);color:var(--gold-2);letter-spacing:.12em;line-height:1.08;margin-bottom:.8rem}
+.hero-title em{color:var(--accent);font-style:normal}
+.hero-sub{font-family:'Cinzel',serif;font-size:clamp(.9rem,2vw,1.15rem);color:var(--accent);letter-spacing:.12em;margin-bottom:1.6rem}
+.hero-desc{font-size:1.1rem;color:#c0a8d0;font-style:italic;max-width:640px;line-height:1.85;margin:0 auto 2.2rem}
+.hero-credentials{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin-bottom:2rem}
+.hero-cred{text-align:center}
+.hero-cred-n{font-family:'Cinzel',serif;font-size:1.7rem;color:var(--gold)}
+.hero-cred-t{font-size:.7rem;color:var(--muted);letter-spacing:.2em;text-transform:uppercase}
+.hero-mandala{margin:0 auto 1rem;width:120px;height:120px;display:block;animation:rota 40s linear infinite}
+@keyframes rota{to{transform:rotate(360deg)}}
+.hero-cta-row{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap}
+.btn-cta{display:inline-block;background:linear-gradient(135deg,#7a5000,var(--gold));border:none;color:#fff;font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:.14em;padding:1rem 2.2rem;border-radius:30px;cursor:pointer;text-decoration:none;box-shadow:0 8px 32px rgba(201,168,76,.3);transition:all .3s}
+.btn-cta:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(201,168,76,.5)}
+.btn-cta.alt{background:transparent;border:1px solid var(--gold);color:var(--gold)}
+
+/* ===== PRODUTOS GRID ===== */
+.produtos{padding:5rem 1.5rem;background:linear-gradient(180deg,var(--dark) 0%,var(--dark-2) 100%)}
+.produtos-head{text-align:center;max-width:680px;margin:0 auto 3rem}
+.sec-label{font-family:'Cinzel',serif;font-size:.66rem;color:var(--gold);letter-spacing:.28em;margin-bottom:.6rem}
+.sec-title{font-family:'Cinzel',serif;font-size:clamp(1.5rem,3.2vw,2.2rem);color:var(--gold-2);line-height:1.25;margin-bottom:.8rem}
+.sec-sub{font-size:1rem;color:var(--muted);font-style:italic;line-height:1.8}
+.produtos-grid{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.2rem}
+.produto-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:1.6rem 1.4rem;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+.produto-card:hover{transform:translateY(-4px);border-color:rgba(201,168,76,.4);box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.produto-card.ativo{border-color:var(--gold);background:linear-gradient(135deg,var(--card-2),var(--card));box-shadow:0 0 0 1px var(--gold) inset,0 12px 40px rgba(201,168,76,.18)}
+.pc-badge{position:absolute;top:.9rem;right:.9rem;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.16em;padding:.3rem .7rem;border-radius:12px;text-transform:uppercase}
+.pc-badge.isca{background:rgba(122,208,140,.14);color:var(--ok);border:1px solid rgba(122,208,140,.4)}
+.pc-badge.premium{background:rgba(224,112,144,.12);color:var(--accent);border:1px solid rgba(224,112,144,.35)}
+.pc-icone{font-size:2.6rem;margin-bottom:.8rem;filter:drop-shadow(0 0 14px rgba(201,168,76,.4))}
+.pc-nome{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold-2);letter-spacing:.06em;margin-bottom:.3rem}
+.pc-sub{font-size:.92rem;color:var(--muted);font-style:italic;line-height:1.55;margin-bottom:1rem;min-height:2.85rem}
+.pc-precos{display:flex;align-items:baseline;gap:.6rem;margin-bottom:1rem}
+.pc-de{font-size:.78rem;color:#5a3d80;text-decoration:line-through}
+.pc-por{font-family:'Cinzel',serif;font-size:1.4rem;color:var(--gold)}
+.pc-entrega{font-size:.74rem;color:var(--muted);margin-bottom:.9rem;display:flex;align-items:center;gap:.4rem}
+.pc-entrega .dot{width:6px;height:6px;border-radius:50%;background:var(--gold)}
+.pc-cta{display:block;text-align:center;background:rgba(201,168,76,.08);border:1px solid var(--gold);color:var(--gold);font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.16em;padding:.7rem;border-radius:24px;cursor:pointer;transition:all .2s}
+.produto-card:hover .pc-cta{background:var(--gold);color:#000}
+.produto-card.ativo .pc-cta{background:var(--gold);color:#000}
+
+/* ===== CHECKOUT ===== */
+.checkout-sec{padding:5rem 1.5rem;background:var(--dark-2)}
+.checkout-wrap{max-width:620px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:22px;padding:2.4rem 2rem;box-shadow:0 24px 60px rgba(0,0,0,.4)}
+.checkout-header{text-align:center;margin-bottom:1.6rem;padding-bottom:1.2rem;border-bottom:1px solid var(--border)}
+.checkout-header h2{font-family:'Cinzel',serif;font-size:1.4rem;color:var(--gold-2);letter-spacing:.08em;margin-bottom:.4rem}
+.checkout-header p{font-size:.95rem;color:var(--muted);font-style:italic}
+.entrega-aviso{background:linear-gradient(135deg,rgba(201,168,76,.06),rgba(224,112,144,.06));border-left:3px solid var(--gold);padding:.85rem 1rem;border-radius:8px;margin-bottom:1.4rem;font-size:.92rem;line-height:1.6;color:#d0b8e0}
+.entrega-aviso b{color:var(--gold-2)}
+.cliente-recorrente{border:1px dashed var(--border-2);border-radius:12px;padding:1rem;margin-bottom:1.2rem;background:rgba(201,168,76,.03)}
+.cr-toggle{display:flex;align-items:center;gap:.6rem;cursor:pointer;font-size:.9rem;color:#c0a8d0}
+.cr-toggle .ic{font-size:1.1rem}
+.cr-toggle strong{color:var(--gold)}
+.cr-conteudo{display:none;margin-top:.8rem}
+.cr-conteudo.aberto{display:block}
+.cr-form{display:flex;gap:.5rem}
+.cr-form input{flex:1;background:#100828;border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Cormorant Garamond',serif;font-size:1rem;padding:.65rem .9rem;outline:none;text-transform:uppercase}
+.cr-form button{background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.12em;padding:.5rem 1rem;border-radius:10px;cursor:pointer}
+.cr-status{margin-top:.5rem;font-size:.85rem}
+.cr-status.ok{color:var(--ok)}
+.cr-status.err{color:var(--err)}
+.fbox{margin-bottom:1.3rem}
+.fbox-title{font-family:'Cinzel',serif;font-size:.66rem;color:var(--gold);letter-spacing:.2em;text-align:center;margin-bottom:.9rem}
+.fd{margin-bottom:.8rem;position:relative}
+.fd label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:.3rem}
+.fd input,.fd select{width:100%;background:#100828;border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Cormorant Garamond',serif;font-size:1rem;padding:.7rem .9rem;outline:none;transition:border-color .2s}
+.fd input:focus,.fd select:focus{border-color:var(--gold)}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.7rem}
+.autocomplete-results{position:absolute;top:100%;left:0;right:0;background:#15102b;border:1px solid var(--border);border-radius:0 0 10px 10px;z-index:30;max-height:240px;overflow-y:auto;display:none}
+.autocomplete-item{padding:.65rem .9rem;cursor:pointer;font-size:.92rem;border-bottom:1px solid var(--border)}
+.autocomplete-item:hover{background:#241a4d;color:var(--gold-2)}
+.extras-box{display:none;background:rgba(224,112,144,.05);border:1px solid rgba(224,112,144,.2);border-radius:12px;padding:1rem 1rem .4rem;margin-bottom:1.2rem}
+.extras-box.ativo{display:block}
+.extras-box .fbox-title{color:var(--accent);font-size:.62rem}
+.preco-box{text-align:center;padding:1.1rem;border:1px dashed rgba(201,168,76,.4);border-radius:12px;margin-bottom:1.3rem}
+.preco-label{font-size:.85rem;color:var(--muted);margin-bottom:.2rem}
+.preco-de{font-size:.84rem;color:#5a3d80;text-decoration:line-through}
+.preco-val{font-family:'Cinzel',serif;font-size:2rem;color:var(--gold)}
+.preco-eco{font-size:.78rem;color:var(--ok);margin-top:.3rem;display:none}
+.preco-eco.ativo{display:block}
+.metodos{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1rem}
+.metodo-btn{background:#100828;border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center;cursor:pointer;transition:all .2s}
+.metodo-btn.ativo{border-color:var(--gold);background:rgba(201,168,76,.08)}
+.metodo-btn-icon{font-size:1.5rem}
+.metodo-btn-label{font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.1em;color:var(--text);margin-top:.3rem}
+.form-cartao{display:none;animation:fadeIn .3s ease}
+.form-cartao.ativo{display:block}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.lgpd-checkbox{display:flex;gap:.7rem;align-items:flex-start;background:#100828;border:1px solid var(--border);border-radius:10px;padding:.85rem;margin-bottom:1rem;cursor:pointer}
+.lgpd-checkbox input{margin-top:.2rem;flex-shrink:0}
+.lgpd-checkbox-text{font-size:.8rem;color:var(--muted);line-height:1.55}
+.lgpd-checkbox-text strong{color:var(--text)}
+.btn-pagar{width:100%;background:linear-gradient(135deg,#7a5000,var(--gold));border:none;color:#fff;font-family:'Cinzel',serif;font-size:.9rem;letter-spacing:.12em;padding:1.1rem;border-radius:30px;cursor:pointer;transition:all .3s;box-shadow:0 8px 32px rgba(201,168,76,.3)}
+.btn-pagar:hover:not(:disabled){transform:translateY(-2px)}
+.btn-pagar:disabled{opacity:.6;cursor:wait}
+.err-msg{display:none;background:rgba(180,40,60,.15);border:1px solid rgba(180,40,60,.4);color:var(--err);font-size:.85rem;border-radius:10px;padding:.7rem;margin-bottom:1rem;text-align:center}
+.seguranca{text-align:center;font-size:.74rem;color:#3a2560;margin-top:.7rem}
+
+/* PIX e estados */
+.pix-section,.aguardando-box,.resultado-box{display:none;text-align:center;padding:1.4rem 0}
+.pix-qr{width:230px;height:230px;border-radius:12px;background:#fff;padding:8px;margin:1rem auto;display:block}
+.pix-code{background:#100828;border:1px solid var(--border);border-radius:10px;padding:.8rem;font-size:.74rem;color:var(--muted);word-break:break-all;margin:.8rem 0;font-family:monospace}
+.btn-copy{background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.1em;padding:.6rem 1.4rem;border-radius:24px;cursor:pointer}
+.aguardando-icon{display:inline-block;width:54px;height:54px}
+.aguardando-icon circle{transform-origin:center}
+.resultado-icon{font-size:3.6rem;filter:drop-shadow(0 0 24px rgba(201,168,76,.6));margin-bottom:.8rem}
+.resultado-h{font-family:'Cinzel',serif;font-size:1.4rem;color:var(--gold-2);letter-spacing:.08em;margin-bottom:.8rem}
+.resultado-p{color:#c0a8d0;font-size:1rem;line-height:1.85;font-style:italic;max-width:480px;margin:0 auto 1.5rem}
+.resultado-codigo{background:rgba(201,168,76,.08);border:1px dashed var(--gold);border-radius:12px;padding:1rem;margin:1.2rem 0;font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold);letter-spacing:.1em}
+.resultado-codigo small{display:block;font-family:'Cormorant Garamond',serif;font-size:.78rem;color:var(--muted);letter-spacing:.02em;margin-top:.4rem;font-style:italic}
+#leitura-content{text-align:left;padding:1.5rem;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:12px;margin:1rem 0;line-height:1.85;font-size:1rem;color:#d8c4ee}
+#leitura-content h3{font-family:'Cinzel',serif;color:var(--gold-2);font-size:1.1rem;letter-spacing:.06em;margin:1.2rem 0 .5rem}
+#mandala-container{margin:1rem auto;max-width:280px}
+
+/* ===== FOOTER ===== */
+footer{border-top:1px solid var(--border);padding:3rem 1.5rem 2rem;text-align:center;background:var(--dark)}
+.footer-logo{font-family:'Cinzel',serif;font-size:1.2rem;color:var(--gold);margin-bottom:.6rem;letter-spacing:.1em}
+.footer-text{font-size:.9rem;color:var(--muted);line-height:1.8;max-width:680px;margin:0 auto}
+.footer-text strong{color:var(--gold)}
+.footer-links{margin-top:1.2rem;display:flex;justify-content:center;gap:1.4rem;flex-wrap:wrap}
+.footer-links a{color:var(--muted);font-size:.82rem;text-decoration:none}
+.footer-links a:hover{color:var(--gold)}
+
+@media(max-width:580px){.r3{grid-template-columns:1fr}.checkout-wrap{padding:1.6rem 1.2rem}.hero-credentials{gap:1.2rem}}
 </style>
 </head>
 <body>
+
+<!-- ===== NAV ===== -->
 <nav class="nav">
-  <div class="nav-logo">Astral<em>IA</em></div>
-  <div class="nav-pages">
-    <button class="npg on" onclick="goPage('home',this)">Início</button>
-    <button class="npg" onclick="goPage('form',this)">Leituras</button>
+  <div class="nav-wrap">
+    <a href="#" class="nav-brand"><span class="nav-brand-name">ASTRAL<em>·</em>IA</span></a>
+    <div class="nav-menu">
+      <a href="#produtos" class="nav-menu-btn">INÍCIO</a>
+      <div class="dropdown-container">
+        <a class="nav-menu-btn dropdown">MAPAS</a>
+        <div class="dropdown-content" id="dropdown-mapas"></div>
+      </div>
+      <a href="#sobre" class="nav-menu-btn">SOBRE</a>
+      <a href="#footer" class="nav-menu-btn">CONTATO</a>
+    </div>
+    <button class="menu-mobile-btn" onclick="abrirMenuMobile()">☰</button>
   </div>
 </nav>
-
-<!-- HOME -->
-<div class="page on" id="pg-home">
-  <div class="hero">
-    <div class="hero-orb"><svg width="420" height="420" viewBox="-210 -210 420 420"><circle r="190" fill="none" stroke="#c9a84c" stroke-width=".8" stroke-dasharray="4 9"/><circle r="130" fill="none" stroke="#7a3ddd" stroke-width=".6" stroke-dasharray="2 7"/><circle r="75" fill="none" stroke="#c9a84c" stroke-width=".4" stroke-dasharray="1 6"/><circle cx="190" cy="0" r="5.5" fill="#c9a84c" opacity=".9"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite"/></circle><circle cx="130" cy="0" r="4" fill="#7a3ddd" opacity=".85"><animateTransform attributeName="transform" type="rotate" from="0" to="-360" dur="13s" repeatCount="indefinite"/></circle><circle cx="75" cy="0" r="3" fill="#c9a84c" opacity=".7"><animateTransform attributeName="transform" type="rotate" from="90" to="450" dur="8s" repeatCount="indefinite"/></circle></svg></div>
-    <div class="hero-badge">✦ Inteligência Artificial + 30 Anos de Experiência ✦</div>
-    <h1 class="hero-title">ASTRAL IA</h1>
-    <div class="hero-sub">O Cosmos Revelado para Você</div>
-    <p class="hero-desc">Leituras astrológicas profundas geradas por IA e supervisionadas por uma astróloga com 30 anos de experiência.</p>
-    <div class="hero-btns">
-      <button class="btn-gold" onclick="goPage('form',document.querySelectorAll('.npg')[1])">✦ Descobrir Meu Mapa</button>
-      <button class="btn-ghost" onclick="document.getElementById('sec-s').scrollIntoView({behavior:'smooth'})">Ver Serviços</button>
-    </div>
-    <div class="astrologa-banner">
-      <div class="astrologa-icon">🔮</div>
-      <div class="astrologa-text"><p><strong>Gerado por Inteligência Artificial</strong>, com base em dados astrológicos reais e supervisionado por uma astróloga com <strong>mais de 30 anos de experiência</strong>. Cada leitura é única e elaborada especialmente para você.</p></div>
-    </div>
-  </div>
-  <div class="section" id="sec-s">
-    <div class="sec-label">✦ Promoção de Lançamento</div>
-    <h2 class="sec-title">Escolha sua Leitura</h2>
-    <p class="sec-sub">Preços especiais por tempo limitado. PDFs completos gerados na hora.</p>
-    <div class="contador-wrap">
-      <div class="contador-label">⏳ OFERTA EXPIRA EM</div>
-      <div class="contador">
-        <div class="cnt-box"><span class="cnt-num" id="cnt-d">07</span><span class="cnt-label">DIAS</span></div>
-        <div class="cnt-box"><span class="cnt-num" id="cnt-h">00</span><span class="cnt-label">HORAS</span></div>
-        <div class="cnt-box"><span class="cnt-num" id="cnt-m">00</span><span class="cnt-label">MIN</span></div>
-        <div class="cnt-box"><span class="cnt-num" id="cnt-s">00</span><span class="cnt-label">SEG</span></div>
-      </div>
-    </div>
-    <div class="cards">
-      <div class="scard" onclick="selecionarTipo('mapa-astral')"><span class="sc-icon">☉</span><div class="sc-title">Mapa Astral Natal</div><p class="sc-desc">PDF completo com mandala, interpretação de todos os planetas e casas, aspectos e síntese do seu mapa.</p><div class="sc-entrega">📥 PDF até 10 páginas — gerado na hora</div><div class="sc-preco"><span class="de">De R$ 27,97</span><span class="por">R$ 17,97<span class="promo-badge">PROMO</span></span></div><button class="sc-btn">Quero esta leitura →</button></div>
-      <div class="scard" onclick="selecionarTipo('revolucao-solar')"><span class="sc-icon">🌅</span><div class="sc-title">Revolução Solar</div><p class="sc-desc">O mapa do seu novo ano com previsão mês a mês, temas centrais e oportunidades do ciclo que se inicia.</p><div class="sc-entrega">📥 PDF completo — gerado na hora</div><div class="sc-preco"><span class="de">De R$ 47,97</span><span class="por">R$ 37,97<span class="promo-badge">PROMO</span></span></div><button class="sc-btn">Quero esta leitura →</button></div>
-      <div class="scard" onclick="selecionarTipo('mapa-profissional')"><span class="sc-icon">💼</span><div class="sc-title">Mapa Profissional</div><p class="sc-desc">Vocação, talentos e propósito profissional revelados pelos astros com orientações práticas.</p><div class="sc-entrega">📥 PDF completo — gerado na hora</div><div class="sc-preco"><span class="de">De R$ 47,97</span><span class="por">R$ 37,97<span class="promo-badge">PROMO</span></span></div><button class="sc-btn">Quero esta leitura →</button></div>
-      <div class="scard" onclick="selecionarTipo('sinastria')"><span class="sc-icon">💕</span><div class="sc-title">Sinastria</div><p class="sc-desc">A comparação entre dois mapas astrais revelando compatibilidade, dons e desafios do relacionamento.</p><div class="sc-entrega">📥 PDF completo — gerado na hora</div><div class="sc-preco"><span class="de">De R$ 67,97</span><span class="por">R$ 47,97<span class="promo-badge">PROMO</span></span></div><button class="sc-btn">Quero esta leitura →</button></div>
-      <div class="scard" onclick="selecionarTipo('mapa-karmico')"><span class="sc-icon">🔮</span><div class="sc-title">Mapa Kármico</div><p class="sc-desc">As missões da sua alma, nodos lunares, planetas retrógrados e os padrões de outras existências.</p><div class="sc-entrega">📥 PDF completo — gerado na hora</div><div class="sc-preco"><span class="de">De R$ 47,97</span><span class="por">R$ 37,97<span class="promo-badge">PROMO</span></span></div><button class="sc-btn">Quero esta leitura →</button></div>
-      <div class="scard premium" onclick="selecionarTipo('personalizada')"><div class="sc-badge">✦ PREMIUM</div><div class="sc-limited">100 VAGAS</div><span class="sc-icon">✨</span><div class="sc-title">Leitura Personalizada</div><p class="sc-desc">Análise profunda com todos os planetas, aspectos individuais e previsão anual completa.</p><div class="sc-entrega">📥 PDF até 50 páginas — gerado na hora</div><div class="sc-preco"><span class="de">De R$ 297,97</span><span class="por">R$ 197,97<span class="promo-badge">100 PRIMEIROS</span></span></div><button class="sc-btn">Quero esta leitura →</button></div>
-    </div>
-  </div>
-  <div class="section alt">
-    <div class="sec-label">✦ Passo a Passo</div>
-    <h2 class="sec-title">Como Funciona</h2>
-    <p class="sec-sub">Em menos de 5 minutos você recebe seu PDF completo.</p>
-    <div class="steps">
-      <div class="step"><div class="step-n">1</div><div><h3>Escolha a Leitura</h3><p>Selecione entre as 6 opções e preencha seus dados de nascimento.</p></div></div>
-      <div class="step"><div class="step-n">2</div><div><h3>Realize o Pagamento</h3><p>Pague com PIX ou cartão de forma segura via Mercado Pago. <strong>Não feche esta página!</strong></p></div></div>
-      <div class="step"><div class="step-n">3</div><div><h3>Receba na Hora</h3><p>Após confirmar o pagamento, sua leitura completa é gerada automaticamente aqui!</p></div></div>
-    </div>
-  </div>
-  <div class="section">
-    <div class="sec-label">✦ Depoimentos</div>
-    <h2 class="sec-title">O que dizem nossos clientes</h2>
-    <div class="testi-grid">
-      <div class="testi"><div class="testi-stars">★★★★★</div><p class="testi-text">"A leitura foi surpreendentemente precisa e profunda. O PDF ficou lindo e eu reli várias vezes!"</p><div class="testi-name">— MARIANA S., SÃO PAULO</div></div>
-      <div class="testi"><div class="testi-stars">★★★★★</div><p class="testi-text">"Fiz a Sinastria com meu marido. As interpretações eram exatamente o que vivemos juntos!"</p><div class="testi-name">— CAROLINA M., RIO DE JANEIRO</div></div>
-      <div class="testi"><div class="testi-stars">★★★★★</div><p class="testi-text">"O Mapa Profissional me deu clareza sobre minha vocação. Recomendo demais!"</p><div class="testi-name">— RAFAEL T., BELO HORIZONTE</div></div>
-    </div>
-  </div>
-  <div class="section alt"><div class="cta-wrap"><h2>Os Astros Têm uma Mensagem para Você</h2><p>Descubra o que seu mapa natal revela sobre quem você veio ser.</p><button class="btn-gold" onclick="goPage('form',document.querySelectorAll('.npg')[1])">✦ Iniciar Minha Leitura Agora</button></div></div>
-  <footer>
-    <div class="footer-logo">Astral IA</div>
-    <p class="footer-text">Leituras geradas por Inteligência Artificial, supervisionadas por astróloga com 30 anos de experiência.<br>Para fins de autoconhecimento e entretenimento espiritual.</p>
-    <div class="footer-links">
-      <a onclick="document.getElementById('modal-lgpd').classList.add('show')">Política de Privacidade (LGPD)</a>
-      <a onclick="document.getElementById('modal-termos').classList.add('show')">Termos de Uso</a>
-      <a href="mailto:contato@astralia.online">Contato</a>
-    </div>
-  </footer>
-  <div class="lgpd-bar">🔒 Seus dados são protegidos pela <strong>LGPD — Lei 13.709/2018</strong>. <a onclick="document.getElementById('modal-lgpd').classList.add('show')">Saiba mais</a></div>
+<div class="menu-mobile-overlay" id="menu-overlay" onclick="fecharMenuMobile()"></div>
+<div class="menu-mobile" id="menu-mobile">
+  <button class="menu-mobile-close" onclick="fecharMenuMobile()">×</button>
+  <div id="menu-mobile-itens"></div>
 </div>
 
-<!-- FORM -->
-<div class="page" id="pg-form">
-  <div class="form-page">
-    <div class="form-header"><h2>✦ Sua Leitura Astral</h2><p>Escolha o tipo e preencha seus dados</p></div>
-    <div class="tipo-grid">
-      <div class="tipo-btn on" data-tipo="mapa-astral" onclick="setTipo(this)"><span class="ti">☉</span>Mapa Astral</div>
-      <div class="tipo-btn" data-tipo="revolucao-solar" onclick="setTipo(this)"><span class="ti">🌅</span>Rev. Solar</div>
-      <div class="tipo-btn" data-tipo="mapa-profissional" onclick="setTipo(this)"><span class="ti">💼</span>Profissional</div>
-      <div class="tipo-btn" data-tipo="sinastria" onclick="setTipo(this)"><span class="ti">💕</span>Sinastria</div>
-      <div class="tipo-btn" data-tipo="mapa-karmico" onclick="setTipo(this)"><span class="ti">🔮</span>Kármico</div>
-      <div class="tipo-btn" data-tipo="personalizada" onclick="setTipo(this)"><span class="ti">✨</span>Personalizada</div>
-    </div>
-    <div class="fbox">
-      <div class="fbox-title">✧ Seus Dados ✧</div>
-      <div class="fd"><label>Nome Completo</label><input type="text" id="f-nome" placeholder="Seu nome completo"/></div>
-      <div class="r2">
-        <div class="fd"><label>WhatsApp</label><input type="tel" id="f-whatsapp" placeholder="(00) 00000-0000"/></div>
-        <div class="fd"><label>E-mail</label><input type="email" id="f-email" placeholder="seu@email.com"/></div>
-      </div>
-      <div class="fbox-title" style="margin-top:.3rem">✧ Dados de Nascimento ✧</div>
-      <div class="r2"><div class="fd"><label>Data de Nascimento</label><input type="date" id="f-data"/></div><div class="fd"><label>Hora (se souber)</label><input type="time" id="f-hora"/></div></div>
-      <div class="fd">
-        <label>Cidade de Nascimento</label>
-        <input type="text" id="f-cidade" placeholder="Digite sua cidade..." autocomplete="off" oninput="buscarCidade(this,'lista-cidade','f-lat','f-lon')"/>
-        <div class="autocomplete-results" id="lista-cidade"></div>
-        <input type="hidden" id="f-lat"/><input type="hidden" id="f-lon"/>
-      </div>
-      <div id="extra-sinastria" style="display:none"><div class="sep"><div class="fbox-title" style="margin-bottom:.8rem">✧ Dados do Parceiro(a) ✧</div><div class="fd"><label>Nome</label><input type="text" id="f-nome2" placeholder="Nome do parceiro(a)"/></div><div class="r2"><div class="fd"><label>Data</label><input type="date" id="f-data2"/></div><div class="fd"><label>Hora</label><input type="time" id="f-hora2"/></div></div><div class="fd"><label>Cidade</label><input type="text" id="f-cidade2" placeholder="Cidade de nascimento" autocomplete="off" oninput="buscarCidade(this,'lista-cidade2','f-lat2','f-lon2')"/><div class="autocomplete-results" id="lista-cidade2"></div><input type="hidden" id="f-lat2"/><input type="hidden" id="f-lon2"/></div></div></div>
-      <div id="extra-rs" style="display:none"><div class="sep"><div class="fd"><label>Cidade no Aniversário</label><input type="text" id="f-cidaders" placeholder="Onde passará o aniversário"/></div><div class="fd"><label>Ano da Revolução Solar</label><select id="f-anors"></select></div></div></div>
-      <div id="extra-personalizada-aviso" style="display:none"><div style="background:#0d0420;border:1px solid rgba(160,127,255,.2);border-radius:10px;padding:.9rem;font-size:.83rem;color:#7a5ea0;line-height:1.7;margin-top:.5rem">✨ <strong style="color:#c9a84c">Leitura Personalizada Premium</strong> — PDF de até 50 páginas gerado na hora.</div></div>
-    </div>
-    <div class="preco-box">
-      <div class="preco-box-inner">
-        <div class="preco-label" id="preco-label">Mapa Astral</div>
-        <div class="preco-val-wrap"><span class="de-val" id="preco-de">De R$ 27,97</span><span class="preco-val" id="preco-display">R$ 17,97</span></div>
-      </div>
-      <div class="preco-promo" id="preco-promo">🔥 Promoção 7 dias de lançamento!</div>
-      <div class="entrega-info" id="entrega-info">📥 PDF de até 10 páginas — gerado na hora</div>
-    </div>
-    <div class="err-msg" id="err-msg">Preencha nome, data e cidade para continuar.</div>
-    <button class="btn-pagar" onclick="irPagar()">☉ Prosseguir para Pagamento Seguro</button>
-    <p style="text-align:center;font-size:.72rem;color:#3a2560;margin-top:.6rem">🔒 Pagamento seguro via Mercado Pago · Dados protegidos pela LGPD</p>
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="stars" id="stars"></div>
+  <div class="hero-badge">✦ 30 ANOS · +130 MIL MAPAS REALIZADOS ✦</div>
+  <svg class="hero-mandala" viewBox="-50 -50 100 100">
+    <circle r="46" fill="none" stroke="#c9a84c" stroke-width=".7" opacity=".7"/>
+    <circle r="38" fill="none" stroke="#e07090" stroke-width=".5" opacity=".5"/>
+    <circle r="24" fill="none" stroke="#c9a84c" stroke-width=".4" opacity=".4"/>
+    <g stroke="#c9a84c" stroke-width=".4" opacity=".55">
+      <line x1="0" y1="-46" x2="0" y2="-38"/><line x1="23" y1="-39.8" x2="19" y2="-33"/>
+      <line x1="39.8" y1="-23" x2="33" y2="-19"/><line x1="46" y1="0" x2="38" y2="0"/>
+      <line x1="39.8" y1="23" x2="33" y2="19"/><line x1="23" y1="39.8" x2="19" y2="33"/>
+      <line x1="0" y1="46" x2="0" y2="38"/><line x1="-23" y1="39.8" x2="-19" y2="33"/>
+      <line x1="-39.8" y1="23" x2="-33" y2="19"/><line x1="-46" y1="0" x2="-38" y2="0"/>
+      <line x1="-39.8" y1="-23" x2="-33" y2="-19"/><line x1="-23" y1="-39.8" x2="-19" y2="-33"/>
+    </g>
+    <circle r="2" fill="#f0d080"/>
+  </svg>
+  <h1 class="hero-title">A Astrologia que Conhece <em>Você</em></h1>
+  <div class="hero-sub">Nove mapas personalizados, escritos só para você</div>
+  <p class="hero-desc">Cada um dos seus astros num momento único de nascimento. A IA traduz a técnica milenar; a astróloga supervisiona a alma. Você recebe um documento profundo, pessoal, completo.</p>
+  <div class="hero-credentials">
+    <div class="hero-cred"><div class="hero-cred-n">30</div><div class="hero-cred-t">Anos de prática</div></div>
+    <div class="hero-cred"><div class="hero-cred-n">+130 mil</div><div class="hero-cred-t">Mapas realizados</div></div>
+    <div class="hero-cred"><div class="hero-cred-n">9</div><div class="hero-cred-t">Mapas disponíveis</div></div>
   </div>
-</div>
+  <div class="hero-cta-row">
+    <a href="#produtos" class="btn-cta">✦ Escolher Meu Mapa</a>
+  </div>
+</section>
 
-<!-- PAGAMENTO -->
-<div class="page" id="pg-pay">
-  <div class="form-page-pay">
-    <div class="form-header"><h2>✦ Pagamento</h2><p id="pay-desc">Mapa Astral — R$ 17,97</p></div>
+<!-- ===== PRODUTOS ===== -->
+<section class="produtos" id="produtos">
+  <div class="produtos-head">
+    <div class="sec-label">✦ NOSSOS MAPAS</div>
+    <h2 class="sec-title">Escolha o Mapa que Conversa com Você</h2>
+    <p class="sec-sub">Cada mapa ilumina uma face da sua história. Pague aqui mesmo — sem sair desta página.</p>
+  </div>
+  <div class="produtos-grid" id="produtos-grid"></div>
+</section>
 
-    <!-- Step 1: botão para abrir MP -->
-    <div id="pay-step1">
-      <div class="pay-box">
-        <div class="pay-title">✧ Pagamento Seguro via Mercado Pago ✧</div>
-        <div class="pay-aguarda">
-          <p>Clique no botão abaixo para pagar.<br><strong>Não feche esta página</strong> — sua leitura será gerada aqui! ✨</p>
-          <a id="link-pagamento" href="#" target="_blank" class="pay-link" onclick="iniciarPolling()">💳 Pagar com Mercado Pago</a>
-          <p class="pay-info">✅ PIX, Crédito e Débito · 100% seguro · Dados protegidos pela LGPD</p>
-        </div>
-      </div>
-      <button class="btn-voltar" onclick="goPage('form',document.querySelectorAll('.npg')[1])">← Voltar e editar dados</button>
+<!-- ===== CHECKOUT (único, dinâmico) ===== -->
+<section class="checkout-sec" id="checkout">
+  <div class="checkout-wrap">
+    <div class="checkout-header">
+      <h2 id="ch-titulo">Escolha um mapa acima</h2>
+      <p id="ch-sub">Selecione um dos mapas na grade para começar.</p>
     </div>
 
-    <!-- Step 2: verificando pagamento -->
-    <div id="pay-step2" style="display:none">
-      <div class="pay-box">
-        <div class="pay-title">✧ Aguardando Confirmação do Pagamento ✧</div>
-        <div style="text-align:center;padding:1.5rem 1rem">
-          <svg width="54" height="54" viewBox="-27 -27 54 54" style="margin-bottom:1rem">
-            <circle r="22" fill="none" stroke="#2a1650" stroke-width="2"/>
-            <circle r="22" fill="none" stroke="#c9a84c" stroke-width="2" stroke-dasharray="18 120" stroke-linecap="round">
-              <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="2s" repeatCount="indefinite"/>
-            </circle>
-          </svg>
-          <p style="font-family:'Cinzel',serif;font-size:.8rem;color:#c9a84c;letter-spacing:.1em;margin-bottom:.6rem">VERIFICANDO SEU PAGAMENTO...</p>
-          <p style="font-size:.85rem;color:#6a4d90;line-height:1.7;margin-bottom:1rem">Assim que confirmarmos, sua leitura será gerada automaticamente aqui! ✨<br><small style="color:#3a2560">Não feche esta página.</small></p>
-          <p style="font-size:.75rem;color:#5a3d80;font-style:italic" id="pay-tentativas">Verificando... (0/40)</p>
+    <div id="form-section" style="display:none">
+      <div class="entrega-aviso" id="entrega-aviso"></div>
+
+      <div class="cliente-recorrente">
+        <div class="cr-toggle" onclick="toggleClienteCodigo()">
+          <span class="ic">🌟</span>
+          <span>Já é cliente Astralia? <strong>Use seu código</strong> e ganhe 10% de desconto.</span>
+        </div>
+        <div class="cr-conteudo" id="cr-conteudo">
+          <div class="cr-form">
+            <input type="text" id="f-codigo-cliente" placeholder="ASTRO-XXX-XXXXXX" maxlength="17" oninput="this.value=this.value.toUpperCase()"/>
+            <button onclick="validarCodigoCliente()">Validar</button>
+          </div>
+          <div class="cr-status" id="cr-status"></div>
         </div>
       </div>
-      <div style="text-align:center;margin-top:.8rem">
-        <p style="font-size:.75rem;color:#3a2560;margin-bottom:.5rem">Ainda não pagou?</p>
-        <a id="link-pagamento2" href="#" target="_blank" class="pay-link" style="font-size:.7rem;padding:.5rem 1.2rem">Abrir Mercado Pago</a>
+
+      <div class="fbox">
+        <div class="fbox-title">✦ Seus Dados ✦</div>
+        <div class="fd"><label>Nome Completo</label><input type="text" id="f-nome" placeholder="Seu nome completo"/></div>
+        <div class="r2">
+          <div class="fd"><label>WhatsApp</label><input type="tel" id="f-whatsapp" placeholder="(00) 00000-0000"/></div>
+          <div class="fd"><label>E-mail</label><input type="email" id="f-email" placeholder="seu@email.com"/></div>
+        </div>
+        <div class="fd" id="campo-cpf" style="display:none"><label>CPF (obrigatório para cartão)</label><input type="text" id="f-cpf" placeholder="000.000.000-00" maxlength="14"/></div>
       </div>
+
+      <div class="fbox">
+        <div class="fbox-title">✦ Seu Nascimento ✦</div>
+        <div class="r2">
+          <div class="fd"><label>Data de Nascimento</label><input type="date" id="f-data"/></div>
+          <div class="fd"><label>Hora (se souber)</label><input type="time" id="f-hora"/></div>
+        </div>
+        <div class="fd">
+          <label>Cidade de Nascimento</label>
+          <input type="text" id="f-cidade" placeholder="Ex.: Fortaleza, Ceará, Brasil" autocomplete="off" oninput="buscarCidade(this,'lista-cidade','f-lat','f-lon')"/>
+          <div class="autocomplete-results" id="lista-cidade"></div>
+          <input type="hidden" id="f-lat"/><input type="hidden" id="f-lon"/>
+        </div>
+      </div>
+
+      <!-- Extras (Sinastria/RS/Previsões) -->
+      <div class="extras-box" id="extras-sinastria">
+        <div class="fbox-title">✦ Segundo Nascimento (Sinastria) ✦</div>
+        <div class="fd"><label>Nome do(a) Parceiro(a)</label><input type="text" id="f-parc-nome" placeholder="Nome completo"/></div>
+        <div class="r2">
+          <div class="fd"><label>Data</label><input type="date" id="f-parc-data"/></div>
+          <div class="fd"><label>Hora</label><input type="time" id="f-parc-hora"/></div>
+        </div>
+        <div class="fd">
+          <label>Cidade de Nascimento</label>
+          <input type="text" id="f-parc-cidade" placeholder="Ex.: Recife, Pernambuco, Brasil" autocomplete="off" oninput="buscarCidade(this,'lista-parc-cidade','f-parc-lat','f-parc-lon')"/>
+          <div class="autocomplete-results" id="lista-parc-cidade"></div>
+          <input type="hidden" id="f-parc-lat"/><input type="hidden" id="f-parc-lon"/>
+        </div>
+      </div>
+
+      <div class="extras-box" id="extras-revsolar">
+        <div class="fbox-title">✦ Ano-Alvo (Revolução Solar) ✦</div>
+        <div class="fd"><label>Ano que você quer mapear</label><input type="number" id="f-ano-alvo" placeholder="Ex.: 2026" min="1900" max="2099"/></div>
+      </div>
+
+      <div class="extras-box" id="extras-previsoes">
+        <div class="fbox-title">✦ Período de Início (Previsões) ✦</div>
+        <div class="fd"><label>Data de início dos 18 meses</label><input type="date" id="f-inicio-prev"/></div>
+        <p style="font-size:.78rem;color:var(--muted);font-style:italic">Os trânsitos serão calculados a partir desta data, por 18 meses à frente.</p>
+      </div>
+
+      <div class="preco-box">
+        <div class="preco-label" id="p-titulo">—</div>
+        <div class="preco-de" id="p-de">—</div>
+        <div class="preco-val" id="p-valor">—</div>
+        <div class="preco-eco" id="p-eco">✦ Desconto cliente aplicado: -10%</div>
+      </div>
+
+      <div class="fbox">
+        <div class="fbox-title">✦ Forma de Pagamento ✦</div>
+        <div class="metodos">
+          <div class="metodo-btn ativo" onclick="selecionarMetodo('pix')" id="m-pix">
+            <div class="metodo-btn-icon">⚡</div><div class="metodo-btn-label">PIX</div>
+          </div>
+          <div class="metodo-btn" onclick="selecionarMetodo('cartao')" id="m-cartao">
+            <div class="metodo-btn-icon">💳</div><div class="metodo-btn-label">Cartão</div>
+          </div>
+        </div>
+        <div class="form-cartao" id="form-cartao">
+          <div class="fd"><label>Número do Cartão</label><input type="text" id="c-numero" placeholder="0000 0000 0000 0000" maxlength="19"/></div>
+          <div class="fd"><label>Nome no Cartão</label><input type="text" id="c-nome" placeholder="NOME COMO ESTÁ NO CARTÃO" style="text-transform:uppercase"/></div>
+          <div class="r3">
+            <div class="fd"><label>Validade</label><input type="text" id="c-validade" placeholder="MM/AA" maxlength="5"/></div>
+            <div class="fd"><label>CVV</label><input type="text" id="c-cvv" placeholder="000" maxlength="4"/></div>
+            <div class="fd"><label>Parcelas</label><select id="c-parcelas"><option value="1">1x</option></select></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="err-msg" id="err-msg">Preencha todos os campos.</div>
+
+      <div class="lgpd-checkbox" onclick="if(event.target.tagName!=='INPUT'){document.getElementById('lgpd-aceite').click()}">
+        <input type="checkbox" id="lgpd-aceite"/>
+        <div class="lgpd-checkbox-text"><strong>Li e aceito</strong> os Termos de Uso, a Política de Devolução e a Política de Privacidade. Autorizo o tratamento dos meus dados pessoais conforme a LGPD (Lei 13.709/2018).</div>
+      </div>
+
+      <button class="btn-pagar" id="btn-pagar" onclick="processarPagamento()">⚡ Gerar PIX</button>
+      <p class="seguranca">🔒 Pagamento processado por Mercado Pago · Dados de cartão nunca armazenados</p>
     </div>
 
-    <!-- Step 3: aprovado, gerando leitura -->
-    <div id="pay-step3" style="display:none">
-      <div class="pay-box">
-        <div class="pay-title">✧ Pagamento Confirmado! ✧</div>
-        <div style="text-align:center;padding:1.5rem 1rem">
-          <div style="font-size:2.5rem;margin-bottom:.8rem">✅</div>
-          <p style="font-family:'Cinzel',serif;font-size:.85rem;color:#c9a84c;letter-spacing:.1em;margin-bottom:.5rem">GERANDO SUA LEITURA...</p>
-          <p style="font-size:.88rem;color:#6a4d90;line-height:1.7">Os astros estão sendo consultados ✨</p>
-        </div>
-      </div>
+    <!-- PIX -->
+    <div class="pix-section" id="pix-section">
+      <div class="fbox-title">✦ Pague com PIX ✦</div>
+      <p style="color:#c0a8d0;margin-top:.4rem">Escaneie o QR Code com o app do seu banco:</p>
+      <img id="pix-qr-img" class="pix-qr" alt="QR Code PIX"/>
+      <p style="color:var(--muted);font-size:.88rem">Ou copie o código:</p>
+      <div class="pix-code" id="pix-code-text"></div>
+      <button class="btn-copy" onclick="copiarPix()">📋 Copiar Código PIX</button>
+      <p style="font-size:.84rem;color:var(--gold);margin-top:1.2rem;font-style:italic">Aguardando confirmação do pagamento... ✨</p>
+    </div>
+
+    <!-- Aguardando (polling) -->
+    <div class="aguardando-box" id="aguardando-box">
+      <svg class="aguardando-icon" viewBox="-24 -24 48 48">
+        <circle r="20" fill="none" stroke="#1c0e40" stroke-width="2"/>
+        <circle r="20" fill="none" stroke="#c9a84c" stroke-width="2" stroke-dasharray="20 100" stroke-linecap="round">
+          <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="1.5s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+      <div class="resultado-h" style="margin-top:.8rem">VERIFICANDO PAGAMENTO</div>
+      <p style="font-size:.85rem;color:var(--muted)" id="polling-status">Aguardando confirmação...</p>
+    </div>
+
+    <!-- Resultado: divergente por produto -->
+    <div class="resultado-box" id="resultado-box">
+      <!-- conteúdo injetado por JS conforme isca vs premium -->
     </div>
   </div>
-</div>
+</section>
 
-<!-- RESULTADO -->
-<div class="page" id="pg-result">
-  <div class="result-page">
-    <div class="res-header">
-      <div class="res-title" id="res-title">✦ Sua Leitura Astral ✦</div>
-      <div class="res-sub">Gerada por IA · Supervisionada por astróloga com 30 anos de experiência</div>
-    </div>
-    <div id="res-loading" class="res-loading">
-      <svg width="54" height="54" viewBox="-27 -27 54 54"><circle r="22" fill="none" stroke="#2a1650" stroke-width="2"/><circle r="22" fill="none" stroke="#c9a84c" stroke-width="2" stroke-dasharray="18 120" stroke-linecap="round"/><circle cx="22" cy="0" r="3.5" fill="#c9a84c"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="3s" repeatCount="indefinite"/></circle></svg>
-      <p>Os astros estão sendo consultados...<br><small style="font-size:.76rem;color:#3a2560">Calculando posições reais e gerando sua leitura personalizada</small></p>
-    </div>
-    <div id="res-content" style="display:none">
-      <div class="mandala-wrap" id="mandala-wrap" style="display:none">
-        <div class="mandala-nome" id="mandala-nome"></div>
-        <canvas id="mandala-canvas" width="720" height="620"></canvas>
-        <div class="mandala-label">✦ MAPA NATAL CÓSMICO · ASTRAL IA ✦</div>
-      </div>
-      <div class="tabs-wrap" id="tabs-wrap" style="display:none">
-        <div class="tabs-header">
-          <button class="tab-btn on" onclick="setTab('planetas',this)">☉ Planetas</button>
-          <button class="tab-btn" onclick="setTab('casas',this)">🏠 Casas</button>
-          <button class="tab-btn" onclick="setTab('aspectos',this)">⚡ Aspectos</button>
-        </div>
-        <div class="tab-content on" id="tab-planetas"><div id="tabela-planetas-wrap"></div></div>
-        <div class="tab-content" id="tab-casas"><div id="tabela-casas-wrap"></div></div>
-        <div class="tab-content" id="tab-aspectos"><div class="aspectos-list" id="aspectos-list"></div></div>
-      </div>
-      <div id="leitura-content"></div>
-      <div class="download-box" id="download-box" style="display:none">
-        <p>✨ Sua leitura completa está pronta! Baixe agora.</p>
-        <button class="btn-download" onclick="gerarPDF()">📥 Baixar Minha Leitura em PDF</button>
-      </div>
-    </div>
-    <button class="btn-voltar" id="btn-nova" style="display:none;margin-top:1rem" onclick="goPage('home',document.querySelectorAll('.npg')[0])">← Fazer Nova Leitura</button>
+<!-- ===== SOBRE (resumo) ===== -->
+<section id="sobre" style="padding:5rem 1.5rem;background:linear-gradient(180deg,var(--dark-2),var(--dark))">
+  <div style="max-width:760px;margin:0 auto;text-align:center">
+    <div class="sec-label">✦ SOBRE A ASTRAL·IA</div>
+    <h2 class="sec-title">Tecnologia a Serviço da Tradição</h2>
+    <p style="font-size:1.05rem;color:#c0a8d0;line-height:1.95;font-style:italic;margin-top:1rem">
+      A Astral·IA reúne 30 anos de prática astrológica e mais de 130 mil mapas realizados ao longo de uma carreira inteira. Cada leitura é gerada por Inteligência Artificial sob a curadoria de uma astróloga experiente — combinando velocidade, escala e profundidade humana. Não é um horóscopo de revista: é a fotografia astronômica de um instante único, seu, traduzido em palavras que fazem sentido.
+    </p>
   </div>
-</div>
+</section>
 
-<!-- MODAIS -->
-<div class="modal-overlay" id="modal-lgpd"><div class="modal-box"><h2>🔒 Política de Privacidade — LGPD</h2><p><strong style="color:#c9a84c">Lei Geral de Proteção de Dados (Lei 13.709/2018)</strong></p><p>A Astral IA está comprometida com a proteção dos seus dados pessoais.</p><p><strong style="color:#c9a84c">Dados coletados:</strong> Nome, e-mail, WhatsApp, data e cidade de nascimento. Utilizados exclusivamente para gerar sua leitura.</p><p><strong style="color:#c9a84c">Seus direitos:</strong> Solicite exclusão pelo e-mail contato@astralia.online.</p><button class="modal-close" onclick="document.getElementById('modal-lgpd').classList.remove('show')">Entendi e Fechar</button></div></div>
-<div class="modal-overlay" id="modal-termos"><div class="modal-box"><h2>📋 Termos de Uso</h2><p><strong style="color:#c9a84c">Serviço:</strong> Leituras astrológicas geradas por IA.</p><p><strong style="color:#c9a84c">Finalidade:</strong> Autoconhecimento e entretenimento espiritual.</p><p><strong style="color:#c9a84c">Entrega:</strong> PDF gerado após confirmação do pagamento.</p><p><strong style="color:#c9a84c">Reembolso:</strong> Por se tratar de produto digital, não há reembolso após a geração.</p><button class="modal-close" onclick="document.getElementById('modal-termos').classList.remove('show')">Entendi e Fechar</button></div></div>
+<!-- ===== FOOTER ===== -->
+<footer id="footer">
+  <div class="footer-logo">✦ ASTRAL · IA ✦</div>
+  <p class="footer-text">Leituras astrológicas com Inteligência Artificial — supervisionadas por metodologia de astróloga com mais de <strong>30 anos de experiência</strong> e <strong>+130 mil mapas analisados</strong>.<br>Para fins de autoconhecimento e entretenimento espiritual · Dados protegidos pela LGPD</p>
+  <div class="footer-links">
+    <a href="#">Termos de Uso</a>
+    <a href="#">Política de Privacidade</a>
+    <a href="#">Política de Devolução</a>
+    <a href="#sobre">Sobre</a>
+  </div>
+</footer>
 
 <script>
-const PRODUTOS={
-  'mapa-astral':{nome:'Mapa Astral Natal',de:'R$ 27,97',por:'R$ 17,97',preco:17.97,entrega:'📥 PDF até 10 páginas — na hora',promo:'🔥 Promoção 7 dias de lançamento!'},
-  'revolucao-solar':{nome:'Revolução Solar',de:'R$ 47,97',por:'R$ 37,97',preco:37.97,entrega:'📥 PDF completo — na hora',promo:'🔥 Promoção de lançamento!'},
-  'mapa-profissional':{nome:'Mapa Profissional',de:'R$ 47,97',por:'R$ 37,97',preco:37.97,entrega:'📥 PDF completo — na hora',promo:'🔥 Promoção de lançamento!'},
-  'sinastria':{nome:'Sinastria',de:'R$ 67,97',por:'R$ 47,97',preco:47.97,entrega:'📥 PDF completo — na hora',promo:'🔥 Promoção de lançamento!'},
-  'mapa-karmico':{nome:'Mapa Kármico',de:'R$ 47,97',por:'R$ 37,97',preco:37.97,entrega:'📥 PDF completo — na hora',promo:'🔥 Promoção de lançamento!'},
-  'personalizada':{nome:'Leitura Personalizada',de:'R$ 297,97',por:'R$ 197,97',preco:197.97,entrega:'📥 PDF até 50 páginas — na hora',promo:'🔥 Oferta para os 100 primeiros!'}
+/* ========== CATÁLOGO ========== */
+const PRODUTOS = {
+  mapaastral:{nome:'Mapa Astral',icone:'🌌',sub:'O Retrato do Seu Céu',precoCheio:87.00,precoNum:57.97,isca:true,sub_dom:null,extras:[],entrega:'Sua leitura é <b>gerada na hora</b> aqui na página — e também <b>enviada por e-mail</b>, caso algo interrompa a geração.'},
+  mapaastralpersonalizado:{nome:'Mapa Astral Personalizado',icone:'✦',sub:'Profundidade Plena',precoCheio:197.97,precoNum:129.97,isca:false,sub_dom:'astralia',extras:[],entrega:'Seu Mapa será preparado com cuidado e <b>chega em até 48h no seu e-mail</b>. Documento premium, completo, autoral.'},
+  mapadasorte:{nome:'Mapa da Sorte',icone:'🍀',sub:'Onde Reside Sua Prosperidade',precoCheio:167.97,precoNum:97.97,isca:false,sub_dom:'mapadasorte',extras:[],entrega:'Seu Mapa será preparado com cuidado e <b>chega em até 48h no seu e-mail</b>.'},
+  mapaprofissional:{nome:'Mapa Profissional',icone:'💼',sub:'Sua Vocação Escrita no Céu',precoCheio:129.97,precoNum:97.97,isca:false,sub_dom:'mapaprofissional',extras:[],entrega:'Seu Mapa será preparado com cuidado e <b>chega em até 48h no seu e-mail</b>.'},
+  mapakarmico:{nome:'Mapa Kármico',icone:'🔮',sub:'O Que Sua Alma Veio Resolver',precoCheio:259.97,precoNum:197.97,isca:false,sub_dom:'mapakarmico',extras:[],entrega:'Seu Mapa será preparado com cuidado e <b>chega em até 48h no seu e-mail</b>.'},
+  lilith:{nome:'Mapa da Lilith',icone:'⚸',sub:'Seu Poder Selvagem e Sagrado',precoCheio:129.97,precoNum:87.97,isca:false,sub_dom:'lilith',extras:[],entrega:'Seu Mapa será preparado com cuidado e <b>chega em até 48h no seu e-mail</b>.'},
+  sinastria:{nome:'Sinastria do Casal',icone:'💞',sub:'A Química Entre Dois Mapas',precoCheio:199.97,precoNum:129.99,isca:false,sub_dom:'sinastria',extras:['sinastria'],entrega:'Sua Sinastria será preparada com cuidado e <b>chega em até 48h no seu e-mail</b>. (Exige os dois nascimentos.)'},
+  revolucaosolar:{nome:'Revolução Solar',icone:'☀️',sub:'O Mapa do Seu Próximo Ano',precoCheio:159.97,precoNum:97.97,isca:false,sub_dom:'revolucaosolar',extras:['revsolar'],entrega:'Sua Revolução Solar será preparada com cuidado e <b>chega em até 48h no seu e-mail</b>.'},
+  mapaprevisoes:{nome:'Mapa de Previsões — 18 Meses',icone:'🌠',sub:'Os Trânsitos dos Seus Próximos 18 Meses',precoCheio:249.97,precoNum:159.97,isca:false,sub_dom:'mapaprevisoes',extras:['previsoes'],entrega:'Seu Mapa de Previsões será preparado com cuidado e <b>chega em até 48h no seu e-mail</b>.'}
 };
-const PLANET_SYMS={'Sun':'☉','Moon':'☽','Mercury':'☿','Venus':'♀','Mars':'♂','Jupiter':'♃','Saturn':'♄','Uranus':'♅','Neptune':'♆','Pluto':'♇','Ascendant':'↑','MC':'⊕'};
-const PLANET_PT={'Sun':'Sol','Moon':'Lua','Mercury':'Mercúrio','Venus':'Vênus','Mars':'Marte','Jupiter':'Júpiter','Saturn':'Saturno','Uranus':'Urano','Neptune':'Netuno','Pluto':'Plutão','Ascendant':'Ascendente','MC':'Meio do Céu','IC':'Fundo do Céu','Descendant':'Descendente','Chiron':'Quíron','Lilith':'Lilith','True Node':'Nodo Norte','Mean Node':'Nodo Norte (Médio)','Ceres':'Ceres','Vesta':'Vesta','Juno':'Juno','Pallas':'Palas'};
-const SIGNO_PT={'Aries':'Áries','Taurus':'Touro','Gemini':'Gêmeos','Cancer':'Câncer','Leo':'Leão','Virgo':'Virgem','Libra':'Libra','Scorpio':'Escorpião','Sagittarius':'Sagitário','Capricorn':'Capricórnio','Aquarius':'Aquário','Pisces':'Peixes'};
-const CASA_TEMA={'1':'Identidade','2':'Recursos','3':'Comunicação','4':'Lar','5':'Criatividade','6':'Saúde','7':'Relacionamentos','8':'Transformação','9':'Expansão','10':'Carreira','11':'Amizades','12':'Espiritualidade'};
-const SIGNOS=['Áries','Touro','Gêmeos','Câncer','Leão','Virgem','Libra','Escorpião','Sagitário','Capricórnio','Aquário','Peixes'];
-const ASP_CORES={'Conjunction':'#c9a84c','Opposition':'#a07fff','Trine':'#90c0e0','Square':'#e07060','Sextile':'#90d0a0','Quincunx':'#f0c080'};
-const ASP_PT={'Conjunction':'Conjunção','Opposition':'Oposição','Trine':'Trígono','Square':'Quadratura','Sextile':'Sextil','Quincunx':'Quincúncio'};
-const ASP_DESC={'Conjunction':'União e fusão de energias','Opposition':'Polaridade criativa','Trine':'Fluxo harmonioso','Square':'Desafio transformador','Sextile':'Oportunidade suave','Quincunx':'Ajuste necessário'};
 
-let tipoAtual='mapa-astral',dadosForm={},planetasReais=[],casasReais=null,aspectosReais=[],leituraSecoes=[],tokenPagamento='';
-let pollingInterval=null,tentativas=0;
+let PRODUTO_ATIVO=null, metodoSelecionado='pix', MP_PUBLIC_KEY=null, mp=null;
+let sessionId=null, pollingInterval=null, tentativas=0, descontoCliente=0, codigoClienteValido=null;
+const dadosForm={};
 
-(()=>{let end=localStorage.getItem('promo_end');if(!end){end=Date.now()+7*24*60*60*1000;localStorage.setItem('promo_end',end);}function atualizar(){const diff=parseInt(end)-Date.now();if(diff<=0)return;const d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);document.getElementById('cnt-d').textContent=String(d).padStart(2,'0');document.getElementById('cnt-h').textContent=String(h).padStart(2,'0');document.getElementById('cnt-m').textContent=String(m).padStart(2,'0');document.getElementById('cnt-s').textContent=String(s).padStart(2,'0');}atualizar();setInterval(atualizar,1000);})();
-(()=>{const s=document.getElementById('f-anors'),y=new Date().getFullYear();for(let i=y;i<=y+4;i++){const o=document.createElement('option');o.value=i;o.textContent=i+(i===y?' (atual)':'');s.appendChild(o);}})();
-document.addEventListener('click',e=>{document.querySelectorAll('.autocomplete-results').forEach(d=>{if(!d.contains(e.target))d.style.display='none';});});
+function formatBRL(v){return 'R$ '+v.toFixed(2).replace('.',',')}
 
-async function buscarCidade(input,listaId,latId,lonId){const q=input.value.trim(),lista=document.getElementById(listaId);if(q.length<3){lista.style.display='none';return;}try{const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&accept-language=pt`);const data=await r.json();if(!data.length){lista.style.display='none';return;}lista.innerHTML=data.map(d=>`<div class="autocomplete-item" onclick="selecionarCidade('${d.display_name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${d.lat}','${d.lon}','${input.id}','${listaId}','${latId}','${lonId}')">${d.display_name}</div>`).join('');lista.style.display='block';}catch(e){lista.style.display='none';}}
-function selecionarCidade(nome,lat,lon,inputId,listaId,latId,lonId){document.getElementById(inputId).value=nome;document.getElementById(latId).value=lat;document.getElementById(lonId).value=lon;document.getElementById(listaId).style.display='none';}
-function goPage(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.npg').forEach(b=>b.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');if(btn)btn.classList.add('on');window.scrollTo({top:0,behavior:'smooth'});}
-function selecionarTipo(tipo){tipoAtual=tipo;document.querySelectorAll('.tipo-btn').forEach(b=>{b.classList.remove('on');if(b.dataset.tipo===tipo)b.classList.add('on');});atualizarPreco();document.getElementById('extra-sinastria').style.display=tipo==='sinastria'?'block':'none';document.getElementById('extra-rs').style.display=tipo==='revolucao-solar'?'block':'none';document.getElementById('extra-personalizada-aviso').style.display=tipo==='personalizada'?'block':'none';goPage('form',document.querySelectorAll('.npg')[1]);}
-function setTipo(el){document.querySelectorAll('.tipo-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');tipoAtual=el.dataset.tipo;atualizarPreco();document.getElementById('extra-sinastria').style.display=tipoAtual==='sinastria'?'block':'none';document.getElementById('extra-rs').style.display=tipoAtual==='revolucao-solar'?'block':'none';document.getElementById('extra-personalizada-aviso').style.display=tipoAtual==='personalizada'?'block':'none';}
-function atualizarPreco(){const p=PRODUTOS[tipoAtual];document.getElementById('preco-label').textContent=p.nome;document.getElementById('preco-de').textContent='De '+p.de;document.getElementById('preco-display').textContent=p.por;document.getElementById('preco-promo').textContent=p.promo;document.getElementById('entrega-info').textContent=p.entrega;}
-function setTab(id,btn){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('on'));if(btn)btn.classList.add('on');document.getElementById('tab-'+id).classList.add('on');}
+/* ========== INIT ========== */
+function init(){
+  // Estrelas no hero
+  const stars=document.getElementById('stars'); let s='';
+  for(let i=0;i<60;i++){
+    const x=Math.random()*100, y=Math.random()*100, sz=Math.random()*1.8+.6, d=Math.random()*3+2;
+    s+=`<i style="left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;--d:${d}s"></i>`;
+  }
+  stars.innerHTML=s;
+  // Cards de produtos
+  const grid=document.getElementById('produtos-grid');
+  const dropdown=document.getElementById('dropdown-mapas');
+  const mobileItens=document.getElementById('menu-mobile-itens');
+  let cards='', drop='', mob='';
+  for(const pid in PRODUTOS){
+    const p=PRODUTOS[pid];
+    const badge=p.isca?'<span class="pc-badge isca">Gera na hora</span>':'<span class="pc-badge premium">Em até 48h</span>';
+    const entrega=p.isca?'Leitura gerada na hora + e-mail':'Entrega em até 48h por e-mail';
+    cards+=`<div class="produto-card" data-pid="${pid}" onclick="selecionarProduto('${pid}')">
+      ${badge}
+      <div class="pc-icone">${p.icone}</div>
+      <div class="pc-nome">${p.nome}</div>
+      <div class="pc-sub">${p.sub}</div>
+      <div class="pc-precos"><span class="pc-de">De R$ ${p.precoCheio.toFixed(2).replace('.',',')}</span><span class="pc-por">R$ ${p.precoNum.toFixed(2).replace('.',',')}</span></div>
+      <div class="pc-entrega"><span class="dot"></span>${entrega}</div>
+      <div class="pc-cta">QUERO ESTE MAPA</div>
+    </div>`;
+    drop+=`<a class="dropdown-item" onclick="selecionarProduto('${pid}')"><span class="icon">${p.icone}</span>${p.nome}</a>`;
+    mob+=`<a class="menu-mobile-item" onclick="selecionarProduto('${pid}');fecharMenuMobile()"><span>${p.icone}</span>${p.nome}</a>`;
+  }
+  grid.innerHTML=cards;
+  dropdown.innerHTML=drop;
+  mobileItens.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:.7rem;color:var(--accent);letter-spacing:.18em;margin-bottom:.7rem">MAPAS</div>${mob}<div style="margin-top:1.5rem"><a class="menu-mobile-item" href="#sobre">Sobre</a><a class="menu-mobile-item" href="#footer">Contato</a></div>`;
+}
+init();
 
-async function irPagar(){
-  const nome=document.getElementById('f-nome').value.trim();
-  const data=document.getElementById('f-data').value;
-  const cidade=document.getElementById('f-cidade').value.trim();
-  if(!nome||!data||!cidade){document.getElementById('err-msg').style.display='block';return;}
-  document.getElementById('err-msg').style.display='none';
-  const p=PRODUTOS[tipoAtual];
-  dadosForm={nome,data,hora:document.getElementById('f-hora').value,cidade,whatsapp:document.getElementById('f-whatsapp').value,email:document.getElementById('f-email').value,tipo:tipoAtual,preco:p.preco,lat:document.getElementById('f-lat').value,lon:document.getElementById('f-lon').value,timezone:-3,nome2:document.getElementById('f-nome2').value,data2:document.getElementById('f-data2').value,hora2:document.getElementById('f-hora2').value,cidade2:document.getElementById('f-cidade2').value,lat2:document.getElementById('f-lat2')?document.getElementById('f-lat2').value:'',lon2:document.getElementById('f-lon2')?document.getElementById('f-lon2').value:'',cidadeRS:document.getElementById('f-cidaders').value||cidade,anoRS:document.getElementById('f-anors').value};
-  sessionStorage.setItem('dadosForm',JSON.stringify(dadosForm));
-  const btn=document.querySelector('.btn-pagar');
-  btn.textContent='⏳ Gerando link...';btn.disabled=true;
+/* ========== CONFIG (Mercado Pago) ========== */
+async function carregarConfig(){
   try{
-    const r=await fetch('/api/pagamento',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tipo:tipoAtual,nome:dadosForm.nome,email:dadosForm.email||'cliente@astralia.online',dados:dadosForm})});
-    const result=await r.json();
-    if(result.init_point){
-      tokenPagamento=result.sessionId;
-      sessionStorage.setItem('sessionId',result.sessionId);
-      document.getElementById('link-pagamento').href=result.init_point;
-      document.getElementById('link-pagamento2').href=result.init_point;
-      document.getElementById('pay-desc').textContent=p.nome+' — '+p.por;
-      // Reseta steps
-      document.getElementById('pay-step1').style.display='block';
-      document.getElementById('pay-step2').style.display='none';
-      document.getElementById('pay-step3').style.display='none';
-      goPage('pay',null);
-      btn.textContent='☉ Prosseguir para Pagamento Seguro';btn.disabled=false;
-    }else{throw new Error(result.error||'Erro ao criar pagamento');}
-  }catch(e){
-    console.error('Erro pagamento:',e);
-    btn.textContent='☉ Prosseguir para Pagamento Seguro';btn.disabled=false;
-    document.getElementById('err-msg').textContent='Erro ao criar pagamento. Tente novamente.';
-    document.getElementById('err-msg').style.display='block';
+    const r=await fetch('/api/config'); const d=await r.json();
+    MP_PUBLIC_KEY=d.publicKey;
+    if(window.MercadoPago) mp=new MercadoPago(MP_PUBLIC_KEY,{locale:'pt-BR'});
+  }catch(e){console.error('Config:',e)}
+}
+carregarConfig();
+
+/* ========== SELECIONAR PRODUTO ========== */
+function selecionarProduto(pid){
+  PRODUTO_ATIVO=pid;
+  const p=PRODUTOS[pid];
+  document.querySelectorAll('.produto-card').forEach(c=>c.classList.toggle('ativo',c.dataset.pid===pid));
+  document.getElementById('ch-titulo').textContent='Sua Leitura — '+p.nome;
+  document.getElementById('ch-sub').textContent='Preencha seus dados e pague sem sair desta página.';
+  document.getElementById('form-section').style.display='block';
+  document.getElementById('entrega-aviso').innerHTML=p.entrega;
+  document.getElementById('p-titulo').textContent=p.nome;
+  document.getElementById('p-de').textContent='De R$ '+p.precoCheio.toFixed(2).replace('.',',');
+  atualizarPreco();
+  // Mostra/esconde extras
+  document.getElementById('extras-sinastria').classList.toggle('ativo',p.extras.includes('sinastria'));
+  document.getElementById('extras-revsolar').classList.toggle('ativo',p.extras.includes('revsolar'));
+  document.getElementById('extras-previsoes').classList.toggle('ativo',p.extras.includes('previsoes'));
+  // Reset estados
+  document.getElementById('pix-section').style.display='none';
+  document.getElementById('aguardando-box').style.display='none';
+  document.getElementById('resultado-box').style.display='none';
+  document.getElementById('err-msg').style.display='none';
+  // Scroll
+  setTimeout(()=>document.getElementById('checkout').scrollIntoView({behavior:'smooth'}),150);
+}
+function atualizarPreco(){
+  if(!PRODUTO_ATIVO) return;
+  const p=PRODUTOS[PRODUTO_ATIVO];
+  const final=p.precoNum*(1-descontoCliente);
+  document.getElementById('p-valor').textContent=formatBRL(final);
+  document.getElementById('p-eco').classList.toggle('ativo',descontoCliente>0);
+  // Botão e parcelas
+  const btn=document.getElementById('btn-pagar');
+  btn.textContent=metodoSelecionado==='pix'?'⚡ Gerar PIX — '+formatBRL(final):'💳 Pagar '+formatBRL(final);
+  const sel=document.getElementById('c-parcelas');
+  sel.innerHTML='';
+  for(let i=1;i<=6;i++){
+    if(final/i<5 && i>1) break;
+    const o=document.createElement('option'); o.value=i; o.textContent=`${i}x ${formatBRL(final/i)}`; sel.appendChild(o);
   }
 }
 
+/* ========== MÉTODO PAGAMENTO ========== */
+function selecionarMetodo(m){
+  metodoSelecionado=m;
+  document.getElementById('m-pix').classList.toggle('ativo',m==='pix');
+  document.getElementById('m-cartao').classList.toggle('ativo',m==='cartao');
+  document.getElementById('form-cartao').classList.toggle('ativo',m==='cartao');
+  document.getElementById('campo-cpf').style.display=m==='cartao'?'block':'none';
+  atualizarPreco();
+}
+
+/* ========== CÓDIGO CLIENTE ========== */
+function toggleClienteCodigo(){document.getElementById('cr-conteudo').classList.toggle('aberto')}
+async function validarCodigoCliente(){
+  const codigo=document.getElementById('f-codigo-cliente').value.trim();
+  const st=document.getElementById('cr-status');
+  if(!codigo){st.textContent='Digite seu código.';st.className='cr-status err';return}
+  if(!PRODUTO_ATIVO){st.textContent='Selecione um mapa primeiro.';st.className='cr-status err';return}
+  st.textContent='Validando…';st.className='cr-status';
+  try{
+    const r=await fetch('/api/cliente?codigo='+encodeURIComponent(codigo));
+    const d=await r.json();
+    if(r.ok && d.valido){
+      descontoCliente=0.10; codigoClienteValido=codigo;
+      st.textContent='✓ Código válido — 10% aplicado.';st.className='cr-status ok';
+      atualizarPreco();
+    } else {
+      descontoCliente=0; codigoClienteValido=null;
+      st.textContent=d.mensagem||'Código não reconhecido.';st.className='cr-status err';
+      atualizarPreco();
+    }
+  }catch(e){st.textContent='Não consegui validar agora.';st.className='cr-status err'}
+}
+
+/* ========== MÁSCARAS ========== */
+document.getElementById('f-cpf').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'');v=v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})/,'$1-$2');e.target.value=v.substring(0,14)});
+document.getElementById('c-numero').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'');v=v.replace(/(\d{4})/g,'$1 ').trim();e.target.value=v.substring(0,19)});
+document.getElementById('c-validade').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'');if(v.length>=2)v=v.substring(0,2)+'/'+v.substring(2);e.target.value=v.substring(0,5)});
+
+/* ========== GEOCODING (Nominatim, lat/lon) ========== */
+const buscaTimers={};
+async function buscarCidade(input, listaId, latId, lonId){
+  const q=input.value.trim(), lista=document.getElementById(listaId);
+  if(input.dataset.valida==='true'){input.dataset.valida='false';document.getElementById(latId).value='';document.getElementById(lonId).value=''}
+  if(q.length<3){lista.style.display='none';return}
+  clearTimeout(buscaTimers[listaId]);
+  buscaTimers[listaId]=setTimeout(async()=>{
+    try{
+      const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=6&accept-language=pt&addressdetails=1`);
+      const data=await r.json();
+      if(!data.length){lista.style.display='none';return}
+      lista.innerHTML=data.map(d=>{
+        const safe=d.display_name.replace(/'/g,"\\'");
+        return `<div class="autocomplete-item" onclick="selecionarCidade('${safe}','${d.lat}','${d.lon}','${input.id}','${listaId}','${latId}','${lonId}')">${d.display_name}</div>`;
+      }).join('');
+      lista.style.display='block';
+    }catch(e){lista.style.display='none'}
+  },350);
+}
+function selecionarCidade(nome,lat,lon,inputId,listaId,latId,lonId){
+  document.getElementById(inputId).value=nome;
+  document.getElementById(inputId).dataset.valida='true';
+  document.getElementById(latId).value=lat;
+  document.getElementById(lonId).value=lon;
+  document.getElementById(listaId).style.display='none';
+}
+document.addEventListener('click',e=>{
+  document.querySelectorAll('.autocomplete-results').forEach(l=>{if(!l.contains(e.target)) l.style.display='none'});
+});
+
+/* ========== VALIDAR + MONTAR ========== */
+function erro(msg){const e=document.getElementById('err-msg');e.textContent=msg;e.style.display='block';window.scrollTo({top:e.getBoundingClientRect().top+window.scrollY-100,behavior:'smooth'})}
+function validar(){
+  if(!PRODUTO_ATIVO){erro('Selecione um mapa.');return false}
+  const g=id=>document.getElementById(id).value.trim();
+  if(!g('f-nome')||!g('f-email')||!g('f-data')||!g('f-cidade')){erro('Preencha nome, e-mail, data e cidade.');return false}
+  if(!document.getElementById('f-lat').value){erro('Selecione sua cidade na lista para fixar as coordenadas.');return false}
+  if(metodoSelecionado==='cartao' && document.getElementById('f-cpf').value.replace(/\D/g,'').length!==11){erro('Informe um CPF válido para pagamento com cartão.');return false}
+  const p=PRODUTOS[PRODUTO_ATIVO];
+  if(p.extras.includes('sinastria')){
+    if(!g('f-parc-nome')||!g('f-parc-data')||!g('f-parc-cidade')){erro('Preencha os dados do parceiro(a).');return false}
+    if(!document.getElementById('f-parc-lat').value){erro('Selecione a cidade do parceiro(a) na lista.');return false}
+  }
+  if(p.extras.includes('revsolar') && !g('f-ano-alvo')){erro('Informe o ano-alvo da Revolução Solar.');return false}
+  if(p.extras.includes('previsoes') && !g('f-inicio-prev')){erro('Informe a data de início das previsões.');return false}
+  if(!document.getElementById('lgpd-aceite').checked){erro('É preciso aceitar os termos LGPD.');return false}
+  return true;
+}
+function montarDados(){
+  const p=PRODUTOS[PRODUTO_ATIVO];
+  const d={
+    produto:PRODUTO_ATIVO,
+    nome:document.getElementById('f-nome').value.trim(),
+    email:document.getElementById('f-email').value.trim(),
+    whatsapp:document.getElementById('f-whatsapp').value.trim(),
+    cpf:document.getElementById('f-cpf').value.replace(/\D/g,''),
+    data:document.getElementById('f-data').value,
+    hora:document.getElementById('f-hora').value||'12:00',
+    cidade:document.getElementById('f-cidade').value.trim(),
+    lat:document.getElementById('f-lat').value,
+    lon:document.getElementById('f-lon').value,
+    codigoCliente:codigoClienteValido,
+    descontoExtra:descontoCliente
+  };
+  if(p.extras.includes('sinastria')){
+    d.parceiro={
+      nome:document.getElementById('f-parc-nome').value.trim(),
+      data:document.getElementById('f-parc-data').value,
+      hora:document.getElementById('f-parc-hora').value||'12:00',
+      cidade:document.getElementById('f-parc-cidade').value.trim(),
+      lat:document.getElementById('f-parc-lat').value,
+      lon:document.getElementById('f-parc-lon').value
+    };
+  }
+  if(p.extras.includes('revsolar')) d.anoAlvo=parseInt(document.getElementById('f-ano-alvo').value);
+  if(p.extras.includes('previsoes')) d.inicioPrevisoes=document.getElementById('f-inicio-prev').value;
+  Object.assign(dadosForm,d); return d;
+}
+
+/* ========== PAGAR ========== */
+async function processarPagamento(){
+  if(!validar()) return;
+  document.getElementById('err-msg').style.display='none';
+  const dados=montarDados();
+  const p=PRODUTOS[PRODUTO_ATIVO];
+  const precoFinal=p.precoNum*(1-descontoCliente);
+  const btn=document.getElementById('btn-pagar'); btn.disabled=true; btn.textContent='⏳ Processando…';
+  try{
+    let paymentData;
+    if(metodoSelecionado==='pix') paymentData={payment_method_id:'pix'};
+    else{
+      const num=document.getElementById('c-numero').value.replace(/\s/g,'');
+      const nm=document.getElementById('c-nome').value.trim();
+      const val=document.getElementById('c-validade').value.split('/');
+      const cvv=document.getElementById('c-cvv').value;
+      const parc=parseInt(document.getElementById('c-parcelas').value);
+      if(!num||!nm||val.length!==2||!cvv) throw new Error('Preencha todos os campos do cartão.');
+      if(!mp) throw new Error('SDK do Mercado Pago não carregado. Recarregue a página.');
+      const band=await mp.getPaymentMethods({bin:num.substring(0,6)});
+      if(!band.results||!band.results.length) throw new Error('Cartão não reconhecido.');
+      const tok=await mp.createCardToken({cardNumber:num,cardholderName:nm,cardExpirationMonth:val[0],cardExpirationYear:'20'+val[1],securityCode:cvv,identificationType:'CPF',identificationNumber:dados.cpf});
+      paymentData={token:tok.id,payment_method_id:band.results[0].id,installments:parc,payer:{identification:{type:'CPF',number:dados.cpf}}};
+    }
+    const r=await fetch('/api/pagamento',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentData,dadosCliente:dados,preco:precoFinal,produto:PRODUTO_ATIVO})});
+    const result=await r.json();
+    if(!r.ok) throw new Error(result.details||result.error||'Erro no pagamento');
+    sessionId=result.sessionId; sessionStorage.setItem('sessionId',sessionId); sessionStorage.setItem('produto',PRODUTO_ATIVO);
+    if(metodoSelecionado==='pix' && result.qr_code_base64){
+      document.getElementById('form-section').style.display='none';
+      document.getElementById('pix-section').style.display='block';
+      document.getElementById('pix-qr-img').src='data:image/png;base64,'+result.qr_code_base64;
+      document.getElementById('pix-code-text').textContent=result.qr_code;
+      iniciarPolling();
+    } else if(result.status==='approved'){
+      document.getElementById('form-section').style.display='none';
+      document.getElementById('aguardando-box').style.display='block';
+      iniciarPolling();
+    } else {
+      throw new Error('Pagamento '+result.status+': '+(result.status_detail||'tente novamente'));
+    }
+  }catch(e){
+    btn.disabled=false; atualizarPreco();
+    erro(e.message||'Erro no pagamento. Tente novamente.');
+  }
+}
+function copiarPix(){navigator.clipboard.writeText(document.getElementById('pix-code-text').textContent).then(()=>{const b=event.target,o=b.textContent;b.textContent='✓ Copiado!';setTimeout(()=>b.textContent=o,2000)})}
+
+/* ========== POLLING ========== */
 function iniciarPolling(){
-  // Mostra step2 após 2s (tempo para o cliente abrir o MP)
-  setTimeout(()=>{
-    document.getElementById('pay-step1').style.display='none';
-    document.getElementById('pay-step2').style.display='block';
-  },2000);
-  tentativas=0;
-  if(pollingInterval)clearInterval(pollingInterval);
+  tentativas=0; if(pollingInterval) clearInterval(pollingInterval);
+  document.getElementById('aguardando-box').style.display='block';
   pollingInterval=setInterval(async()=>{
     tentativas++;
-    document.getElementById('pay-tentativas').textContent=`Verificando... (${tentativas}/40)`;
-    if(tentativas>40){
-      clearInterval(pollingInterval);
-      document.getElementById('pay-tentativas').textContent='Tempo esgotado. Tente pagar novamente.';
-      document.getElementById('pay-step2').style.display='none';
-      document.getElementById('pay-step1').style.display='block';
-      return;
-    }
+    const ps=document.getElementById('polling-status'); if(ps) ps.textContent=`Verificando… (${tentativas}/80)`;
+    if(tentativas>80){clearInterval(pollingInterval);ps.textContent='Tempo esgotado. Se você pagou, sua leitura chegará por e-mail. Em caso de dúvidas, entre em contato.';return}
     try{
-      const r=await fetch(`/api/check?sessionId=${tokenPagamento}`);
-      const data=await r.json();
-      if(data.status==='approved'){
-        clearInterval(pollingInterval);
-        document.getElementById('pay-step2').style.display='none';
-        document.getElementById('pay-step3').style.display='block';
-        setTimeout(()=>{goPage('result',null);gerarLeitura();},1500);
-      }
-    }catch(e){console.log('Polling erro:',e.message);}
+      const r=await fetch('/api/check?sessionId='+sessionId);
+      const d=await r.json();
+      if(d.status==='approved'){clearInterval(pollingInterval);aoConfirmarPagamento(d)}
+    }catch(e){}
   },3000);
 }
 
-function sIdx(m,d){const L=[[3,21,0],[4,20,1],[5,21,2],[6,21,3],[7,23,4],[8,23,5],[9,23,6],[10,23,7],[11,22,8],[12,22,9],[1,20,10],[2,19,11]];for(const[lm,ld,i]of L)if(m===lm&&d>=ld)return i;return(m>2)?Math.floor((m*30.4+d)/30.4)%12:11;}
-function calcP(data,hora){const dt=new Date(data+'T12:00:00'),m=dt.getMonth()+1,d=dt.getDate(),yr=dt.getFullYear();const j=new Date(yr,0,1),doy=Math.floor((dt-j)/86400000),h=hora?parseInt(hora):12,sol=sIdx(m,d);const offs=[0,Math.round(doy*13/360)%12,Math.round(doy/88*12)%12,Math.round(doy/225*12)%12,Math.round(doy/687*12)%12,Math.round(doy/4333*12)%12];const asc=(sol+Math.round(h/2)+4)%12;return{solS:SIGNOS[sol],ascS:SIGNOS[asc],luaS:SIGNOS[(sol+offs[1])%12],venS:SIGNOS[(sol+offs[3])%12],marS:SIGNOS[(sol+offs[4])%12],jupS:SIGNOS[(sol+offs[5])%12]};}
+/* ========== PÓS-PAGAMENTO (divergente: isca vs premium) ========== */
+async function aoConfirmarPagamento(checkData){
+  const p=PRODUTOS[PRODUTO_ATIVO];
+  document.getElementById('pix-section').style.display='none';
+  document.getElementById('aguardando-box').style.display='none';
+  const box=document.getElementById('resultado-box');
+  const codigo=checkData.codigoCliente||'ASTRO-XXX-XXXXXX';
 
-function exibirTabelaPlanetas(planetas){const wrap=document.getElementById('tabela-planetas-wrap');const todos=['Ascendant','Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','MC','Chiron','Lilith','True Node'];const fi=planetas.filter(p=>todos.includes(p.planet?.en));if(!fi.length){wrap.innerHTML='<p style="color:#5a3d80;padding:1rem;text-align:center">Dados não disponíveis</p>';return;}wrap.innerHTML=`<table class="tabela-astral"><thead><tr><th>Símbolo</th><th>Planeta</th><th>Signo</th><th>Grau</th><th>Casa</th><th>Área</th></tr></thead><tbody>${fi.map(item=>{const nome=item.planet?.en||'',signoEn=item.zodiac_sign?.name?.en||'',signoPT=SIGNO_PT[signoEn]||signoEn,grau=item.normDegree?item.normDegree.toFixed(2)+'°':'',sym=PLANET_SYMS[nome]||'●',nomePT=PLANET_PT[nome]||nome,retro=(item.isRetro==='True'||item.isRetro===true),casa=item.casaNum||'—',area=item.casaNum?CASA_TEMA[String(item.casaNum)]||'':'';return`<tr><td class="sym">${sym}</td><td><strong>${nomePT}</strong>${retro?' <small style="color:#e09090">R</small>':''}</td><td>${signoPT}</td><td>${grau}</td><td>${casa!=='—'?'Casa '+casa:'—'}</td><td style="color:#7a5ea0;font-size:.75rem">${area}</td></tr>`;}).join('')}</tbody></table>`;}
-function exibirTabelaCasas(casas){const wrap=document.getElementById('tabela-casas-wrap');if(!casas||!casas.Houses){wrap.innerHTML='<p style="color:#5a3d80;padding:1rem;text-align:center">Dados não disponíveis</p>';return;}wrap.innerHTML=`<table class="tabela-astral"><thead><tr><th>Casa</th><th>Signo</th><th>Grau</th><th>Área</th></tr></thead><tbody>${casas.Houses.map(casa=>{const signoEn=casa.zodiac_sign?.name?.en||'',signoPT=SIGNO_PT[signoEn]||signoEn,grau=casa.normDegree?casa.normDegree.toFixed(2)+'°':'';return`<tr><td><strong>Casa ${casa.House}</strong></td><td>${signoPT}</td><td>${grau}</td><td style="color:#7a5ea0;font-size:.8rem">${CASA_TEMA[String(casa.House)]||''}</td></tr>`;}).join('')}</tbody></table>`;}
-function exibirAspectos(aspectos){const list=document.getElementById('aspectos-list');if(!aspectos||!aspectos.length){list.innerHTML='<p style="color:#5a3d80;padding:1rem;text-align:center">Nenhum aspecto encontrado</p>';return;}list.innerHTML=aspectos.slice(0,15).map(item=>{const p1=PLANET_PT[item.planet_1?.en]||item.planet_1?.en||'',p2=PLANET_PT[item.planet_2?.en]||item.planet_2?.en||'',asp=item.aspect?.en||'',aspPT=ASP_PT[asp]||asp,cor=ASP_CORES[asp]||'#c9a84c',desc=ASP_DESC[asp]||'',sym1=PLANET_SYMS[item.planet_1?.en]||'',sym2=PLANET_SYMS[item.planet_2?.en]||'';return`<div class="aspecto-item"><div class="asp-cor" style="background:${cor}"></div><div class="asp-info"><div class="asp-titulo">${sym1} ${p1} ${aspPT} ${sym2} ${p2}</div><div class="asp-desc">${desc}</div></div></div>`;}).join('');}
-
-function desenharMandala(planetas,casas){const canvas=document.getElementById('mandala-canvas');const ctx=canvas.getContext('2d');const W=720,H=620,cx=W/2,cy=H/2-10,TAU=Math.PI*2;const bg=ctx.createRadialGradient(cx,cy,0,cx,cy,340);bg.addColorStop(0,'#12063a');bg.addColorStop(0.5,'#08042a');bg.addColorStop(1,'#06030e');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);const rng=(s)=>{let x=s;return()=>{x=(x*1664525+1013904223)&0xffffffff;return(x>>>0)/0xffffffff;};};const rand=rng(42);for(let i=0;i<280;i++){const x=rand()*W,y=rand()*H,r=rand()*1.8+0.3,a=rand()*0.8+0.2;ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();}const circle=(x,y,r,stroke,lw,dash=[])=>{ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.setLineDash(dash);ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.stroke();ctx.setLineDash([]);};circle(cx,cy,255,'rgba(201,168,76,0.38)',0.9);const zs=['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];for(let i=0;i<12;i++){const sa=(i*30-90)*Math.PI/180,ea=((i+1)*30-90)*Math.PI/180;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,255,sa,ea);ctx.closePath();ctx.strokeStyle='rgba(201,168,76,0.32)';ctx.lineWidth=0.7;ctx.stroke();const ma=(i*30+15-90)*Math.PI/180;ctx.save();ctx.translate(cx+Math.cos(ma)*238,cy+Math.sin(ma)*238);ctx.rotate(ma+Math.PI/2);ctx.font='14px serif';ctx.fillStyle='#f0d080';ctx.globalAlpha=0.9;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(zs[i],0,0);ctx.globalAlpha=1;ctx.restore();}if(casas&&casas.Houses){circle(cx,cy,210,'rgba(100,60,180,0.35)',0.9,[2,5]);casas.Houses.forEach((casa,i)=>{const angCasa=((casa.degree||0)-90)*Math.PI/180;ctx.beginPath();ctx.moveTo(cx+Math.cos(angCasa)*195,cy+Math.sin(angCasa)*195);ctx.lineTo(cx+Math.cos(angCasa)*255,cy+Math.sin(angCasa)*255);ctx.strokeStyle='rgba(160,127,255,0.45)';ctx.lineWidth=1;ctx.stroke();});}circle(cx,cy,195,'rgba(201,168,76,0.5)',1.2);const pc={'Sun':'#f0d080','Moon':'#d0c8f0','Mercury':'#c9a84c','Venus':'#f4c0d3','Mars':'#e07060','Jupiter':'#c9a84c','Saturn':'#a07fff','Uranus':'#90d0e0','Neptune':'#7090f0','Pluto':'#c090d0','Ascendant':'#f0d080','MC':'#c9a84c'};const mp=['Ascendant','Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','MC'];if(planetas&&planetas.length>0){planetas.filter(p=>mp.includes(p.planet?.en)).forEach((item,i)=>{const nome=item.planet?.en||'',grau=item.fullDegree||0,angle=(grau-90)*Math.PI/180,r=125+((i%4)*10);const px=cx+Math.cos(angle)*r,py=cy+Math.sin(angle)*r,color=pc[nome]||'#c9a84c';ctx.fillStyle=color;ctx.beginPath();ctx.arc(px,py,3.5,0,TAU);ctx.fill();ctx.font='13px serif';ctx.fillStyle=color;ctx.globalAlpha=0.95;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(PLANET_SYMS[nome]||'●',px,py-16);ctx.globalAlpha=1;});}ctx.fillStyle='#f0d080';ctx.beginPath();ctx.arc(cx,cy,5,0,TAU);ctx.fill();}
-
-function gerarPDF(){const d=dadosForm;const canvas=document.getElementById('mandala-canvas');const mandalaImg=canvas?canvas.toDataURL('image/png'):'';const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Leitura Astral — ${d.nome}</title><style>body{font-family:Georgia,serif;background:#06030e;color:#e5d0ff;max-width:820px;margin:0 auto;padding:2rem}.titulo{color:#f0d080;font-size:2rem;text-align:center;margin-bottom:2rem}.mandala{width:100%;max-width:680px;display:block;margin:1.5rem auto}.card{background:#0d0620;border:1px solid #1c0e40;border-radius:10px;padding:1.3rem;margin-bottom:1rem}.card-titulo{color:#b090e0;font-size:.75rem;letter-spacing:.12em;margin-bottom:.65rem}.card-texto{color:#d0b8f5;line-height:1.9}</style></head><body><div class="titulo">✦ ASTRAL IA ✦</div>${mandalaImg?`<img class="mandala" src="${mandalaImg}" alt="Mandala"/>`:''}${leituraSecoes.map(s=>`<div class="card"><div class="card-titulo">${s.titulo}</div><div class="card-texto">${s.texto}</div></div>`).join('')}<p style="text-align:center;color:#5a3d80;font-size:.75rem;margin-top:2rem">Gerado em ${new Date().toLocaleDateString('pt-BR')} · astralia.online</p></body></html>`;const blob=new Blob([html],{type:'text/html;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`AstralIA-${d.nome.replace(/\s+/g,'-')}.html`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
-
-async function gerarLeitura(){
-  document.getElementById('res-loading').style.display='block';
-  document.getElementById('res-content').style.display='none';
-  document.getElementById('btn-nova').style.display='none';
-  const d=dadosForm,n=calcP(d.data,d.hora);
-  document.getElementById('res-title').textContent='✦ '+PRODUTOS[d.tipo||tipoAtual].nome+' de '+d.nome+' ✦';
-  document.getElementById('mandala-nome').textContent=d.nome.toUpperCase();
-  const eloquencia='Use linguagem eloquente, inspiradora, poética e profunda. Use o nome do cliente nas interpretações.';
-  let p='';
-  if((d.tipo||tipoAtual)==='mapa-astral'){p=`Astróloga com 30 anos. ${eloquencia} Mapa Astral COMPLETO em PORTUGUÊS para ${d.nome}, ${d.data}${d.hora?' às '+d.hora:''} em ${d.cidade}. Sol ${n.solS}, Lua ${n.luaS}, Asc ${n.ascS}. JSON sem markdown: {"secoes":[{"titulo":"☉ Essência Solar — Sol em ${n.solS}","texto":"6 frases"},{"titulo":"☽ Lua em ${n.luaS}","texto":"5 frases"},{"titulo":"↑ Ascendente em ${n.ascS}","texto":"5 frases"},{"titulo":"♀ Amor — Vênus em ${n.venS}","texto":"5 frases"},{"titulo":"♂ Força — Marte em ${n.marS}","texto":"5 frases"},{"titulo":"🔮 Sinfonia do Mapa","texto":"6 frases"},{"titulo":"✦ Mensagem para ${d.nome}","texto":"5 frases"}]}`;}
-  else if((d.tipo||tipoAtual)==='revolucao-solar'){p=`Astróloga com 30 anos. ${eloquencia} Revolução Solar para ${d.nome}. JSON: {"secoes":[{"titulo":"☉ Tom do Ano","texto":"6 frases"},{"titulo":"♀ Amor","texto":"5 frases"},{"titulo":"♃ Carreira","texto":"5 frases"},{"titulo":"◷ Mês a Mês","texto":"previsão dos 12 meses"},{"titulo":"✦ Mensagem","texto":"5 frases"}]}`;}
-  else if((d.tipo||tipoAtual)==='sinastria'){p=`Astróloga especialista. ${eloquencia} Sinastria para ${d.nome} e ${d.nome2||'parceiro(a)'}. JSON: {"secoes":[{"titulo":"💕 O Encontro","texto":"6 frases"},{"titulo":"☉ Dança dos Sóis","texto":"5 frases"},{"titulo":"☽ Emoções","texto":"5 frases"},{"titulo":"♀ Amor","texto":"5 frases"},{"titulo":"✦ Mensagem","texto":"5 frases"}]}`;}
-  else if((d.tipo||tipoAtual)==='mapa-profissional'){p=`Astróloga especialista. ${eloquencia} Mapa Profissional para ${d.nome}. JSON: {"secoes":[{"titulo":"💼 Dons","texto":"6 frases"},{"titulo":"☉ Identidade","texto":"5 frases"},{"titulo":"♃ Abundância","texto":"5 frases"},{"titulo":"🎯 Vocação","texto":"5 frases"},{"titulo":"✦ Propósito","texto":"5 frases"}]}`;}
-  else if((d.tipo||tipoAtual)==='mapa-karmico'){p=`Astróloga especialista. ${eloquencia} Mapa Kármico para ${d.nome}. JSON: {"secoes":[{"titulo":"🔮 Missão da Alma","texto":"6 frases"},{"titulo":"☊ Nodo Norte","texto":"5 frases"},{"titulo":"☋ Nodo Sul","texto":"5 frases"},{"titulo":"🌟 Dons Espirituais","texto":"5 frases"},{"titulo":"✦ Mensagem","texto":"5 frases"}]}`;}
-  else{p=`Astróloga mística. ${eloquencia} Leitura Personalizada para ${d.nome}. JSON: {"secoes":[{"titulo":"✨ Panorama","texto":"8 frases"},{"titulo":"☉ Sol","texto":"7 frases"},{"titulo":"☽ Lua","texto":"7 frases"},{"titulo":"♀ Amor","texto":"7 frases"},{"titulo":"💫 Próximos 12 Meses","texto":"mês a mês"},{"titulo":"✦ Mensagem","texto":"7 frases"}]}`;}
-  try{
-    const r=await fetch('/api/leitura',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:p,sessionId:tokenPagamento,dados:{data:d.data,hora:d.hora,lat:d.lat,lon:d.lon,timezone:d.timezone||-3,nome:d.nome,whatsapp:d.whatsapp,email:d.email,cidade:d.cidade,tipo:d.tipo||tipoAtual,preco:d.preco}})});
-    if(!r.ok){const err=await r.json();throw new Error(err.error||'Erro '+r.status);}
-    const j=await r.json();
-    if(j.planetas){planetasReais=j.planetas;if(j.casas&&j.casas.Houses){casasReais=j.casas;planetasReais.forEach(item=>{const grauPlaneta=item.fullDegree||0;const houses=j.casas.Houses;let casaNum=1;for(let i=0;i<houses.length;i++){const proxIdx=(i+1)%12,inicio=houses[i].degree,fim=houses[proxIdx].degree;if(fim>inicio){if(grauPlaneta>=inicio&&grauPlaneta<fim){casaNum=houses[i].House;break;}}else{if(grauPlaneta>=inicio||grauPlaneta<fim){casaNum=houses[i].House;break;}}}item.casaNum=casaNum;});}}
-    if(j.casas)casasReais=j.casas;if(j.aspectos)aspectosReais=j.aspectos;
-    let secoes=[];
-    const txt=j.content?j.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim():'';
-    if(txt){try{const leitura=JSON.parse(txt);secoes=leitura.secoes||[];}catch(e){console.log('Parse erro:',e);}}
-    leituraSecoes=secoes;
-    document.getElementById('res-loading').style.display='none';
-    document.getElementById('res-content').style.display='block';
-    document.getElementById('mandala-wrap').style.display='block';
-    desenharMandala(planetasReais,casasReais);
-    document.getElementById('tabs-wrap').style.display='block';
-    exibirTabelaPlanetas(planetasReais);exibirTabelaCasas(casasReais);exibirAspectos(aspectosReais);
-    document.getElementById('leitura-content').innerHTML=secoes.length>0?secoes.map(s=>`<div class="res-card"><h3>${s.titulo}</h3><p>${s.texto}</p></div>`).join(''):`<div class="res-card"><h3>✦ Sua leitura</h3><p>${txt}</p></div>`;
-    document.getElementById('download-box').style.display='block';
-    document.getElementById('btn-nova').style.display='block';
-    sessionStorage.removeItem('dadosForm');
-  }catch(e){
-    console.error('Erro:',e);
-    document.getElementById('res-loading').innerHTML=`<p style="color:#e09090">Erro: ${e.message}.<br>Entre em contato: contato@astralia.online</p>`;
-    document.getElementById('btn-nova').style.display='block';
+  if(p.isca){
+    // ISCA — Mapa Astral: gera na hora aqui mesmo + e-mail de fallback
+    box.innerHTML=`
+      <div class="resultado-icon">🌌</div>
+      <div class="resultado-h">Sua leitura está sendo gerada agora</div>
+      <p class="resultado-p">Aguarde alguns instantes — estamos calculando o seu mapa e escrevendo a sua leitura. <b>Uma cópia também foi enviada para o seu e-mail</b>, caso algo interrompa a geração aqui.</p>
+      <div class="resultado-codigo">${codigo}<small>Seu código de cliente — use em compras futuras e ganhe 10%</small></div>
+      <div id="mandala-container"></div>
+      <div id="leitura-content"><p style="text-align:center;color:var(--muted)">⏳ Preparando o seu céu…</p></div>
+    `;
+    box.style.display='block';
+    try{
+      const r=await fetch('/api/leitura',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId})});
+      const d=await r.json();
+      if(d.mandalaSVG) document.getElementById('mandala-container').innerHTML=d.mandalaSVG;
+      if(d.leituraHTML){
+        document.getElementById('leitura-content').innerHTML=d.leituraHTML+`
+          <div style="text-align:center;margin-top:1.5rem">
+            <button class="btn-cta" onclick="baixarPDF()">📥 Baixar Leitura em PDF</button>
+          </div>`;
+      }
+    }catch(e){
+      document.getElementById('leitura-content').innerHTML=`<p style="text-align:center;color:var(--err)">Houve um problema ao gerar aqui na página, mas <b>sua leitura está chegando no seu e-mail</b> em instantes. Você não perdeu nada.</p>`;
+    }
+  } else {
+    // PREMIUM — entra na fila do n8n, chega em até 48h por e-mail
+    box.innerHTML=`
+      <div class="resultado-icon">${p.icone}</div>
+      <div class="resultado-h">Pagamento confirmado!</div>
+      <p class="resultado-p">Seu <b>${p.nome}</b> entrou na fila de produção. Ele será preparado com cuidado pela nossa astróloga supervisora e <b>chega em até 48h no seu e-mail</b> (${dadosForm.email||'seu e-mail'}).</p>
+      <div class="resultado-codigo">${codigo}<small>Seu código de cliente — use em compras futuras e ganhe 10%</small></div>
+      <p class="resultado-p" style="margin-top:1.4rem">Enquanto isso, que tal explorar outros mapas que conversam com o seu?</p>
+      <div style="margin-top:1rem"><a href="#produtos" class="btn-cta alt">✦ Ver Outros Mapas</a></div>
+    `;
+    box.style.display='block';
   }
+  box.scrollIntoView({behavior:'smooth'});
 }
+
+function baixarPDF(){
+  const el=document.getElementById('leitura-content');
+  if(!el||!window.html2pdf){alert('PDF indisponível agora — sua leitura também está no seu e-mail.');return}
+  html2pdf().set({margin:[10,12,10,12],filename:`Astralia-${PRODUTOS[PRODUTO_ATIVO].nome}.pdf`,html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4'}}).from(el).save();
+}
+
+/* ========== MENU MOBILE ========== */
+function abrirMenuMobile(){document.getElementById('menu-mobile').classList.add('aberto');document.getElementById('menu-overlay').classList.add('aberto')}
+function fecharMenuMobile(){document.getElementById('menu-mobile').classList.remove('aberto');document.getElementById('menu-overlay').classList.remove('aberto')}
+
+/* ========== Aviso ao backend: lat/lon (necessário para fuso preciso por coordenada) ========== */
+// O front envia f-lat e f-lon ao /api/pagamento (em dadosCliente). O backend deve resolver
+// o fuso a partir de lat/lon → IANA → offset (com DST histórico). Só BR por enquanto.
 </script>
 </body>
 </html>
