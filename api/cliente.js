@@ -1,82 +1,26 @@
-// api/cliente.js
-// Sistema de cliente unificado entre todos os produtos Astralia.
-// Gera codigo unico, rastreia produtos adquiridos, aplica desconto recorrente.
-// Adaptado da versao da Lilith com nomenclatura nova (hifen, lowercase).
+// Sistema de cliente unificado entre todos os produtos Astralia
+// Gera codigo unico, rastreia produtos adquiridos, aplica descontos especiais
 
 const { createClient } = require('redis');
 
-// 8 produtos + 1 combo. Nomenclatura padronizada com hifen.
-const PRODUTOS = [
-  'mapa-astral',                // isca R$17,97
-  'mapa-astral-personalizado',  // premium R$197,97
-  'revolucao-solar',
-  'mapa-profissional',
-  'sinastria',
-  'mapa-karmico',
-  'mapa-previsoes',
-  'mapa-da-sorte',
-  'combo-completo'              // tipo agregador
-];
+const PRODUTOS = ['lilith', 'mapanatal', 'mapakarmico', 'mapadasorte', 'sinastria', 'mapaprofissional', 'mapaprevisoes', 'revolucaosolar'];
 
-// Prefixos pro codigo do cliente: ASTRO-XXX-XXXXXX
+// Prefixos para abreviar produtos nos codigos
 const PREFIXOS = {
-  'mapa-astral':                'AST',
-  'mapa-astral-personalizado':  'PER',
-  'revolucao-solar':            'REV',
-  'mapa-profissional':          'PRO',
-  'sinastria':                  'SIN',
-  'mapa-karmico':               'KAR',
-  'mapa-previsoes':             'PRE',
-  'mapa-da-sorte':              'SOR',
-  'combo-completo':             'COM'
+  lilith: 'LIL',
+  mapanatal: 'NAT',
+  mapakarmico: 'KAR',
+  mapadasorte: 'SOR',
+  sinastria: 'SIN',
+  mapaprofissional: 'PRO',
+  mapaprevisoes: 'PRE',
+  revolucaosolar: 'REV',
+  mapaastralpersonalizado: 'MAP'
 };
 
-// Nomes legiveis pra usar em emails, mensagens, WhatsApp, etc
-const NOMES_PRODUTOS = {
-  'mapa-astral':                'Mapa Astral Natal',
-  'mapa-astral-personalizado':  'Mapa Astral Personalizado',
-  'revolucao-solar':            'Revolução Solar',
-  'mapa-profissional':          'Mapa Profissional',
-  'sinastria':                  'Sinastria Amorosa',
-  'mapa-karmico':               'Mapa Kármico',
-  'mapa-previsoes':             'Mapa de Previsões',
-  'mapa-da-sorte':              'Mapa da Sorte',
-  'combo-completo':             'Guia Astral Completo'
-};
-
-// Simbolos astrologicos por produto. Frontend importa daqui pra cards,
-// modais, emails, WhatsApp - tudo puxa do mesmo lugar.
-// Combina simbolos astrologicos reais (☉ ☽ ♀ ♃ ♄ ☋ ⚸) com emoji
-// quando o astrologico nao comunica claramente o que e o produto.
-const SIMBOLOS_PRODUTOS = {
-  'mapa-astral':                '☉',      // Sol - essencia astrologica basica
-  'mapa-astral-personalizado':  '✦',      // Estrela - leitura premium completa
-  'revolucao-solar':            '☀',      // Sol em revolucao - ciclo anual
-  'mapa-profissional':          '♎',      // Libra/Casa 10 - carreira (MC)
-  'sinastria':                  '♀',      // Venus - amor e relacoes
-  'mapa-karmico':               '☋',      // Nodo Sul - heranca da alma
-  'mapa-previsoes':             '♄',      // Saturno - tempo e ciclos
-  'mapa-da-sorte':              '♃',      // Jupiter - sorte e expansao
-  'combo-completo':             '✧'       // Estrela ornamental - jornada completa
-};
-
-// Mesma logica, versao emoji - util quando o cliente esta em WhatsApp
-// ou em ambientes que renderizam emoji melhor que simbolo unicode
-const EMOJIS_PRODUTOS = {
-  'mapa-astral':                '⭐',
-  'mapa-astral-personalizado':  '✨',
-  'revolucao-solar':            '☀️',
-  'mapa-profissional':          '💼',
-  'sinastria':                  '💞',
-  'mapa-karmico':               '⚖️',
-  'mapa-previsoes':             '🔮',
-  'mapa-da-sorte':              '🍀',
-  'combo-completo':             '🌟'
-};
-
-// Gera codigo unico tipo ASTRO-KAR-X7F2Q9 (sem caracteres confusos O/0, I/1)
+// Gera codigo unico tipo ASTRO-LIL-X7F2Q9
 function gerarCodigo(produtoBase) {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sem caracteres confusos (O/0, I/1)
   let random = '';
   for (let i = 0; i < 6; i++) {
     random += chars[Math.floor(Math.random() * chars.length)];
@@ -85,6 +29,7 @@ function gerarCodigo(produtoBase) {
   return `ASTRO-${prefixo}-${random}`;
 }
 
+// Conecta no Redis
 async function conectarRedis() {
   const redisUrl = process.env.REDIS_URL || process.env.STORAGE_URL;
   const rc = createClient({ url: redisUrl });
@@ -99,7 +44,7 @@ async function registrarCompra(dadosCliente, produto) {
   try {
     let codigo;
 
-    // 1) Se cliente ja tem codigo (vinha como recorrente), usa
+    // Se cliente ja tem codigo (vinha como recurrente), usa
     if (dadosCliente.codigoCliente) {
       codigo = dadosCliente.codigoCliente.toUpperCase();
       const existente = await rc.get(`cliente:${codigo}`);
@@ -115,7 +60,7 @@ async function registrarCompra(dadosCliente, produto) {
       }
     }
 
-    // 2) Tenta achar cliente existente por email
+    // Tenta achar cliente existente por email/whatsapp
     if (dadosCliente.email) {
       const codigoAchado = await rc.get(`cliente:email:${dadosCliente.email.toLowerCase()}`);
       if (codigoAchado) {
@@ -134,8 +79,9 @@ async function registrarCompra(dadosCliente, produto) {
       }
     }
 
-    // 3) Cliente novo: gera codigo unico
+    // Cliente novo: gera codigo
     codigo = gerarCodigo(produto);
+    // Garante unicidade
     let tentativas = 0;
     while (await rc.get(`cliente:${codigo}`) && tentativas < 5) {
       codigo = gerarCodigo(produto);
@@ -160,7 +106,9 @@ async function registrarCompra(dadosCliente, produto) {
       totalCompras: 1
     };
 
+    // Salva por codigo
     await rc.setEx(`cliente:${codigo}`, 60 * 60 * 24 * 365 * 2, JSON.stringify(cliente));
+    // Index por email para reconhecimento futuro
     if (dadosCliente.email) {
       await rc.setEx(`cliente:email:${dadosCliente.email.toLowerCase()}`, 60 * 60 * 24 * 365 * 2, codigo);
     }
@@ -188,54 +136,43 @@ async function buscarCliente(codigo) {
   }
 }
 
-// Sugere proximo produto seguindo estrategia de upsell/downsell.
-// REGRA CRITICA: mapa-astral-personalizado contem mapa-astral simples.
-// - Quem comprou personalizado NUNCA recebe upsell de simples
-// - Quem comprou simples PODE receber personalizado como upgrade
+// Sugere proximo produto baseado no que o cliente NAO tem
+// Sugere proximo produto seguindo estrategia de upsell/downsell
+// REGRA CRITICA: Mapa Astral Personalizado contem Mapa Astral simples.
+// - Quem comprou Personalizado NUNCA recebe upsell de Mapa Astral simples
+// - Quem comprou Mapa Astral simples PODE receber Personalizado como upgrade
 // - Combos NUNCA misturam os dois
 function sugerirProximoProduto(produtosAdquiridos = [], produtoAtual = null) {
   const ja = new Set([...produtosAdquiridos, produtoAtual].filter(p => p));
 
-  // Se tem Personalizado, considera o simples como ja adquirido
-  if (ja.has('mapa-astral-personalizado')) {
-    ja.add('mapa-astral');
+  // REGRA: se tem Personalizado, considera Mapa Astral simples como "ja adquirido"
+  if (ja.has('mapaastralpersonalizado') || ja.has('personalizado')) {
+    ja.add('mapanatal');
+    ja.add('mapaastral');
   }
 
-  // Se comprou combo, considera todos os mapas do combo como adquiridos
-  if (ja.has('combo-completo')) {
-    ja.add('mapa-astral-personalizado');
-    ja.add('mapa-astral');
-    ja.add('mapa-karmico');
-    ja.add('mapa-previsoes');
-    ja.add('mapa-profissional');
-    ja.add('mapa-da-sorte');
-    ja.add('revolucao-solar');
-    // sinastria NAO esta no combo padrao (decisao recomendada)
-  }
-
-  // UPSELL: mapas principais com maior valor agregado
-  const upsellPrincipais = ['mapa-astral-personalizado', 'mapa-karmico', 'mapa-previsoes'];
+  // UPSELL: mapas principais com maior valor
+  const upsellPrincipais = ['mapaastralpersonalizado', 'mapakarmico', 'mapaprevisoes'];
   const upsellDisponiveis = upsellPrincipais.filter(p => !ja.has(p));
 
-  // DOWNSELL: mapas complementares
-  const downsellOpcoes = ['mapa-da-sorte', 'sinastria', 'mapa-profissional', 'revolucao-solar'];
+  // DOWNSELL: mapas complementares com menor preco
+  const downsellOpcoes = ['mapadasorte', 'sinastria', 'mapaprofissional', 'revolucaosolar'];
   const downsellDisponiveis = downsellOpcoes.filter(p => !ja.has(p));
 
-  // COMBO: so vale oferecer se ainda tem Personalizado E Karmico disponiveis
-  // (porque sao os dois mapas mais caros que justificam o combo)
-  const podeCombo = upsellDisponiveis.includes('mapa-astral-personalizado') &&
-                    upsellDisponiveis.includes('mapa-karmico');
-  const combo = podeCombo ? 'combo-completo' : null;
+  // COMBO: so se ambos do upsell estao disponiveis (Personalizado + Karmico)
+  const podeCombo = upsellDisponiveis.includes('mapaastralpersonalizado') &&
+                    upsellDisponiveis.includes('mapakarmico');
+  const combo = podeCombo ? 'combo-personalizado-karmico' : null;
 
-  // Todos disponiveis pra mostrar como opcoes
+  // TODOS produtos disponiveis para Upsell N1 (escolha multipla)
   const todosDisponiveis = [
-    'mapa-astral-personalizado', 'mapa-karmico', 'mapa-previsoes',
-    'sinastria', 'mapa-da-sorte', 'mapa-profissional', 'revolucao-solar'
+    'mapaastralpersonalizado', 'mapakarmico', 'mapaprevisoes',
+    'sinastria', 'mapadasorte', 'mapaprofissional', 'revolucaosolar'
   ].filter(p => !ja.has(p));
 
-  // Se nao tem Personalizado E nao tem o simples, oferece o simples como entrada
-  if (!ja.has('mapa-astral-personalizado') && !ja.has('mapa-astral')) {
-    todosDisponiveis.push('mapa-astral');
+  // Se cliente NAO tem Personalizado E NAO tem Mapa Astral simples, oferece simples no N1
+  if (!ja.has('mapaastralpersonalizado') && !ja.has('mapanatal') && !ja.has('mapaastral')) {
+    todosDisponiveis.push('mapanatal');
   }
 
   return {
@@ -247,7 +184,17 @@ function sugerirProximoProduto(produtosAdquiridos = [], produtoAtual = null) {
   };
 }
 
-// Endpoint handler: GET /api/cliente?codigo=XXX -> busca cliente
+// Funcao legacy mantida para compatibilidade
+function proximoProdutoSimples(produtosAdquiridos = [], produtoAtual = null) {
+  const ordem = ['mapakarmico', 'mapaprevisoes', 'sinastria', 'lilith', 'mapadasorte', 'mapaprofissional', 'revolucaosolar', 'mapanatal'];
+  const ja = new Set([...produtosAdquiridos, produtoAtual]);
+  for (const p of ordem) {
+    if (!ja.has(p)) return p;
+  }
+  return null;
+}
+
+// Endpoint handler
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
@@ -255,15 +202,25 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
+    // GET /api/cliente?codigo=XXX -> busca cliente
     if (req.method === 'GET') {
       const codigo = req.query.codigo;
       if (!codigo) return res.status(400).json({ error: 'Codigo obrigatorio' });
-      const cliente = await buscarCliente(codigo);
-      if (!cliente) return res.status(404).json({ error: 'Cliente nao encontrado' });
 
+      // Codigo ADMIN de teste: fixa preco em R$ 1 (mesmo box do codigo de cliente)
+      const CODIGO_ADMIN = (process.env.CODIGO_ADMIN_TESTE || 'ASTRO-ADM-1REAL').toUpperCase();
+      if (codigo.toUpperCase() === CODIGO_ADMIN) {
+        return res.status(200).json({ valido: true, admin: true, precoFixo: 1.00, mensagem: 'Modo teste ativo - R$ 1,00' });
+      }
+
+      const cliente = await buscarCliente(codigo);
+      if (!cliente) return res.status(404).json({ valido: false, error: 'Cliente nao encontrado' });
+
+      // Sugere upsell/downsell baseado em historico
       const sugestoes = sugerirProximoProduto(cliente.produtos, req.query.produto);
 
       return res.status(200).json({
+        valido: true,
         codigo: cliente.codigo,
         nome: cliente.nome,
         email: cliente.email,
@@ -287,13 +244,8 @@ module.exports = async function handler(req, res) {
   }
 };
 
-// Exporta funcoes utilitarias pra outros endpoints usarem
 module.exports.gerarCodigo = gerarCodigo;
 module.exports.registrarCompra = registrarCompra;
 module.exports.buscarCliente = buscarCliente;
 module.exports.sugerirProximoProduto = sugerirProximoProduto;
 module.exports.PRODUTOS = PRODUTOS;
-module.exports.PREFIXOS = PREFIXOS;
-module.exports.NOMES_PRODUTOS = NOMES_PRODUTOS;
-module.exports.SIMBOLOS_PRODUTOS = SIMBOLOS_PRODUTOS;
-module.exports.EMOJIS_PRODUTOS = EMOJIS_PRODUTOS;
