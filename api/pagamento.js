@@ -2,14 +2,13 @@ const { MercadoPagoConfig, Payment } = require('mercadopago');
 const { createClient } = require('redis');
 const { registrarCompra, buscarCliente } = require('./cliente');
 
-// ================================================================
-// Backend multi-produto do portal Astralia.online
-// Aceita qualquer um dos 9 produtos. Fallback compativel: se nao
-// vier 'produto', assume 'mapaastralpersonalizado' (cliente legado).
-// ================================================================
-
 const PRECOS_URL = 'https://raw.githubusercontent.com/katruryn-byte/astralia-precos/main/precos.json';
 const PRODUTO_PADRAO = 'mapaastralpersonalizado';
+
+// Codigo ADMIN de teste: fixa o preco em R$ 1 e NAO depende do precos.json.
+// Troque pela env var CODIGO_ADMIN_TESTE no Vercel para um valor secreto,
+// e REMOVA antes do lancamento real.
+const CODIGO_ADMIN = (process.env.CODIGO_ADMIN_TESTE || 'ASTRO-ADM-1REAL').toUpperCase();
 
 const CATALOGO = {
   mapaastral:              { nome: 'Mapa Astral',                   isca: true  },
@@ -23,9 +22,6 @@ const CATALOGO = {
   mapaprevisoes:           { nome: 'Mapa de Previsoes - 18 Meses',  isca: false }
 };
 
-// IMPORTANTE: nunca "chuta" preco. Se nao conseguir confirmar na fonte
-// oficial (precos.json no GitHub), devolve {ok:false} e o pagamento e'
-// RECUSADO. Melhor falhar visivel do que cobrar valor errado.
 async function obterPrecoAtual(produto) {
   if (!CATALOGO[produto]) return { ok: false, motivo: 'produto_invalido' };
   try {
@@ -59,37 +55,40 @@ module.exports = async function handler(req, res) {
 
   try {
     const { paymentData, dadosCliente, descontoExtra: descTopo, produto: produtoTopo } = req.body;
-    if (!paymentData || !dadosCliente) {
-      return res.status(400).json({ error: 'Dados incompletos' });
-    }
+    if (!paymentData || !dadosCliente) return res.status(400).json({ error: 'Dados incompletos' });
 
     const produto = produtoTopo || dadosCliente.produto || PRODUTO_PADRAO;
-    if (!CATALOGO[produto]) {
-      return res.status(400).json({ error: 'Produto invalido', code: 'INVALID_PRODUCT', produto });
-    }
+    if (!CATALOGO[produto]) return res.status(400).json({ error: 'Produto invalido', code: 'INVALID_PRODUCT', produto });
     const meta = CATALOGO[produto];
 
-    // SEGURANCA: preco sempre da fonte oficial. Se nao confirmar, RECUSA.
-    const precoInfo = await obterPrecoAtual(produto);
-    if (!precoInfo.ok) {
-      console.error('Preco nao confirmado:', produto, precoInfo.motivo);
-      return res.status(400).json({
-        error: 'Nao foi possivel confirmar o preco no momento. Nenhuma cobranca foi feita. Tente novamente em instantes.',
-        code: 'PRICE_UNCONFIRMED',
-        motivo: precoInfo.motivo,
-        produto
-      });
-    }
-    let precoServidor = precoInfo.preco;
+    const codigoCliente = (dadosCliente.codigoCliente || '').toUpperCase();
 
-    // Desconto -10% se o codigo de cliente existir de verdade
-    const descontoExtra = descTopo ?? dadosCliente.descontoExtra;
-    const codigoCliente = dadosCliente.codigoCliente;
-    if (descontoExtra && descontoExtra > 0 && codigoCliente) {
-      try {
-        const c = await buscarCliente(codigoCliente);
-        if (c) precoServidor = Math.round(precoServidor * 0.90 * 100) / 100;
-      } catch (e) { console.log('Erro validar codigo:', e.message); }
+    let precoServidor;
+    let modoTeste = false;
+    if (codigoCliente && codigoCliente === CODIGO_ADMIN) {
+      // MODO TESTE ADMIN: preco fixo R$ 1, ignora precos.json (passa por cima do bug do fetch)
+      precoServidor = 1.00;
+      modoTeste = true;
+      console.log('[ADMIN] Modo teste R$1 ativado para', produto);
+    } else {
+      // Fluxo normal: preco da fonte oficial. Se nao confirmar, RECUSA (nao chuta valor).
+      const precoInfo = await obterPrecoAtual(produto);
+      if (!precoInfo.ok) {
+        console.error('Preco nao confirmado:', produto, precoInfo.motivo);
+        return res.status(400).json({
+          error: 'Nao foi possivel confirmar o preco no momento. Nenhuma cobranca foi feita. Tente novamente em instantes.',
+          code: 'PRICE_UNCONFIRMED', motivo: precoInfo.motivo, produto
+        });
+      }
+      precoServidor = precoInfo.preco;
+      // Desconto -10% se o codigo de cliente existir de verdade
+      const descontoExtra = descTopo ?? dadosCliente.descontoExtra;
+      if (descontoExtra && descontoExtra > 0 && codigoCliente) {
+        try {
+          const c = await buscarCliente(codigoCliente);
+          if (c) precoServidor = Math.round(precoServidor * 0.90 * 100) / 100;
+        } catch (e) { console.log('Erro validar codigo:', e.message); }
+      }
     }
 
     const sessionId = `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -101,7 +100,7 @@ module.exports = async function handler(req, res) {
     await rc.setEx(`session:${sessionId}`, 7200, JSON.stringify({
       produto, tipo: produto, isca: meta.isca,
       nome: dadosCliente.nome, email: dadosCliente.email,
-      dados: dadosCliente, preco: precoServidor,
+      dados: dadosCliente, preco: precoServidor, modoTeste,
       status: 'pending', criadoEm: new Date().toISOString()
     }));
     await rc.quit();
@@ -111,7 +110,7 @@ module.exports = async function handler(req, res) {
 
     const paymentBody = {
       transaction_amount: precoServidor,
-      description: `${meta.nome} - Astralia`,
+      description: `${meta.nome} - Astralia${modoTeste ? ' (teste)' : ''}`,
       external_reference: sessionId,
       payer: {
         email: dadosCliente.email || 'cliente@astralia.online',
@@ -127,19 +126,14 @@ module.exports = async function handler(req, res) {
     if (paymentData.payment_method_id === 'pix') {
       paymentBody.payment_method_id = 'pix';
       const cpf = (dadosCliente.cpf || '').replace(/\D/g, '');
-      if (cpf.length === 11) {
-        paymentBody.payer.identification = { type: 'CPF', number: cpf };
-      } else {
-        return res.status(400).json({ error: 'CPF obrigatorio para PIX', code: 'CPF_REQUIRED' });
-      }
+      if (cpf.length === 11) paymentBody.payer.identification = { type: 'CPF', number: cpf };
+      else return res.status(400).json({ error: 'CPF obrigatorio para PIX', code: 'CPF_REQUIRED' });
     } else {
       paymentBody.token = paymentData.token;
       paymentBody.installments = paymentData.installments || 1;
       paymentBody.payment_method_id = paymentData.payment_method_id;
       paymentBody.issuer_id = paymentData.issuer_id;
-      if (paymentData.payer?.identification) {
-        paymentBody.payer.identification = paymentData.payer.identification;
-      }
+      if (paymentData.payer?.identification) paymentBody.payer.identification = paymentData.payer.identification;
     }
 
     const result = await paymentClient.create({ body: paymentBody });
@@ -154,6 +148,7 @@ module.exports = async function handler(req, res) {
       status: result.status,
       status_detail: result.status_detail,
       valorCobrado: precoServidor,
+      modoTeste,
       qr_code: result.point_of_interaction?.transaction_data?.qr_code,
       qr_code_base64: result.point_of_interaction?.transaction_data?.qr_code_base64,
       ticket_url: result.point_of_interaction?.transaction_data?.ticket_url
@@ -161,10 +156,7 @@ module.exports = async function handler(req, res) {
 
   } catch (error) {
     console.error('Pagamento erro:', error.message, error.cause);
-    return res.status(500).json({
-      error: error.message,
-      details: error.cause?.[0]?.description || null
-    });
+    return res.status(500).json({ error: error.message, details: error.cause?.[0]?.description || null });
   }
 }
 
@@ -194,8 +186,7 @@ async function marcarPago(sessionId, paymentId, redisUrl, dadosCliente, preco, p
 
   if (meta && !meta.isca) {
     await rc.lPush(`fila:${produto}`, JSON.stringify({
-      sessionId, produto,
-      codigoCliente: sessionObj.codigoCliente,
+      sessionId, produto, codigoCliente: sessionObj.codigoCliente,
       dados: sessionObj.dados, preco, paidAt: sessionObj.paidAt
     }));
   }
