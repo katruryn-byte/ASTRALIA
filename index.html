@@ -111,9 +111,10 @@ html,body{background:var(--dark);color:var(--text);font-family:'Cormorant Garamo
 .fbox{margin-bottom:1.3rem}
 .fbox-title{font-family:'Cinzel',serif;font-size:.66rem;color:var(--gold);letter-spacing:.2em;text-align:center;margin-bottom:.9rem}
 .fd{margin-bottom:.8rem;position:relative}
-.fd label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:.3rem}
-.fd input,.fd select{width:100%;background:#100828;border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Cormorant Garamond',serif;font-size:1rem;padding:.7rem .9rem;outline:none;transition:border-color .2s}
-.fd input:focus,.fd select:focus{border-color:var(--gold)}
+.fd label{display:block;font-size:.98rem;color:#d8c8f0;margin-bottom:.4rem;letter-spacing:.01em}
+.fd input,.fd select{width:100%;background:#150b32;border:1px solid var(--border-2);border-radius:10px;color:#f7f0ff;font-family:'Cormorant Garamond',serif;font-size:1.18rem;padding:.85rem 1rem;outline:none;transition:border-color .2s}
+.fd input::placeholder{color:#9580bd;opacity:1}
+.fd input:focus,.fd select:focus{border-color:var(--gold);background:#1a0f3c}
 .r2{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
 .r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.7rem}
 .autocomplete-results{position:absolute;top:100%;left:0;right:0;background:#15102b;border:1px solid var(--border);border-radius:0 0 10px 10px;z-index:30;max-height:240px;overflow-y:auto;display:none}
@@ -271,7 +272,7 @@ footer{border-top:1px solid var(--border);padding:3rem 1.5rem 2rem;text-align:ce
           <div class="fd"><label>WhatsApp</label><input type="tel" id="f-whatsapp" placeholder="(00) 00000-0000"/></div>
           <div class="fd"><label>E-mail</label><input type="email" id="f-email" placeholder="seu@email.com"/></div>
         </div>
-        <div class="fd" id="campo-cpf" style="display:none"><label>CPF (obrigatório para cartão)</label><input type="text" id="f-cpf" placeholder="000.000.000-00" maxlength="14"/></div>
+        <div class="fd" id="campo-cpf"><label>CPF (obrigatório para gerar o pagamento)</label><input type="text" id="f-cpf" placeholder="000.000.000-00" maxlength="14"/></div>
       </div>
 
       <div class="fbox">
@@ -520,7 +521,7 @@ function selecionarMetodo(m){
   document.getElementById('m-pix').classList.toggle('ativo',m==='pix');
   document.getElementById('m-cartao').classList.toggle('ativo',m==='cartao');
   document.getElementById('form-cartao').classList.toggle('ativo',m==='cartao');
-  document.getElementById('campo-cpf').style.display=m==='cartao'?'block':'none';
+  // CPF agora fica sempre visível (PIX e cartão exigem identificação do pagador)
   atualizarPreco();
 }
 
@@ -590,7 +591,7 @@ function validar(){
   const g=id=>document.getElementById(id).value.trim();
   if(!g('f-nome')||!g('f-email')||!g('f-data')||!g('f-cidade')){erro('Preencha nome, e-mail, data e cidade.');return false}
   if(!document.getElementById('f-lat').value){erro('Selecione sua cidade na lista para fixar as coordenadas.');return false}
-  if(metodoSelecionado==='cartao' && document.getElementById('f-cpf').value.replace(/\D/g,'').length!==11){erro('Informe um CPF válido para pagamento com cartão.');return false}
+  if(document.getElementById('f-cpf').value.replace(/\D/g,'').length!==11){erro('Informe um CPF válido — exigido para gerar o pagamento.');return false}
   const p=PRODUTOS[PRODUTO_ATIVO];
   if(p.extras.includes('sinastria')){
     if(!g('f-parc-nome')||!g('f-parc-data')||!g('f-parc-cidade')){erro('Preencha os dados do parceiro(a).');return false}
