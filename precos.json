@@ -1,15 +1,16 @@
 {
   "_meta": {
+    "MODO": "TESTE — todos os produtos a R$ 1,00",
     "atualizadoEm": "2026-05-27",
-    "_nota": "precoCheio=ancora; preco=lancamento (7 dias); codigo ASTRO-XXX-XXXXXX recebe -10% sobre preco."
+    "_nota": "Use somente durante testes. Substituir pelo precos-PRODUCAO.json para voltar aos valores reais. O frontend continua mostrando precoCheio/preco normais — quem decide o valor cobrado e o backend, que le este arquivo."
   },
-  "mapaastral":              { "ativo": true, "preco": 57.97,  "precoCheio": 87.00,  "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": true,  "nome": "Mapa Astral" },
-  "mapaastralpersonalizado": { "ativo": true, "preco": 129.97, "precoCheio": 197.97, "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": false, "nome": "Mapa Astral Personalizado" },
-  "mapadasorte":             { "ativo": true, "preco": 97.97,  "precoCheio": 167.97, "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": false, "nome": "Mapa da Sorte" },
-  "mapaprofissional":        { "ativo": true, "preco": 97.97,  "precoCheio": 129.97, "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": false, "nome": "Mapa Profissional" },
-  "mapakarmico":             { "ativo": true, "preco": 197.97, "precoCheio": 259.97, "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": false, "nome": "Mapa Karmico" },
-  "lilith":                  { "ativo": true, "preco": 87.97,  "precoCheio": 129.97, "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": false, "nome": "Mapa da Lilith" },
-  "sinastria":               { "ativo": true, "preco": 129.99, "precoCheio": 199.97, "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": false, "nome": "Sinastria do Casal" },
-  "revolucaosolar":          { "ativo": true, "preco": 97.97,  "precoCheio": 159.97, "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": false, "nome": "Revolucao Solar" },
-  "mapaprevisoes":           { "ativo": true, "preco": 159.97, "precoCheio": 249.97, "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": false, "nome": "Mapa de Previsoes - 18 Meses" }
+  "mapaastral":              { "ativo": true, "preco": 1.00, "precoCheio": 87.00,  "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": true,  "nome": "Mapa Astral" },
+  "mapaastralpersonalizado": { "ativo": true, "preco": 1.00, "precoCheio": 197.97, "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": false, "nome": "Mapa Astral Personalizado" },
+  "mapadasorte":             { "ativo": true, "preco": 1.00, "precoCheio": 167.97, "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": false, "nome": "Mapa da Sorte" },
+  "mapaprofissional":        { "ativo": true, "preco": 1.00, "precoCheio": 129.97, "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": false, "nome": "Mapa Profissional" },
+  "mapakarmico":             { "ativo": true, "preco": 1.00, "precoCheio": 259.97, "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": false, "nome": "Mapa Karmico" },
+  "lilith":                  { "ativo": true, "preco": 1.00, "precoCheio": 129.97, "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": false, "nome": "Mapa da Lilith" },
+  "sinastria":               { "ativo": true, "preco": 1.00, "precoCheio": 199.97, "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": false, "nome": "Sinastria do Casal" },
+  "revolucaosolar":          { "ativo": true, "preco": 1.00, "precoCheio": 159.97, "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": false, "nome": "Revolucao Solar" },
+  "mapaprevisoes":           { "ativo": true, "preco": 1.00, "precoCheio": 249.97, "promoDias": 7, "descontoCodigoCliente": 0.10, "isca": false, "nome": "Mapa de Previsoes - 18 Meses" }
 }
