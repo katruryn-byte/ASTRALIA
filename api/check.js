@@ -12,16 +12,23 @@ module.exports = async function handler(req, res) {
   try {
     const redisUrl = process.env.REDIS_URL || process.env.STORAGE_URL;
     const redisClient = createClient({ url: redisUrl });
-    redisClient.on('error', (err) => console.error('Redis error:', err));
+    redisClient.on('error', err => console.error('Redis:', err));
     await redisClient.connect();
     const raw = await redisClient.get(`session:${sessionId}`);
     await redisClient.quit();
 
     if (!raw) return res.status(200).json({ status: 'not_found' });
-
     const session = JSON.parse(raw);
-    return res.status(200).json({ status: session.status });
 
+    // Front precisa saber o produto (e se e isca) para escolher a tela
+    // pos-pagamento: isca gera inline; premium mostra "chega em 48h".
+    return res.status(200).json({
+      status: session.status,
+      produto: session.produto || session.tipo || null,
+      isca: session.isca === true,
+      codigoCliente: session.codigoCliente || null,
+      novoCliente: session.novoCliente || false
+    });
   } catch (error) {
     console.error('Check erro:', error.message);
     return res.status(500).json({ error: error.message });
