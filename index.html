@@ -423,7 +423,7 @@ const PRODUTOS = {
 };
 
 let PRODUTO_ATIVO=null, metodoSelecionado='pix', MP_PUBLIC_KEY=null, mp=null;
-let sessionId=null, pollingInterval=null, tentativas=0, descontoCliente=0, codigoClienteValido=null;
+let sessionId=null, pollingInterval=null, tentativas=0, descontoCliente=0, codigoClienteValido=null, precoFixoAdmin=null;
 const dadosForm={};
 
 function formatBRL(v){return 'R$ '+v.toFixed(2).replace('.',',')}
@@ -501,9 +501,11 @@ function selecionarProduto(pid){
 function atualizarPreco(){
   if(!PRODUTO_ATIVO) return;
   const p=PRODUTOS[PRODUTO_ATIVO];
-  const final=p.precoNum*(1-descontoCliente);
+  const final=precoFixoAdmin!=null ? precoFixoAdmin : p.precoNum*(1-descontoCliente);
   document.getElementById('p-valor').textContent=formatBRL(final);
-  document.getElementById('p-eco').classList.toggle('ativo',descontoCliente>0);
+  const eco=document.getElementById('p-eco');
+  eco.classList.toggle('ativo',descontoCliente>0||precoFixoAdmin!=null);
+  eco.textContent=precoFixoAdmin!=null ? '✦ Modo teste — R$ 1,00' : '✦ Desconto cliente aplicado: -10%';
   // Botão e parcelas
   const btn=document.getElementById('btn-pagar');
   btn.textContent=metodoSelecionado==='pix'?'⚡ Gerar PIX — '+formatBRL(final):'💳 Pagar '+formatBRL(final);
@@ -536,13 +538,17 @@ async function validarCodigoCliente(){
   try{
     const r=await fetch('/api/cliente?codigo='+encodeURIComponent(codigo));
     const d=await r.json();
-    if(r.ok && d.valido){
-      descontoCliente=0.10; codigoClienteValido=codigo;
+    if(r.ok && d.admin){
+      precoFixoAdmin=d.precoFixo||1.00; descontoCliente=0; codigoClienteValido=codigo;
+      st.textContent='✓ '+(d.mensagem||'Modo teste — R$ 1,00');st.className='cr-status ok';
+      atualizarPreco();
+    } else if(r.ok && d.valido){
+      precoFixoAdmin=null; descontoCliente=0.10; codigoClienteValido=codigo;
       st.textContent='✓ Código válido — 10% aplicado.';st.className='cr-status ok';
       atualizarPreco();
     } else {
-      descontoCliente=0; codigoClienteValido=null;
-      st.textContent=d.mensagem||'Código não reconhecido.';st.className='cr-status err';
+      precoFixoAdmin=null; descontoCliente=0; codigoClienteValido=null;
+      st.textContent=d.mensagem||d.error||'Código não reconhecido.';st.className='cr-status err';
       atualizarPreco();
     }
   }catch(e){st.textContent='Não consegui validar agora.';st.className='cr-status err'}
@@ -639,7 +645,7 @@ async function processarPagamento(){
   document.getElementById('err-msg').style.display='none';
   const dados=montarDados();
   const p=PRODUTOS[PRODUTO_ATIVO];
-  const precoFinal=p.precoNum*(1-descontoCliente);
+  const precoFinal=precoFixoAdmin!=null ? precoFixoAdmin : p.precoNum*(1-descontoCliente);
   const btn=document.getElementById('btn-pagar'); btn.disabled=true; btn.textContent='⏳ Processando…';
   try{
     let paymentData;
