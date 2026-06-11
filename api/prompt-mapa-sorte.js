@@ -116,7 +116,7 @@ ANÁLISE COMPLETA DA SORTE NA ASTROLOGIA
 ═══════════════════════════════════════════════════════════════════════════════
 
 ## O QUE É SORTE
-Sorte é MULTIFATORIAL: (1) fluxo natural num campo (Júpiter), (2) período favorável (Dasha), (3) capacidade de reconhecer oportunidade (planetas pessoais dignificados), (4) disposição de agir (Marte, Nodo Norte), (5) sustentação por estrutura (Saturno, dignidades), (6) alinhamento kármico (Nodos), (7) sorte criada vs recebida (Nodo Norte vs Sul).
+Sorte é MULTIFATORIAL: (1) fluxo natural num campo (Júpiter), (2) período favorável, (3) capacidade de reconhecer oportunidade (planetas pessoais dignificados), (4) disposição de agir (Marte, Nodo Norte), (5) sustentação por estrutura (Saturno, dignidades), (6) alinhamento kármico (Nodos), (7) sorte criada vs recebida (Nodo Norte vs Sul).
 Pergunta certa: "Em qual campo, em que medida, em qual período, e através de qual mecanismo eu reconheço e ajo sobre oportunidades?"
 
 ## OS 7 FATORES
@@ -131,7 +131,7 @@ FATOR 2 — DIGNIDADES (30%): sorte genuína precisa planetas dignificados. Exal
 FATOR 3 — NODO NORTE (20%): sorte CRIADA vs RECEBIDA. Nodo Sul = talento natural que não evolui. Nodo Norte = sorte criada por aprendizado (genuína). Nodo Norte 1ª/5ª/10ª/11ª: por visibilidade/ação; 6ª: por superação; 2ª: por valor genuíno; 3ª: por comunicação honesta.
 PARADOXO Nodo Sul em casa boa (ex: 10ª) + Nodo Norte (ex: 4ª): teve carreira fácil (falsa, era o sistema), universo retira, reconstrói com integridade (Nodo Norte) e a verdadeira sorte volta diferente. Fórmula: Sorte Genuína = Desafio (Nodo Norte) + Superação + Integração.
 
-FATOR 4 — DASHAS (timing): Sol 6a (carreira), Lua 10a (emocional/lar), Marte 7a (ação), Mercúrio 17a (comunicação), Júpiter 16a (MÁXIMA SORTE), Vênus 20a (amor/criatividade/finanças), Saturno 19a (sorte ausente, aprendizado), Nodo Norte 18a (sorte por desafio), Nodo Sul 18a (sorte antiga volta, se não aprendeu sofre).
+FATOR 4 — PERÍODOS PLANETÁRIOS (timing): Sol 6a (carreira), Lua 10a (emocional/lar), Marte 7a (ação), Mercúrio 17a (comunicação), Júpiter 16a (MÁXIMA SORTE), Vênus 20a (amor/criatividade/finanças), Saturno 19a (sorte ausente, aprendizado), Nodo Norte 18a (sorte por desafio), Nodo Sul 18a (sorte antiga volta, se não aprendeu sofre).
 
 FATOR 5 — TRÂNSITOS DE JÚPITER (sazonal): ~1 ano por signo/casa. Júpiter na 1ª sorte pessoal; 2ª financeira; 5ª romance/criatividade; 9ª espiritual/viagem; 10ª carreira/promoção; 11ª comunidade/ganhos.
 
@@ -139,19 +139,19 @@ FATOR 6 — SATURNO SOBRE NODO SUL (crise forçada): ~29 anos. Força a deixar o
 
 FATOR 7 — PLANETAS PESSOAIS DIGNIFICADOS (capacidade de agir): Sol/Lua/Mercúrio/Vênus/Marte precisam estar dignificados para reconhecer e agir. Júpiter 10ª (sorte) + Sol 6ª (invisível) = oportunidade vem mas não capitaliza.
 
-## DIGBALA (FORÇA DE POSIÇÃO) — 5% da análise
+## FORÇA DIRECIONAL (🐱) — 5% da análise
 Sol: máx 10ª (liderança automática) | fraco 6ª/8ª/12ª (invisibilidade).
 Lua: máx 4ª (segurança emocional) | fraco 6ª/8ª/12ª (instabilidade).
 Mercúrio: máx 1ª (voz ouvida) | fraco 6ª/8ª/12ª (voz não ouvida).
 Vênus: máx 12ª (amor transcendental) | fraco 6ª/8ª (relacionamentos conflituosos).
 Marte: máx 10ª (ação que conquista) | fraco 4ª/8ª/12ª (paralisia).
-J�piter: máx 11ª (sorte máxima) | fraco 6ª/8ª (sorte bloqueada).
+Júpiter: máx 11ª (sorte máxima) | fraco 6ª/8ª (sorte bloqueada).
 Saturno: máx 7ª (relacionamentos duram 50+ anos) | fraco 4ª/8ª/12ª (estruturas caem).
 3+ em máx = sorte estrutural; nenhum = criar ativamente.
 
 ## PADRÕES DE SORTE
-MÁXIMA (rara): 3+ Digbala máx + Júpiter dignificado + Nodo Norte casa boa. CEO/empreendedor nato.
-BLOQUEADA: Júpiter fraco + 3+ Digbala fraco + Nodo Sul casa boa. Luta multifatorial, mas potencial transformador.
+MÁXIMA (rara): 3+ Força Direcional máx + Júpiter dignificado + Nodo Norte casa boa. CEO/empreendedor nato.
+BLOQUEADA: Júpiter fraco + 3+ Força Direcional fraco + Nodo Sul casa boa. Luta multifatorial, mas potencial transformador.
 CRIADA (herói): Nodo Norte 6ª/1ª + Nodo Sul casa boa + Marte/Sol bom. Cada obstáculo superado vira força.
 PARCIAL: sorte em alguns campos, bloqueio em outros. Sorte é DIRECIONAL — escolher o campo certo é tudo.
 TEMPORÁRIA: Fase 1 ou 2 de Nodo Sul em casa boa — vai mudar.
@@ -162,10 +162,10 @@ FASE 2 CRISE: aceitou que não volta, sofre de verdade, questiona tudo, experime
 FASE 3 INTEGRAÇÃO: não precisa mais da sorte antiga, Nodo Norte é natural, clareza, reconstrói genuíno, sorte verdadeira retorna (merecida), paz interior.
 
 ## CHECKLIST DE ANÁLISE (ORDEM DE LEITURA)
-1. JÚPITER (40%): casa, signo, dignidade, digbala, aspectos.
+1. JÚPITER (40%): casa, signo, dignidade, Força Direcional, aspectos.
 2. DIGNIDADES (30%): quantos fortes vs fracos; pessoais dignificados?
 3. NODOS (20%): Nodo Sul em casa boa? Nodo Norte em casa boa? Que sorte CRIAR?
-4. DIGBALA (5%): quantos em força máxima?
+4. FORÇA DIRECIONAL (5%): quantos em força máxima?
 5. SÍNTESE (5%): campo de sorte natural, campo de luta, fase, padrão geral.
 6. PARTE DA FORTUNA: onde a vida flui com MENOS esforço (signo+casa); cruzar com Júpiter (coincide=reforço; diverge=2 campos) e com Nodo Norte (sorte fácil vs sorte a desenvolver).
 
@@ -177,7 +177,7 @@ FASE 3 INTEGRAÇÃO: não precisa mais da sorte antiga, Nodo Norte é natural, c
 5. Onde a Parte da Fortuna indica fluxo com menos esforço?
 
 ## VERDADE FINAL
-Sorte não é acaso. É a intersecção de estrutura cósmica (dignidades, digbala) + timing (Dashas, trânsitos) + capacidade de agir (pessoais fortes) + alinhamento kármico (Nodos) + disposição de aprender. Pessoas "com sorte" têm melhor ALINHAMENTO — e alinhamento pode ser lido, entendido e usado.
+Sorte não é acaso. É a intersecção de estrutura cósmica (dignidades, Força Direcional) + timing (períodos planetários, trânsitos) + capacidade de agir (pessoais fortes) + alinhamento kármico (Nodos) + disposição de aprender. Pessoas "com sorte" têm melhor ALINHAMENTO — e alinhamento pode ser lido, entendido e usado.
 `;
 
 // -------------------------------------------------------------------------------
@@ -202,29 +202,41 @@ FATOS: você TEM sorte (todos têm), mas em áreas específicas; sua sorte é PE
 POR QUE NÃO ACESSA: bloqueios conscientes ("não mereço", "não é para mim") ou inconscientes (crença familiar, trauma, padrão familiar, culpa de ter, medo de perder).
 SINAIS DE BLOQUEIO: oportunidades chegam mas você sabota; consegue mas perde; outros têm fácil; trabalha muito e colhe pouco; sente "maldição"; quando progride algo ruim acontece; sente-se indigna; quer mas teme; culpa de ter.
 
-## ESTRUTURA (33 SEÇÕES)
-SEÇÃO 1: Capa + dados | SEÇÃO 2: Introdução + como ler
-SEÇÃO 3: SUA SORTE NATURAL (700p) — áreas onde TEM sorte, por quê (astrológico), como potencializar
-SEÇÃO 4: SEUS BLOQUEIOS (800p) — onde travada, raiz profunda, crença/padrão, como desentravar
-SEÇÃO 5: A RODA DA SORTE + PARTE DA FORTUNA (800p) — visualização das 8-9 áreas + o PONTO de fluxo natural (Pars Fortunae): signo, casa, cruzamento com Júpiter e Nodo Norte, e o que fazer na prática
-SEÇÃO 6: DINHEIRO E ABUNDÂNCIA (1000p) — relação com dinheiro, bloqueios, por que ganha/perde, ativação de fluxo
-SEÇÃO 7: RELACIONAMENTOS (800p) — sorte amorosa, padrão, bloqueios, como atrair saudável, timing
-SEÇÃO 8: OPORTUNIDADES PROFISSIONAIS (800p) — sorte em carreira, portas que abrem/fecham, timing, sua oportunidade certa
-SEÇÃO 9: CRIATIVIDADE E EXPRESSÃO (600p) — fluxo criativo, confiança, desbloqueio
-SEÇÃO 10: SAÚDE E PROTEÇÃO (600p) — resiliência, recuperação, proteção, vitalidade
-SEÇÃO 11: CONEXÕES E REDES (500p) — pessoas certas, qualidade das redes, timing de encontros
-SEÇÃO 12: SINCRONICIDADES (500p) — timing cósmico, estar no lugar certo, alinhamento com fluxo
-SEÇÃO 13-20: ANÁLISE ASTROLÓGICA (6000p): Júpiter; Nodo Norte; Casa X (Sol/Marte digbala); Casa XI (rede); aspectos beneficiadores; planeta retrógrado; retorno de Júpiter (ciclo 12 anos); trânsitos de oportunidade 12 meses
-SEÇÃO 21: BLOQUEIOS FAMILIARES (600p) — padrão de sorte/falta na família, herança, como quebrar, permissão de ter mais que os pais
-SEÇÃO 22: CULPA DE TER (500p) — culpa, medo de inveja, sacrifício, liberação, permissão de prosperar
-SEÇÃO 23: MEDO DE PERDER (500p) — apego, controle, soltura, fluxo natural
-SEÇÃO 24: MANIFESTAÇÃO (600p) — como cria realidade, afirmações, visualização, lei da atração + ação
-SEÇÃO 25-28: PRÁTICAS DE ATIVAÇÃO (2000p): Ativação Diária (15min); Quebra de Bloqueios (30min, 3x/sem); Ritual de Recebimento Mensal (45min); Alinhamento com Júpiter Semanal (10min, quinta)
-SEÇÃO 29: MESES DE SORTE (300p) — meses afortunados (via Júpiter/Nodo), como aproveitar
-SEÇÃO 30: SEU PLANO DE SORTE (300p) — diagnóstico, objetivo, ações, timeline 90 dias
-SEÇÃO 31: AFIRMAÇÕES PERSONALIZADAS (400p) — por área e contra bloqueios
-SEÇÃO 32: CONCLUSÃO (300p) — sorte é direito, começa hoje, esperança + ação + Comunidade VIP
-SEÇÃO 33: PRÓXIMOS PASSOS + UPSELLS (200p) — Kármico (se bloqueios são de fundo), Lilith (tema de merecimento), Sinastria (se relacional)
+## ESTRUTURA (33 SEÇÕES) — PISOS MÍNIMOS A SUPERAR, NUNCA TETOS
+> Cada número abaixo é um PISO (chão de palavras). É PROIBIDO resumir, agrupar, abreviar ou "fechar" uma seção antes do piso. Supere sempre que o mapa pedir. Integre signo + casa + grau + dignidade 🌟 + Força Direcional 🐱 em prosa fluida, segunda pessoa, ancorada nos dados reais — nunca genérico.
+SEÇÃO 1: CAPA + DADOS DO MAPA (abertura, com tabela-mestre 🌟🐱) — piso 150p
+SEÇÃO 2: INTRODUÇÃO + COMO LER (piso 600p) — o que é sorte real; os fatores sem jargão técnico
+SEÇÃO 3: SUA SORTE NATURAL (piso 1500p) — campos onde flui e por quê (astrológico), como potencializar
+SEÇÃO 4: SEUS BLOQUEIOS (piso 1500p) — onde trava, raiz profunda, crença/padrão, como desentravar
+SEÇÃO 5: A RODA DA SORTE + PARTE DA FORTUNA (piso 1500p) — as 8-9 áreas + o PONTO de fluxo (Pars Fortunae): signo, casa, regente, cruzamento com Júpiter e Nodo Norte, comando prático
+SEÇÃO 6: DINHEIRO E ABUNDÂNCIA (piso 1800p) — relação com dinheiro, por que ganha/perde, ativação de fluxo
+SEÇÃO 7: RELACIONAMENTOS (piso 1500p) — sorte amorosa, padrão, como atrair saudável, timing
+SEÇÃO 8: OPORTUNIDADES PROFISSIONAIS (piso 1500p) — portas que abrem/fecham, sua oportunidade certa, timing
+SEÇÃO 9: CRIATIVIDADE E EXPRESSÃO (piso 1200p) — fluxo criativo, confiança, desbloqueio
+SEÇÃO 10: SAÚDE E PROTEÇÃO (piso 1200p) — resiliência, recuperação, proteção, vitalidade
+SEÇÃO 11: CONEXÕES E REDES (piso 1000p) — pessoas certas, qualidade das redes, timing de encontros
+SEÇÃO 12: SINCRONICIDADES (piso 1000p) — timing cósmico, estar no lugar certo, alinhamento com o fluxo
+SEÇÃO 13: JÚPITER — SEU CAMPO NATURAL DE SORTE (Fator 1, 40%) (piso 2200p) — signo + casa + dignidade 🌟 + Força Direcional 🐱 + aspectos; nomear bloqueios de Saturno/Marte tensos
+SEÇÃO 14: DIGNIDADES — QUEM ESTÁ NO SEU TIME (Fator 2, 30%) (piso 1600p) — os 7 planetas com 🌟; fortes vs fracos; foco nos pessoais (Sol/Lua/Mercúrio)
+SEÇÃO 15: NODO NORTE E NODO SUL — SORTE CRIADA VS RECEBIDA (Fator 3, 20%) (piso 2000p) — signos/casas, conjunções (orbe 8°), fase do Nodo Sul (1/2/3)
+SEÇÃO 16: FORÇA DIRECIONAL — ONDE CADA PLANETA BRILHA 🐱 (piso 1500p) — os 7 com 🐱; 6 indicadores-chave; 3+ em máxima = sorte estrutural
+SEÇÃO 17: RODA DA FORTUNA APROFUNDADA (piso 1400p) — qualidade do fluxo, regente, aspectos com Júpiter/Saturno, ativação consciente
+SEÇÃO 18: CASA DO SOL E DA CARREIRA (piso 1400p) — Sol/Marte por casa e Força Direcional; visibilidade profissional
+SEÇÃO 19: CASA 11 — REDE E COMUNIDADE (piso 1200p) — Júpiter/Casa 11; sorte coletiva e de grupos
+SEÇÃO 20: ASPECTOS AMPLIFICADORES E CICLO DE JÚPITER (piso 1400p) — aspectos benéficos; retorno de Júpiter (~12 anos); janelas de oportunidade
+SEÇÃO 21: BLOQUEIOS FAMILIARES (piso 1400p) — padrão de sorte/falta na linhagem; permissão de ter mais que os pais
+SEÇÃO 22: CULPA DE TER (piso 1200p) — culpa, medo de inveja, permissão de prosperar
+SEÇÃO 23: MEDO DE PERDER (piso 1200p) — apego, controle, soltura, fluxo natural
+SEÇÃO 24: MANIFESTAÇÃO (piso 1400p) — como cria realidade; lei da atração + ação alinhada
+SEÇÃO 25: PRÁTICA — ATIVAÇÃO DIÁRIA (piso 550p) — 15min: passo a passo personalizado ao mapa
+SEÇÃO 26: PRÁTICA — QUEBRA DE BLOQUEIOS (piso 550p) — 30min, 3x/sem: passo a passo
+SEÇÃO 27: PRÁTICA — RITUAL DE RECEBIMENTO MENSAL (piso 550p) — 45min: passo a passo
+SEÇÃO 28: PRÁTICA — ALINHAMENTO COM JÚPITER (piso 550p) — 10min, quinta: passo a passo
+SEÇÃO 29: MESES DE SORTE (piso 800p) — janelas afortunadas (Júpiter/Nodo) e como aproveitar
+SEÇÃO 30: SEU PLANO DE SORTE — 90 DIAS (piso 900p) — diagnóstico, objetivo, ações, timeline
+SEÇÃO 31: AFIRMAÇÕES PERSONALIZADAS (piso 800p) — por área e contra bloqueios
+SEÇÃO 32: CONCLUSÃO (piso 800p) — sorte é direito; começa hoje; esperança + ação
+SEÇÃO 33: PRÓXIMOS PASSOS + CROSS-SELL (piso 500p) — condicionados ao mapa: Kármico (bloqueios de fundo / Nodo Sul casa boa fase 1-2); Previsão 18 Meses (Júpiter fraco + bloqueio financeiro); Sinastria (Vênus fraca / tema relacional); Profissional (Sol fraco). Aviso de responsabilidade + assinatura "nossa astróloga — ASTRALIA"
 
 ## PRÁTICAS (resumo para uso nas seções 25-28)
 P1 ATIVAÇÃO DIÁRIA (15min): respiração de abertura; identificar área de sorte e sentir a leveza; expandir a sensação para área desejada; afirmação ("minha sorte se expande"); ação alinhada no dia.
@@ -264,7 +276,7 @@ ONDE A VIDA FLUI COM MENOS ESFORÇO
 
 ## O QUE É
 Ponto CALCULADO que mostra ONDE você tem sorte natural — onde as coisas fluem fácil. Não é magia: é matemática astrológica + psicologia.
-J�piter = sorte GERAL. Parte da Fortuna = sorte ESPECÍFICA (onde prospera com menos atrito). Nodo Norte = onde você CRESCE. Sol = quem você É.
+Júpiter = sorte GERAL. Parte da Fortuna = sorte ESPECÍFICA (onde prospera com menos atrito). Nodo Norte = onde você CRESCE. Sol = quem você É.
 QUANDO A PARTE DA FORTUNA TOCA JÚPITER (mesmo signo/casa): reforço duplo poderoso — fluxo natural coincide com expansão jupiteriana. Sorte concentrada e amplificada nesse campo.
 
 ## FÓRMULA
@@ -390,11 +402,90 @@ function calcularParteFortuna(asc, lua, sol, cuspides = null) {
 // -------------------------------------------------------------------------------
 
 const SECOES_POR_PARTE = {
-  completo: { inicio: 1, fim: 33, metaPalavras: 14000, descricao: 'TODAS as 33 seções (cuidado: pode estourar max_tokens — prefira gerar em partes)' },
-  parte1:   { inicio: 1, fim: 12, metaPalavras: 6000, descricao: 'Seções 1-12 — ATOS 1 e 2: Capa + Apresentação + Sorte Natural + Bloqueios + RODA DA SORTE & PARTE DA FORTUNA + 7 áreas de vida (Dinheiro, Relacionamentos, Profissional, Criatividade, Saúde, Conexões, Sincronicidades)' },
-  parte2:   { inicio: 13, fim: 24, metaPalavras: 5000, descricao: 'Seções 13-24 — ATO 3: Análise Astrológica completa (Júpiter, Nodo Norte, Casa X, Casa XI, aspectos, retrógrados, retorno de Júpiter, trânsitos 12 meses, e PARTE DA FORTUNA aprofundada como 6º fator) + Bloqueios Familiares + Culpa + Medo + Manifestação' },
-  parte3:   { inicio: 25, fim: 33, metaPalavras: 3000, descricao: 'Seções 25-33 — ATO 4: 4 Práticas de Ativação + Meses de Sorte + Plano de 90 Dias + Afirmações + Conclusão + Próximos Passos/Upsells' }
+  completo: { inicio: 1,  fim: 33, pisoPalavras: 50000, descricao: 'TODAS as 33 seções — somente teste local; em produção gere em 9 partes pelo operário' },
+  parte1:   { inicio: 1,  fim: 4,  pisoPalavras: 3750, descricao: 'Seções 1-4 — ATO 1: Capa + tabela-mestre, Introdução, Sua Sorte Natural, Seus Bloqueios' },
+  parte2:   { inicio: 5,  fim: 8,  pisoPalavras: 6300, descricao: 'Seções 5-8 — ATO 2 (áreas): Roda da Sorte + Parte da Fortuna, Dinheiro, Relacionamentos, Oportunidades Profissionais' },
+  parte3:   { inicio: 9,  fim: 12, pisoPalavras: 4400, descricao: 'Seções 9-12 — ATO 2 (áreas): Criatividade, Saúde e Proteção, Conexões e Redes, Sincronicidades' },
+  parte4:   { inicio: 13, fim: 14, pisoPalavras: 3800, descricao: 'Seções 13-14 — ATO 3 (técnico): Júpiter (Fator 1, 40%) e Dignidades (Fator 2, 30%)' },
+  parte5:   { inicio: 15, fim: 17, pisoPalavras: 4900, descricao: 'Seções 15-17 — ATO 3 (técnico): Nodos (Fator 3, 20%), Força Direcional, Roda da Fortuna aprofundada' },
+  parte6:   { inicio: 18, fim: 20, pisoPalavras: 4000, descricao: 'Seções 18-20 — ATO 3 (técnico): Casa do Sol/carreira, Casa 11, Aspectos + ciclo de Júpiter' },
+  parte7:   { inicio: 21, fim: 24, pisoPalavras: 5200, descricao: 'Seções 21-24 — ATO 3 (sombra): Bloqueios Familiares, Culpa de Ter, Medo de Perder, Manifestação' },
+  parte8:   { inicio: 25, fim: 29, pisoPalavras: 3000, descricao: 'Seções 25-29 — ATO 4: 4 Práticas de Ativação + Meses de Sorte' },
+  parte9:   { inicio: 30, fim: 33, pisoPalavras: 3000, descricao: 'Seções 30-33 — ATO 4: Plano de 90 Dias, Afirmações, Conclusão, Próximos Passos + Cross-sell' }
 };
+
+// -------------------------------------------------------------------------------
+// DIGNIDADES (🌟) e FORÇA DIRECIONAL (🐱) — cálculo determinístico (diretrizes do PDF)
+// Contrato de posicoes.planetas: [{ nome, signo, grau, casa, retro }] (nomes em PT)
+// -------------------------------------------------------------------------------
+const _PT = { Sun:'Sol', Moon:'Lua', Mercury:'Mercúrio', Venus:'Vênus', Mars:'Marte', Jupiter:'Júpiter', Saturn:'Saturno' };
+function _normPlaneta(n){ return _PT[n] || n; }
+
+const DIGNIDADES = {
+  'Sol':      { exalt:['Áries'],   dom:['Leão'],               queda:['Libra'],     detr:['Aquário'] },
+  'Lua':      { exalt:['Touro'],   dom:['Câncer'],             queda:['Escorpião'], detr:['Capricórnio'] },
+  'Mercúrio': { exalt:['Virgem'],  dom:['Gêmeos','Virgem'],    queda:['Peixes'],    detr:['Sagitário','Peixes'] },
+  'Vênus':    { exalt:['Peixes'],  dom:['Touro','Libra'],      queda:['Virgem'],    detr:['Áries','Escorpião'] },
+  'Marte':    { exalt:['Capricórnio'], dom:['Áries','Escorpião'], queda:['Câncer'], detr:['Libra','Touro'] },
+  'Júpiter':  { exalt:['Câncer'],  dom:['Sagitário','Peixes'], queda:['Capricórnio'], detr:['Gêmeos','Virgem'] },
+  'Saturno':  { exalt:['Libra'],   dom:['Capricórnio','Aquário'], queda:['Áries'], detr:['Câncer','Leão'] },
+};
+function dignidadeDe(planeta, signo){
+  const pl = _normPlaneta(planeta); const d = DIGNIDADES[pl];
+  if(!d) return null;
+  if(d.exalt.includes(signo)) return { nivel:'Exaltado', estrelas:'🌟🌟🌟🌟🌟' };
+  if(d.dom.includes(signo))   return { nivel:'Domicílio', estrelas:'🌟🌟🌟🌟' };
+  if(d.queda.includes(signo)) return { nivel:'Caído',     estrelas:'🌟🌟' };
+  if(d.detr.includes(signo))  return { nivel:'Detrimento',estrelas:'🌟' };
+  return { nivel:'Neutra', estrelas:'🌟🌟🌟' };
+}
+
+// Tabela de Força Direcional (PDF): casa de força máxima, casas neutras, casas fracas
+const FORCA_DIRECIONAL = {
+  'Sol':      { max:[10], neutra:[1,5,9],    fraca:[6,8,12] },
+  'Lua':      { max:[4],  neutra:[1,5,7],    fraca:[6,8,12] },
+  'Mercúrio': { max:[1],  neutra:[2,3,5,9],  fraca:[6,8,12] },
+  'Vênus':    { max:[12], neutra:[1,2,5,7],  fraca:[6,8] },
+  'Marte':    { max:[10], neutra:[1,3,5,6],  fraca:[4,8,12] },
+  'Júpiter':  { max:[11], neutra:[1,5,9,12], fraca:[6,8] },
+  'Saturno':  { max:[7],  neutra:[1,3,6,10], fraca:[4,8,12] },
+};
+function forcaDirecionalDe(planeta, casa){
+  const pl = _normPlaneta(planeta); const f = FORCA_DIRECIONAL[pl]; const c = Number(casa);
+  if(!f || !c) return null;
+  if(f.max.includes(c))    return { nivel:'máxima', gatinhos:'🐱🐱🐱🐱🐱' };
+  if(f.fraca.includes(c))  return { nivel:'fraca',  gatinhos:'🐱' };
+  return { nivel:'neutra', gatinhos:'🐱🐱🐱' };
+}
+
+// Monta a TABELA-MESTRE determinística (planeta | signo | grau | casa | Rx | dignidade 🌟 | força direcional 🐱)
+// a partir de posicoes.planetas. Retorna '' se não houver dados (o prompt então instrui o cálculo).
+function tabelaMestreSorte(posicoes){
+  if(!posicoes || !Array.isArray(posicoes.planetas) || !posicoes.planetas.length) return '';
+  const ORD = ['Sol','Lua','Mercúrio','Vênus','Marte','Júpiter','Saturno'];
+  const linhas = [];
+  let nMax = 0, nDign = 0;
+  for(const nomeP of ORD){
+    const pl = posicoes.planetas.find(x => _normPlaneta(x.nome) === nomeP);
+    if(!pl) continue;
+    const dig = dignidadeDe(nomeP, pl.signo);
+    const fd  = forcaDirecionalDe(nomeP, pl.casa);
+    if(fd && fd.nivel==='máxima') nMax++;
+    if(dig && (dig.nivel==='Exaltado'||dig.nivel==='Domicílio')) nDign++;
+    const grau = (pl.grau!=null) ? (Math.floor(Number(pl.grau))+'°') : '';
+    const rx = pl.retro ? 'Rx' : '';
+    linhas.push(`- ${nomeP}: ${pl.signo} ${grau} | Casa ${pl.casa||'?'} ${rx} | Dignidade: ${dig?dig.nivel+' '+dig.estrelas:'—'} | Força Direcional: ${fd?fd.nivel+' '+fd.gatinhos:'—'}`);
+  }
+  if(!linhas.length) return '';
+  const padrao = nMax>=3 ? 'sorte ESTRUTURAL (não acidental): 3+ planetas em força máxima' :
+                 nMax===0 ? 'sorte a ser CRIADA ativamente: nenhum planeta em força máxima' :
+                 'sorte PARCIAL: força concentrada em campos específicos';
+  return `TABELA-MESTRE DA SORTE (calculada — use estes valores, não recalcule):
+${linhas.join('\n')}
+- Planetas em força máxima 🐱🐱🐱🐱🐱: ${nMax} | dignificados (exaltado/domicílio): ${nDign}
+- Leitura estrutural: ${padrao}.
+- Use 🐱 (gatinhos) e 🌟 (estrelas) ao apresentar; NUNCA o nome técnico do sistema.`;
+}
 
 // -------------------------------------------------------------------------------
 // FUNÇÃO BUILD — monta o prompt final em runtime
@@ -402,7 +493,7 @@ const SECOES_POR_PARTE = {
 
 function buildPromptMapaDaSorte(dados, planetasInfo, casasInfo, aspectosInfo, parte = 'completo', posicoes = null) {
   const escopo = SECOES_POR_PARTE[parte];
-  if (!escopo) throw new Error(`Parâmetro 'parte' inválido: '${parte}'. Use: completo, parte1, parte2, parte3.`);
+  if (!escopo) throw new Error(`Parâmetro 'parte' inválido: '${parte}'. Use: completo, parte1..parte9.`);
 
   const nome = dados.nome || '[NOME]';
   const dataNasc = dados.dataNascimento || dados.data || '[DATA]';
@@ -424,7 +515,10 @@ function buildPromptMapaDaSorte(dados, planetasInfo, casasInfo, aspectosInfo, pa
     }
   }
 
-  return `Você é uma astróloga prática, esperançosa e empoderadora da Astralia.
+  const blocoTabelaMestre = tabelaMestreSorte(posicoes) ||
+    'TABELA-MESTRE DA SORTE: posições não fornecidas para cálculo automático de dignidades/Força Direcional. Deduza do mapa com cuidado, usando 🌟 para dignidade e 🐱 para Força Direcional.';
+
+  return `Você é uma astróloga prática, esperançosa e empoderadora da Astralia. Escreve em PORTUGUÊS DO BRASIL e NUNCA é determinista: use "tende a", "pode indicar", nunca afirmações absolutas. Nomeia os bloqueios com franqueza, ancorados no posicionamento real, sem culpabilizar e sempre com caminho.
 Gere um MAPA DA SORTE para ${nome}, seguindo o ENREDO de 4 atos (Reconhecimento → Revelação → Entendimento → Libertação), FORMA em segunda pessoa, específica e validadora, e PERSUASÃO em 5 movimentos.
 
 ═══════════════════════════════════════════════════════════════════════════════
@@ -453,7 +547,7 @@ FILOSOFIA: ENREDO + FORMA + PERSUASÃO
 ${FILOSOFIA_MAPA_SORTE}
 
 ═══════════════════════════════════════════════════════════════════════════════
-ANÁLISE ASTROLÓGICA TÉCNICA (Júpiter, Dignidades, Nodos, Digbala, Parte da Fortuna)
+ANÁLISE ASTROLÓGICA TÉCNICA (Júpiter, Dignidades, Nodos, Força Direcional, Parte da Fortuna)
 ═══════════════════════════════════════════════════════════════════════════════
 ${ANALISE_ASTROLOGICA_SORTE}
 
@@ -461,6 +555,11 @@ ${ANALISE_ASTROLOGICA_SORTE}
 PARTE DA FORTUNA — GUIA COMPLETO (6º fator de análise)
 ═══════════════════════════════════════════════════════════════════════════════
 ${PARTE_DA_FORTUNA}
+
+═══════════════════════════════════════════════════════════════════════════════
+TABELA-MESTRE — DIGNIDADES (🌟) E FORÇA DIRECIONAL (🐱)
+═══════════════════════════════════════════════════════════════════════════════
+${blocoTabelaMestre}
 
 ═══════════════════════════════════════════════════════════════════════════════
 ESTRUTURA OBRIGATÓRIA — 33 SEÇÕES + FUNDAMENTOS + PRÁTICAS + AFIRMAÇÕES
@@ -473,7 +572,7 @@ ESCOPO DESTA GERAÇÃO
 Modo: ${parte.toUpperCase()}
 Gerar APENAS: ${escopo.descricao}
 Faixa de seções: ${escopo.inicio} a ${escopo.fim} (inclusive)
-META DE PALAVRAS: ${escopo.metaPalavras} palavras (não economize — desenvolva com profundidade)
+PISO MÍNIMO desta parte: ${escopo.pisoPalavras} palavras. Isto é CHÃO, não teto: supere sempre que o mapa pedir. É PROIBIDO resumir, agrupar seções ou abreviar para "caber". Profundidade máxima em cada seção.
 ⚠️ NÃO gere seções fora desta faixa. Outras chamadas completam.
 
 ═══════════════════════════════════════════════════════════════════════════════
@@ -501,8 +600,9 @@ LEMBRETES FINAIS
 9. ESPERANÇA realista (90 dias, não "1 semana")
 10. PARTE DA FORTUNA: traduzir o signo+casa em FLUXO prático, cruzar com Júpiter e Nodo Norte, e dar comando concreto ("estruture renda/carreira no campo X porque é onde você flui com menos esforço")
 11. Final empoderador + Comunidade VIP + Upsells naturais (Kármico, Lilith, Sinastria)
+12. INSPIRAÇÃO: lembre ${nome} de que a cada ciclo — e a cada Revolução Solar — ela renasce com novos caminhos e oportunidades; a sorte é uma correnteza que se renova.
 
-Gere agora APENAS as seções ${escopo.inicio} a ${escopo.fim}, dentro de ~${escopo.metaPalavras} palavras. Retorne apenas o JSON.`;
+Gere agora APENAS as seções ${escopo.inicio} a ${escopo.fim}, SUPERANDO o piso de ${escopo.pisoPalavras} palavras (nunca menos). Retorne apenas o JSON.`;
 }
 
 // -------------------------------------------------------------------------------
@@ -510,7 +610,7 @@ Gere agora APENAS as seções ${escopo.inicio} a ${escopo.fim}, dentro de ~${esc
 // -------------------------------------------------------------------------------
 const METADADOS_MAPA_SORTE = {
   framework: "Mapa da Sorte — Júpiter + Casa 2 + Nodo Norte + Parte da Fortuna + abundância acessível",
-  modeloRecomendado: "claude-opus-4-7",
+  modeloRecomendado: "claude-sonnet-4-6",
   palavrasEsperadas: "13.000-16.000",
   tipo: "premium_assincrono_48h",
   saida: "JSON por seções — gerado POR PARTES (chunked); renderização de PDF é camada separada",
@@ -520,8 +620,12 @@ const METADADOS_MAPA_SORTE = {
 // -------------------------------------------------------------------------------
 // EXPORTS
 // -------------------------------------------------------------------------------
+// alias de nome-padrão (mesma assinatura/comportamento; preserva o modo chunked)
+const buildPromptSorte = buildPromptMapaDaSorte;
+
 module.exports = {
   buildPromptMapaDaSorte,
+  buildPromptSorte,
   calcularParteFortuna,
   METADADOS_MAPA_SORTE,
   FILOSOFIA_MAPA_SORTE,
@@ -531,5 +635,6 @@ module.exports = {
   FORTUNA_SIGNO,
   FORTUNA_CASA,
   SECOES_POR_PARTE,
+  DIGNIDADES, FORCA_DIRECIONAL, dignidadeDe, forcaDirecionalDe, tabelaMestreSorte,
   SIGNOS_ORDEM
 };
