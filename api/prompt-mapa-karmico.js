@@ -2,7 +2,7 @@
 // ☋ PROMPT — MAPA KÁRMICO — Astralia
 // ═══════════════════════════════════════════════════════════════════════════════
 // Produto Premium — Padrões, ciclos, libertação da alma
-// Modelo recomendado: claude-opus-4-7 (Opus — profundidade filosófica e síntese)
+// Modelo recomendado: claude-sonnet-4-6 (Opus — profundidade filosófica e síntese)
 // Comprimento alvo: 10.000-15.000 palavras
 // Tom: Profundo, transformador, esperançoso — NUNCA culpabilizante
 // Palavra-chave: LIBERTAÇÃO ATRAVÉS DO AUTOCONHECIMENTO
@@ -403,39 +403,43 @@ FÓRMULA: "Você veio para [Nodo Norte] usando o dom de [Quíron integrado] a fi
 // -------------------------------------------------------------------------------
 
 const ESTRUTURA_KARMICO = `
-## ESTRUTURA DO RELATÓRIO (seções)
-1. Carta ao cliente (acolhe antes de revelar; "você não está aqui por acaso") ~300 palavras
-2. O que é karma para ESTE cliente (não genérico) ~400
-3. NODO SUL — de onde você vem (talentos, zona de conforto, padrão inconsciente, maestria que virou prisão) mín. 700
-4. NODO NORTE — para onde você evolui (aprendizado, por que é difícil, se ignora, se honra, práticas) mín. 800
-5. Integração — o caminho entre os dois Nodos (4 fases + onde está agora + próximos passos) ~400
-6. A SERPENTE KÁRMICA — o ciclo central (identificação, como se manifesta, ponto de virada) ~600
-7. Seu SAMSARA específico (o ciclo que repete, o gatilho, o ponto de interrupção) ~500
-8. PLUTÃO — morte e renascimento (o que se transforma, por que a resistência dói, o que nasce) ~600
-9. SATURNO — a lição (o que cobra, por que parece injusto, a estrutura que nasce) ~500
-10. QUÍRON — ferida sagrada (a ferida, como se manifesta, o dom que contém, caminho de maestria) ~500
-11. LILITH — poder reprimido (o que foi silenciado, como emerge, como integrar) ~400
-12. PADRÕES TRANSGERACIONAIS (o herdado, padrão materno e paterno, como quebrar cada um) ~700
-13. PADRÕES EM RELACIONAMENTOS (seu padrão no amor, por que atrai o que atrai, como evoluir) ~500
-14. CASAS KÁRMICAS — IV, VIII, XII ~500
-15. MISSÃO DE ALMA (por que está aqui, contribuição única, como honrar no cotidiano) ~400
-16. PRÁTICAS DE LIBERTAÇÃO (5-7 ESPECÍFICAS para este mapa) ~500
-17. AFIRMAÇÕES PERSONALIZADAS (10, baseadas nestes nodos, este Plutão, este Quíron) ~200
-18. PRÓXIMOS 3 MESES (o que fazer, em que ordem, como verificar avanço) ~300
-19. MENSAGEM FINAL (não veio para sofrer, veio para se libertar; padrões não são identidade; mapa não é sentença) ~300
-20. PRÓXIMOS PASSOS ASTRALIA (upsell individual)
+## ESTRUTURA DO RELATÓRIO (22 seções, nesta ordem)
+EXTENSÃO: relatório PREMIUM EXTENSO. Os números são PISOS MÍNIMOS de palavras, NUNCA tetos. É proibido resumir, agrupar ou abreviar. Na dúvida, vá mais fundo. Cite SEMPRE signo + casa + grau reais de cada ponto (Nodos, Saturno, Quíron, Plutão, Lilith) e os aspectos com orbe, correlacionando-os. Cada padrão difícil é nomeado com compaixão e SEMPRE seguido do caminho de libertação, nunca como rótulo clínico.
+
+1. CARTA AO CLIENTE (>=700): acolhe antes de revelar; "você não está aqui por acaso". Tom de quem enxerga a alma, não a culpa.
+2. O QUE É KARMA PARA ESTE CLIENTE (>=1200): não genérico; ancore no mapa real, nas três câmaras (vida anterior, ancestral, em resolução).
+3. NODO SUL — DE ONDE VOCÊ VEM (>=2800): signo + casa + regente do NS (signo/casa onde está) + planetas conjuntos ao NS (orbe 8°); talentos prontos, zona de conforto, maestria que virou prisão.
+4. NODO NORTE — PARA ONDE VOCÊ EVOLUI (>=3000): signo + casa + regente do NN (signo/casa) + planetas conjuntos ao NN; por que é difícil, o que muda quando se honra, práticas.
+5. EIXO KÁRMICO E A INTEGRAÇÃO ENTRE OS NODOS (>=1600): o eixo de casas (1-7, 2-8, 3-9, 4-10, 5-11, 6-12) e seu tema central; as fases entre os Nodos e onde a pessoa está agora.
+6. A SERPENTE KÁRMICA — O CICLO CENTRAL (>=1800): identificação, como se manifesta hoje, o ponto exato de virada.
+7. SEU SAMSARA ESPECÍFICO (>=1600): nomeie ao menos 3 ciclos que se repetem, o gatilho de cada um e o ponto de interrupção.
+8. PLANETAS RETRÓGRADOS NATAIS — O KARMA REAPRENDIDO (>=1600): para cada planeta Rx natal, o tema kármico (energia internada em outro tempo, reaprendida de dentro para fora). Se não houver Rx, diga e leia a ausência.
+9. PLUTÃO — MORTE E RENASCIMENTO (>=2000): casa + aspectos com pessoais (Sol/Lua/Vênus/Marte/Mercúrio); o que se transforma, por que a resistência dói, o que nasce.
+10. SATURNO — A LIÇÃO KÁRMICA CENTRAL (>=2000): signo + casa + retrógrado? + aspectos com os Nodos; o que cobra, por que parece injusto, a estrutura que dura.
+11. QUÍRON — A FERIDA SAGRADA (>=2000): signo + casa + aspecto com NN; a ferida, como se manifesta, o dom que ela esconde, o caminho de maestria.
+12. LILITH — O PODER REPRIMIDO (>=1400): signo + casa; o que foi silenciado/banido, como emerge, como integrar sem destruir.
+13. CASA 12 — O KARMA OCULTO (>=2000): signo + regente + planeta a planeta (cada planeta na 12 com sua leitura kármica); o que opera abaixo da consciência.
+14. CASA 4 E A HERANÇA FAMILIAR (>=2400): signo + regente + planeta a planeta; cruzamentos Lua×Saturno, Lua×Plutão, Lua×Urano; o padrão materno e o ancestral.
+15. PADRÕES TRANSGERACIONAIS (>=2000): o herdado da linhagem, o padrão materno e o paterno, como romper cada um conscientemente.
+16. PADRÕES EM RELACIONAMENTOS (>=1600): o padrão no amor, por que atrai o que atrai, como evoluir.
+17. OS OITO CRUZAMENTOS KÁRMICOS — A SÍNTESE (>=2400): execute e narre os 8 cruzamentos do BLOCO DE CRUZAMENTOS; é aqui que o mapa vira diagnóstico integrado, não peças soltas.
+18. ANATOMIA DAS SOMBRAS KÁRMICAS (>=2600): siga o BLOCO DE SOMBRAS KÁRMICAS; identifique SOMENTE os padrões presentes e desenvolva cada um no padrão de quatro movimentos. Melhor 3 fundos que 6 rasos.
+19. MISSÃO DE ALMA (>=1600): por que está aqui, a contribuição única, como honrar no cotidiano.
+20. PRÁTICAS DE LIBERTAÇÃO (>=1600): de 5 a 7 práticas ESPECÍFICAS para este mapa (não genéricas), cada uma ancorada num indicador real.
+21. AFIRMAÇÕES E PRÓXIMOS 3 MESES (>=1000): 10 afirmações baseadas nestes Nodos/Plutão/Quíron + o que fazer nos próximos meses, em ordem.
+22. MENSAGEM FINAL E PRÓXIMOS PASSOS (>=900): não veio para sofrer, veio para se libertar; padrões não são identidade; o mapa não é sentença. Inclua o aviso de responsabilidade e 1-2 cross-sells coerentes (ver UPSELL). Encerre com a assinatura "Com cuidado, nossa astróloga - ASTRALIA".
 
 ## TOM E REGRAS ABSOLUTAS
-Nome do cliente em todo o documento. Cada padrão TEM saída clara. Nunca culpabiliza, sempre empodera. Cada seção nos dados reais (não genérico). Linguagem profunda mas acessível, filosófica mas prática. Tom: conversa sincera com alguém que acredita em você. Nunca catastrófico. Mínimo 10.000 palavras.
+Nome do cliente ao longo do documento. Cada padrão TEM saída clara. Nunca culpabiliza, sempre empodera. Cada seção ancorada nos dados reais (nunca genérico). Linguagem profunda mas acessível, filosófica mas prática. Tom: conversa sincera com quem acredita em você. Nunca catastrófico ou determinista. NUNCA assine como "equipe".
 
-## UPSELL (individual — NÃO combo; surge como conselho genuíno, no gancho real)
-- Mapa Profissional: quando há conflito entre vocação e padrão kármico.
-- Revolução Solar: quando há ciclo de transformação em curso (dimensão anual/timing).
-- Previsões 18 Meses: quando há transição/crise (janelas de mudança).
-- Mapa da Lilith: quando Lilith forte ou temas de poder/autenticidade dominam.
-- Sinastria: quando padrões de relacionamento são centrais.
-- Mapa Astral Personalizado: quando o cliente é novo e o Kármico abriu mais perguntas que respostas.
-Oferecer 1-2 mais relevantes ao que o mapa revelou.
+## UPSELL (individual; surge como conselho genuíno, no gancho real)
+- Mapa Profissional: conflito entre vocação e padrão kármico.
+- Revolução Solar: ciclo de transformação em curso (timing anual).
+- Previsões 18 Meses: transição/crise (janelas de mudança).
+- Mapa da Lilith: Lilith forte ou temas de poder/autenticidade.
+- Sinastria: quando os padrões de relacionamento são centrais.
+- Mapa Astral Personalizado: cliente novo, quando o Kármico abriu mais perguntas que respostas.
+Ofereça 1-2 mais relevantes ao que o mapa revelou.
 `;
 
 // -------------------------------------------------------------------------------
@@ -469,7 +473,7 @@ Casa XII: cúspide ${t.casaXII.cuspide||'?'}, ocupantes [${t.casaXII.ocupantes.j
     .filter(([k,v]) => v && typeof v === 'object' && SIGNOS_ORDEM.includes(v.signo))
     .map(([p,d]) => `  - ${p}: ${d.signo} ${d.grau ?? '?'}°${d.retrogrado ? ' ℞' : ''} (Casa ${d.casa ?? '?'})`).join("\n");
 
-  const prompt = `Você é um astrólogo com 30 anos de experiência em astrologia evolutiva e kármica, com formação em psicologia transpessoal e base em filosofias orientais (karma, samsara, dharma). Combina rigor técnico com compaixão genuína. Cliente: ${nome}.
+  const prompt = `Você é um astrólogo com 30 anos de experiência em astrologia evolutiva e kármica, com formação em psicologia transpessoal e base em filosofias orientais (karma, samsara, dharma). Combina rigor técnico com compaixão genuína. Cliente: ${nome}. NUNCA é determinista — use "tende a", "pode indicar", jamais afirmações absolutas.
 OBJETIVO: revelar padrões com precisão técnica; oferecer caminhos de libertação genuínos; NUNCA culpabilizar, sempre empoderar; linguagem profunda mas acessível; honesto sobre desafios sem ser catastrófico.
 Comprimento: 10.000-15.000 palavras.
 
@@ -537,7 +541,9 @@ REGRAS: aspas duplas; escape quebras como \\n e aspas internas como \\"; sem blo
 6. Práticas e afirmações ESPECÍFICAS para este mapa (não genéricas)
 7. Tom: profundo, esperançoso, jamais catastrófico
 8. Pelo menos 1-2 chamadas para outro mapa Astralia (individual, no gancho real) — sem combo
-9. Mínimo 10.000 palavras
+9. Nomeie as tendências difíceis (manipulação, controle, possessividade, obsessão, necessidade de validação/centralidade) ANCORADAS no posicionamento real e SEMPRE com caminho de integração — nunca como rótulo clínico
+10. Seja inspirador: a cada ciclo ${nome} renasce com novos caminhos e oportunidades
+11. Mínimo 10.000 palavras
 
 Gere agora o Mapa Kármico completo (seções 1-20). Retorne apenas o JSON.`;
 
@@ -553,7 +559,7 @@ Gere agora o Mapa Kármico completo (seções 1-20). Retorne apenas o JSON.`;
     prompt,
     metadados: {
       framework: "Mapa Kármico — Nodos + Plutão + Saturno + Quíron + Lilith + Casas IV/VIII/XII + Serpente + 7 padrões transgeracionais",
-      modeloRecomendado: "claude-opus-4-7",
+      modeloRecomendado: "claude-sonnet-4-6",
       palavrasEsperadas: "10.000-15.000",
       tipo: "premium_assincrono_48h",
       saida: "JSON estruturado por seções (renderização de PDF é camada separada)",
@@ -562,11 +568,148 @@ Gere agora o Mapa Kármico completo (seções 1-20). Retorne apenas o JSON.`;
   };
 }
 
+// -------------------------------------------------------------------------------
+// CORPO DE CONHECIMENTO KÁRMICO (reusado pela ponte síncrona)
+// -------------------------------------------------------------------------------
+function montarConhecimentoKarmico() {
+  return `${FUNDAMENTOS_KARMICOS}
+
+## NODO SUL POR SIGNO
+${Object.entries(NODO_SUL_SIGNO).map(([s,txt])=>`${s}: ${txt}`).join("\n\n")}
+
+## NODO SUL POR CASA
+${Object.entries(NODO_SUL_CASA).map(([c,txt])=>`Casa ${c}: ${txt}`).join("\n")}
+
+## NODO NORTE POR SIGNO
+${Object.entries(NODO_NORTE_SIGNO).map(([s,txt])=>`${s}: ${txt}`).join("\n\n")}
+
+## NODO NORTE POR CASA
+${Object.entries(NODO_NORTE_CASA).map(([c,txt])=>`Casa ${c}: ${txt}`).join("\n")}
+
+## PLUTÃO POR CASA
+${Object.entries(PLUTAO_KARMICO_CASA).map(([c,txt])=>`Casa ${c}: ${txt}`).join("\n")}
+
+## SATURNO POR SIGNO
+${Object.entries(SATURNO_KARMICO_SIGNO).map(([s,txt])=>`${s}: ${txt}`).join("\n")}
+
+## QUÍRON POR SIGNO
+${Object.entries(QUIRON_SIGNO).map(([s,txt])=>`${s}: ${txt}`).join("\n")}
+
+## LILITH POR SIGNO
+${Object.entries(LILITH_KARMICO_SIGNO).map(([s,txt])=>`${s}: ${txt}`).join("\n")}
+
+${CASAS_KARMICAS}
+${PADROES_E_MISSAO}`;
+}
+
+// -------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------
+// BLOCOS METODOLÓGICOS (diretrizes operacionais kármicas) — injetados por etapa
+// -------------------------------------------------------------------------------
+const BLOCO_CRUZAMENTOS_KARM = `=== BLOCO DE CRUZAMENTOS KÁRMICOS (execute os oito e narre o resultado) ===
+Não basta ler cada indicador isolado: o diagnóstico kármico nasce do cruzamento entre eles. Execute os oito e traga o resultado integrado.
+1. NODO NORTE signo x NODO NORTE casa: "sua alma veio aprender [qualidade do signo] na área de [casa]".
+2. NODO SUL signo x planetas conjuntos ao NS: o que trouxe e o modus operandi kármico (cada planeta conjunto detalha o dom/armadilha).
+3. REGENTE DO NN x sua posição (signo/casa/aspectos): o GPS da missão — como e onde ela se realiza.
+4. SATURNO x NODOS: Saturno em aspecto ao NN (a lição é parte da missão) ou ao NS (a lição vem do passado); o signo de Saturno resolve o padrão do NS?
+5. QUÍRON x NODO NORTE: quando há aspecto, a cura da ferida É a missão; mostre como uma serve à outra.
+6. PLUTÃO x NODOS: transformação como caminho (aspecto ao NN) ou padrão de poder trazido (aspecto ao NS); a casa de Plutão x casa do NN.
+7. CASA 12 x mapa geral: planetas na 12 = karma oculto nos bastidores; o regente da 12 mostra como o oculto se expressa na vida consciente.
+8. CASA 4 x padrões familiares: signo/planetas da 4 e seu regente x Nodos; a herança serve ou obstrui a missão? Lua x Casa 4 = padrão materno e ancestralidade.`;
+
+const BLOCO_SOMBRAS_KARM = `=== BLOCO DE SOMBRAS KÁRMICAS ===
+O karma também é o que ainda não foi aprendido e aparece como sombra. Identifique SOMENTE os padrões claramente presentes no mapa. Para CADA um, escreva quatro movimentos: (1) NOMEAÇÃO suave ancorada na configuração; (2) PERGUNTA reflexiva que questiona com compaixão e deixa a pessoa responder por dentro; (3) CONEXÃO com o aspecto/casa exato; (4) REENCAMINHAMENTO: o dom que a sombra esconde quando integrada. Melhor 3 sombras fundas que 6 rasas.
+
+PADRÕES MODELADOS (gatilho -> núcleo; adapte ao mapa real):
+- NÓ SUL ATIVO DEMAIS, POUCO NODO NORTE (muitos planetas conj. NS + regente do NN mal posicionado): a pessoa permanece na zona de conforto kármica e nunca arrisca o crescimento. "Existe uma versão de você que funcionou muito bem em outro tempo — e esse tempo passou. O que você seria se parasse de usar o que já sabe como escudo contra o que ainda precisa aprender?"
+- SATURNO TENSO COM O NODO NORTE (quadratura/oposição): a responsabilidade vira desculpa para não crescer. "Sua responsabilidade é real. Mas ela está sendo usada como razão para não fazer o que você veio fazer?"
+- CASA 12 MUITO HABITADA, CASA 1 VAZIA (3+ na 12, nenhum na 1): vive nos bastidores do próprio karma e não assume o protagonismo. "Você existe sobretudo no invisível. O que aconteceria se trouxesse para a luz o que cultiva no silêncio?"
+- PLUTÃO TENSO + NODO SUL EM ESCORPIÃO: padrões de controle e intensidade que custam a soltar. "O poder que você tem é real; a questão é o que faz com ele — serve à transformação ou ao controle? É mais fácil transformar o outro do que a si mesma?"
+- QUÍRON CONJUNTO AO NODO SUL SEM TRABALHO TERAPÊUTICO: carrega a ferida sem perceber que ela é o dom. "A área que mais te envergonha pode ser exatamente onde você tem mais a oferecer. O que mudaria se parasse de esconder a ferida e começasse a usá-la?"
+Para padrões presentes não modelados acima, use o mesmo formato de quatro movimentos, sempre ancorado no aspecto real.`;
+
+const BLOCO_PERGUNTAS_KARM = `=== BLOCO DE PERGUNTAS REFLEXIVAS (encerre as seções relevantes com a pergunta certa) ===
+NODO NORTE: o que você mais evita fazer e que, quando faz, traz mais realização? Em qual situação se sente mais vivo, mesmo desconfortável? Que versão sua precisa nascer, mesmo que a atual morra um pouco?
+NODO SUL: em que áreas recorre automaticamente ao mesmo padrão que não funciona? Que talento vem tão fácil que o impede de desenvolver outros? O que poderia largar que já não é você, mesmo tendo sido?
+SATURNO: qual área a vida mais cobra e você mais resiste? Se sua maior dificuldade é sua maior escola, o que ela ensina? Onde você exige de si mais do que de qualquer outro?
+QUÍRON: o que na sua história gostaria que tivesse sido diferente? O que você sabe sobre o humano que só se sabe passando pelo que passou? Já começou a curar nos outros o que ainda cura em si?
+CASA 12 / KARMA OCULTO: existe padrão que se repete e você não explica pela vida atual? Há algo que a família "nunca falou" e você sente como presença? O que, trazido à luz, mudaria tudo?`;
+
+// PONTE SÍNCRONA — buildPromptKarmico(dados, planetasInfo, casasInfo, aspectosInfo)
+// Mesma assinatura da ponte do Lilith/Personalizado (leitura.js / worker).
+// Recebe os dados JÁ FORMATADOS em texto e RETORNA A STRING do prompt.
+// -------------------------------------------------------------------------------
+const SECOES_POR_PARTE_KARM = {
+  completo:[1,22],
+  parte1:[1,4],    // carta, o que é karma, Nodo Sul, Nodo Norte
+  parte2:[5,8],    // eixo/integração, serpente, samsara, retrógrados
+  parte3:[9,12],   // Plutão, Saturno, Quíron, Lilith
+  parte4:[13,16],  // Casa 12, Casa 4/herança, transgeracional, relacionamentos
+  parte5:[17,18],  // 8 cruzamentos, sombras kármicas
+  parte6:[19,22],  // missão, práticas, afirmações+3 meses, mensagem final
+};
+const BLOCOS_POR_PARTE_KARM = {
+  completo:{ teoria:true,  cruzamentos:true,  sombras:true,  perguntas:true  },
+  parte1:  { teoria:true,  cruzamentos:false, sombras:false, perguntas:true  },
+  parte2:  { teoria:true,  cruzamentos:false, sombras:false, perguntas:true  },
+  parte3:  { teoria:true,  cruzamentos:false, sombras:false, perguntas:true  },
+  parte4:  { teoria:true,  cruzamentos:false, sombras:false, perguntas:true  },
+  parte5:  { teoria:true,  cruzamentos:true,  sombras:true,  perguntas:false },
+  parte6:  { teoria:false, cruzamentos:false, sombras:false, perguntas:false },
+};
+function buildPromptKarmico(dados, planetasInfo, casasInfo, aspectosInfo, parte = "completo") {
+  const nome = dados.nome || '[NOME]';
+  const _f = SECOES_POR_PARTE_KARM[parte] || SECOES_POR_PARTE_KARM.completo, _ini = _f[0], _fim = _f[1];
+  const _b = BLOCOS_POR_PARTE_KARM[parte] || BLOCOS_POR_PARTE_KARM.completo;
+  const _teoria = _b.teoria ? "\n\n" + montarConhecimentoKarmico() : "";
+  const _cruz = _b.cruzamentos ? "\n\n" + BLOCO_CRUZAMENTOS_KARM : "";
+  const _somb = _b.sombras ? "\n\n" + BLOCO_SOMBRAS_KARM : "";
+  const _perg = _b.perguntas ? "\n\n" + BLOCO_PERGUNTAS_KARM : "";
+  const _escopo = parte === "completo"
+    ? "Gere TODAS as 22 seções, na ordem, sem agrupar nem resumir."
+    : `ESCOPO DESTA GERAÇÃO (sobrepõe qualquer outra instrução de quantidade): esta é a ${parte}. Gere SOMENTE as seções ${_ini} a ${_fim} — NÃO gere as demais e NÃO tente cobrir as 22 de uma vez. Mantenha o \"numero\" global real (de ${_ini} a ${_fim}). Como você produz apenas parte do relatório, APROFUNDE AO MÁXIMO cada seção desta faixa: exceda os mínimos de palavras, traga mais exemplos, mais correlações e mais nuance. Não economize.`;
+  return `Você é um astrólogo brasileiro com 30 anos de experiência em astrologia evolutiva e kármica, com formação em psicologia transpessoal e base em filosofias orientais (karma, samsara, dharma). Escreve em PORTUGUÊS DO BRASIL, combinando rigor técnico com compaixão genuína. Revela sem condenar, ilumina sem traumatizar. NUNCA é determinista ou culpabilizante — use sempre "tende a", "pode indicar", nunca afirmações absolutas. O mapa revela padrões; jamais sentencia.
+
+MISSÃO: revelar a ${nome} os padrões da alma — Nodo Sul e Norte, a Serpente Kármica, o samsara que se repete, Plutão, Saturno, Quíron, Lilith, as casas kármicas (IV, VIII, XII), os padrões transgeracionais (materno e paterno) e a missão de alma — sempre com caminho de libertação. Personalize tudo usando o nome ${nome}.
+
+NUNCA invente posições — use APENAS os dados reais abaixo. Calcule a idade a partir da data de nascimento para contextualizar.
+
+=== DADOS REAIS DE ${nome.toUpperCase()} ===
+Nascimento: ${dados.data || dados.dataNascimento || '[DATA]'}${dados.hora ? ' às ' + dados.hora : ''}
+Cidade: ${dados.cidade || dados.localNascimento || '[LOCAL]'}
+${dados.contexto ? 'Contexto / padrão que se repete: ' + dados.contexto : ''}
+
+${planetasInfo}
+
+${casasInfo}
+
+${aspectosInfo}${_teoria}
+
+${ESTRUTURA_KARMICO}${_cruz}${_somb}${_perg}
+
+=== INSTRUÇÕES DE SAÍDA ===
+${_escopo}
+
+Gere uma leitura COMPLETA e profundamente personalizada do Mapa Kármico de ${nome}, seguindo EXATAMENTE a estrutura acima (22 seções), na ordem dada — gerando apenas a faixa de seções definida no escopo desta geração. Cada seção recebe o seu próprio desenvolvimento aprofundado — NÃO agrupe nem resuma. Cite SEMPRE o signo, a casa e o GRAU reais de cada ponto (Nodos, Plutão, Saturno, Quíron, Lilith) e os aspectos reais com o orbe, correlacionando os posicionamentos entre si. Identifique a Serpente Kármica e nomeie ao menos 3 samsaras (ciclos) específicos. Nomeie as tendências difíceis (manipulação, controle, possessividade, obsessão, necessidade de validação/centralidade etc.) ancoradas no posicionamento real e SEMPRE com o caminho de integração — nunca como rótulo clínico. Escreva em prosa rica, em segunda pessoa, com profundidade, aconselhamento e exemplos situacionais contextualizados à fase de vida. Nunca culpabilize, sempre empodere. Seja inspirador: lembre que a cada ciclo ${nome} renasce com novos caminhos e oportunidades.
+
+Responda APENAS com JSON válido, sem markdown, sem texto fora do JSON:
+{
+  "secoes": [
+    {"titulo": "☋ Título da seção (cite signo/casa/grau quando couber)", "texto": "vários parágrafos ricos e personalizados"}
+  ]
+}`;
+}
+
+
 module.exports = {
   buildPromptMapaKarmico,
+  buildPromptKarmico,
+  montarConhecimentoKarmico,
   analisarKarma, calcularNodoSul, casaOposta, ocupantesCasa, regenteCasa,
   detectarSerpente, detectarPadroesTransgeracionais,
   FUNDAMENTOS_KARMICOS, NODO_SUL_SIGNO, NODO_SUL_CASA, NODO_NORTE_SIGNO, NODO_NORTE_CASA,
   PLUTAO_KARMICO_CASA, SATURNO_KARMICO_SIGNO, QUIRON_SIGNO, LILITH_KARMICO_SIGNO,
-  CASAS_KARMICAS, PADROES_E_MISSAO, ESTRUTURA_KARMICO, SIGNO_OPOSTO
+  CASAS_KARMICAS, PADROES_E_MISSAO, ESTRUTURA_KARMICO, SIGNO_OPOSTO,
+  BLOCO_CRUZAMENTOS_KARM, BLOCO_SOMBRAS_KARM, BLOCO_PERGUNTAS_KARM,
+  SECOES_POR_PARTE_KARM, BLOCOS_POR_PARTE_KARM
 };
