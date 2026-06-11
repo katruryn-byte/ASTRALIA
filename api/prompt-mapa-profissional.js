@@ -1,494 +1,235 @@
-// ═══════════════════════════════════════════════════════════════════════════════
-// 💼 PROMPT — MAPA PROFISSIONAL E VOCACIONAL — Astralia
-// ═══════════════════════════════════════════════════════════════════════════════
-// Produto Premium — Vocação, talentos, modelo de carreira, bloqueios, liderança
-// Modelo recomendado: claude-opus-4-7 (Opus — 15 indicadores integrados + Quíron + bloqueios)
-//   [caso limítrofe: forte candidato a A/B com Sonnet — é um mapa só, estruturado]
-// Comprimento alvo: 10.000-14.000 palavras
-// Tom: Prático, revelador, inspirador — NUNCA vago. Palavra-chave: FAZER O QUE VOCÊ VEIO FAZER
-// ═══════════════════════════════════════════════════════════════════════════════
-// Compila INTEGRALMENTE o "Guia — Mapa Profissional e Vocacional (Diretrizes Completas)".
-// Substitui a versão anterior de 9 indicadores.
-// Calcula elemento/modalidade dominante, regente do MC e Casa 10, e detecta
-// modelo de trabalho, tipo de liderança e bloqueios de carreira.
-// Saída em JSON estruturado por seções (renderização de PDF é camada separada).
-// ═══════════════════════════════════════════════════════════════════════════════
+// =============================================================================
+// prompt-mapa-profissional.js  —  Astralia · Mapa Profissional e Vocacional Premium
+// Funde a diretriz operacional (gatilhos/cálculos) com a diretriz completa
+// (MC, Quíron, bloqueios, modelo de trabalho, liderança, Nodo).
+// -----------------------------------------------------------------------------
+// MODELO ALVO: Claude Sonnet 4.6 (claude-sonnet-4-6).
+//   (NB: "Sonnet 4.8" não existe; a linha Sonnet atual é a 4.6. Produto de
+//    estrutura bem tabelada — Sonnet entrega com folga e a custo baixo.)
+// -----------------------------------------------------------------------------
+// ORDEM DE OURO — gerar pelo OPERÁRIO, particionado, sem estourar o Vercel:
+//   o worker itera as partes e concatena os arrays "secoes":
+//     for (const p of ["parte1","parte2","parte3","parte4","parte5","parte6"]) {
+//       const prompt = buildPromptProfissional(dados, planetasInfo, casasInfo, aspectosInfo, p);
+//       // chama a API (claude-sonnet-4-6), faz JSON.parse, empurra resp.secoes
+//     }
+//   Cada parte gera 2–5 seções APROFUNDADAS — sem teto de palavras — e cabe no
+//   limite de tokens/tempo de uma invocação. NUNCA gerar "completo" em produção.
+// -----------------------------------------------------------------------------
+// SEM TETO DE PALAVRAS: os níveis são PISOS mínimos a superar, jamais tetos.
+// -----------------------------------------------------------------------------
+// `dados` esperado (etapa de cálculo preenche; planetasInfo/casasInfo/aspectosInfo
+//   são STRINGS já formatadas com os dados reais do mapa, como no Kármico):
+//   { nome, data|dataNascimento, hora, cidade|localNascimento,
+//     idade, escolaridade, fase,            // fase = Exploração|Construção|Consolidação|Reinvenção|Legado
+//     contexto,                              // texto livre do cliente (12 perguntas resumidas)
+//     camposAtivos: [ "COMUNICAÇÃO E MÍDIA — indicadores: Mercúrio Casa 3; MC Gêmeos", ... ],
+//     multiplasFontes: [ "..." ],            // gatilhos 6.9 ativos (se 3+, indicar pluri-renda)
+//     gatilhosMudanca: [ "..." ] }           // gatilhos 6.10 ativos (se contexto indica transição)
+// =============================================================================
 
-const SIGNOS_ORDEM = ["Áries","Touro","Gêmeos","Câncer","Leão","Virgem","Libra","Escorpião","Sagitário","Capricórnio","Aquário","Peixes"];
+// --------- TABELAS DE REFERÊNCIA (condensadas; injetadas por parte) ----------
 
-const REGENTE_SIGNO = {
-  "Áries":"Marte","Touro":"Vênus","Gêmeos":"Mercúrio","Câncer":"Lua","Leão":"Sol",
-  "Virgem":"Mercúrio","Libra":"Vênus","Escorpião":"Marte","Sagitário":"Júpiter",
-  "Capricórnio":"Saturno","Aquário":"Saturno","Peixes":"Júpiter"
-};
-const REGENTE_MODERNO = { "Escorpião":"Plutão","Aquário":"Urano","Peixes":"Netuno" };
-const ELEMENTO_SIGNO = {
-  "Áries":"Fogo","Leão":"Fogo","Sagitário":"Fogo","Touro":"Terra","Virgem":"Terra",
-  "Capricórnio":"Terra","Gêmeos":"Ar","Libra":"Ar","Aquário":"Ar",
-  "Câncer":"Água","Escorpião":"Água","Peixes":"Água"
-};
-const MODALIDADE_SIGNO = {
-  "Áries":"Cardinal","Câncer":"Cardinal","Libra":"Cardinal","Capricórnio":"Cardinal",
-  "Touro":"Fixo","Leão":"Fixo","Escorpião":"Fixo","Aquário":"Fixo",
-  "Gêmeos":"Mutável","Virgem":"Mutável","Sagitário":"Mutável","Peixes":"Mutável"
-};
-const DIGNIDADES = {
-  Sol:{rege:["Leão"],exalta:["Áries"],cai:["Libra"],detrimento:["Aquário"]},
-  Lua:{rege:["Câncer"],exalta:["Touro"],cai:["Escorpião"],detrimento:["Capricórnio"]},
-  Mercúrio:{rege:["Gêmeos","Virgem"],exalta:["Virgem"],cai:["Peixes"],detrimento:["Sagitário","Peixes"]},
-  Vênus:{rege:["Touro","Libra"],exalta:["Peixes"],cai:["Virgem"],detrimento:["Áries","Escorpião"]},
-  Marte:{rege:["Áries","Escorpião"],exalta:["Capricórnio"],cai:["Câncer"],detrimento:["Libra","Touro"]},
-  Júpiter:{rege:["Sagitário","Peixes"],exalta:["Câncer"],cai:["Capricórnio"],detrimento:["Gêmeos","Virgem"]},
-  Saturno:{rege:["Capricórnio","Aquário"],exalta:["Libra"],cai:["Áries"],detrimento:["Câncer","Leão"]}
-};
+const MC_SIGNO = `MC POR SIGNO — identidade pública, tipo de liderança e campos favorecidos:
+Áries: pioneira, decisiva, corajosa; lidera por iniciativa; empreendedorismo, esportes, militar, cirurgia, competição, gestão de crise.
+Touro: confiável, de qualidade, sólida; lidera por construção; finanças, gastronomia, beleza, agricultura, imóveis, música, arquitetura.
+Gêmeos: comunicadora, versátil, conectora; lidera pela informação; comunicação, jornalismo, educação, tecnologia, vendas, marketing, escrita.
+Câncer: cuidadora, intuitiva, acolhedora; lidera pelo cuidado; saúde, psicologia, educação infantil, gastronomia, hotelaria, imóveis, história.
+Leão: carismática, criativa, generosa; lidera pelo carisma; artes, cinema, política, educação, liderança, publicidade, moda, joia.
+Virgem: precisa, especialista, meticulosa; lidera pela competência; saúde, ciência, análise, tecnologia, produção, logística, editorial, pesquisa.
+Libra: diplomática, justa, elegante; lidera pela negociação; direito, diplomacia, design, moda, arte, mediação, relações públicas.
+Escorpião: profunda, transformadora, estratégica; lidera pelo poder; psicologia, investigação, medicina, finanças, pesquisa, espiritualidade.
+Sagitário: expansiva, filosófica, inspiradora; lidera pela visão; educação, filosofia, viagens, direito, espiritualidade, publicação, esportes.
+Capricórnio: estruturada, responsável, autoridade; lidera pela autoridade; administração, política, engenharia, finanças, construção, gestão, governo.
+Aquário: inovadora, original, visionária; lidera pela visão de futuro; tecnologia, redes, causas sociais, ciência, astrologia, engenharia.
+Peixes: intuitiva, compassiva, artística; lidera pela compaixão; artes, terapia, espiritualidade, cinema, música, saúde holística, cura, caridade.`;
 
-// -------------------------------------------------------------------------------
-// FUNÇÕES DE CÁLCULO E DETECÇÃO
-// -------------------------------------------------------------------------------
+const REGENTE_MC_CASA = `REGENTE DO MC POR CASA — onde a carreira se concretiza na prática:
+1: pela própria presença e identidade — o corpo é o instrumento.  2: pelos próprios talentos e recursos — autossuficiência.
+3: via comunicação, escrita, ensino, conexão de ideias.  4: ligada ao lar, à família, ao passado — trabalho de raízes.
+5: na criatividade, no amor, na expressão pessoal.  6: pelo trabalho cotidiano, serviço e excelência na rotina.
+7: nas parcerias — o outro é instrumento de realização.  8: pela transformação — recursos externos e profundidade.
+9: pelo ensino, pela viagem, pela expansão intelectual.  10: de forma clássica — pela identidade pública direta.
+11: via redes, grupos e causas coletivas.  12: nos bastidores, na espiritualidade, na arte.`;
 
-function avaliarDignidade(planeta, signo){
-  const d = DIGNIDADES[planeta]; if(!d) return "neutro";
-  if(d.exalta.includes(signo)) return "exaltado"; if(d.rege.includes(signo)) return "rege";
-  if(d.cai.includes(signo)) return "caído"; if(d.detrimento.includes(signo)) return "detrimento"; return "neutro";
-}
-function ocupantesCasa(mapaNatal, casa){
-  return Object.entries(mapaNatal)
-    .filter(([k,v]) => v && typeof v==='object' && v.casa===casa && SIGNOS_ORDEM.includes(v.signo))
-    .map(([k])=>k);
-}
-function temAspecto(aspectos, p1, p2, tipos){
-  return aspectos.some(a => {
-    const par = (a.planeta1===p1&&a.planeta2===p2)||(a.planeta1===p2&&a.planeta2===p1);
-    return par && (!tipos || tipos.includes((a.aspecto||'').toLowerCase()));
-  });
-}
-const TENSOS = ["quadratura","oposição","oposicao"];
+const SOL_CASA = `SOL POR CASA — o propósito que sustenta a carreira (combustível interno):
+1: o propósito é a própria presença — identidade e carreira são uma só.  2: criar recursos e demonstrar valor — alimenta a autoestima.
+3: comunicar e aprender — cresce pela palavra e pela mente.  4: cuidar e construir base — raízes no privado.
+5: criar e amar — floresce com expressão pessoal.  6: servir com excelência — missão de aprimoramento.
+7: o encontro com o outro — cresce por parcerias.  8: transformar — profundidade e recursos externos.
+9: expandir e inspirar — expansão de horizontes.  10: a realização pública — a carreira É o propósito, muito visível.
+11: servir ao coletivo — contribuição para o futuro.  12: servir no invisível — bastidores ou espiritualidade.`;
 
-function elementoModalidadeDominante(mapaNatal, regenteMCPos){
-  const chave = ["Sol","Mercúrio","Vênus","Marte","Lua"].map(p=>mapaNatal[p]).filter(Boolean);
-  if(regenteMCPos) chave.push(regenteMCPos);
-  const el={Fogo:0,Terra:0,Ar:0,Água:0}, mod={Cardinal:0,Fixo:0,Mutável:0};
-  chave.forEach(p=>{ if(ELEMENTO_SIGNO[p.signo])el[ELEMENTO_SIGNO[p.signo]]++; if(MODALIDADE_SIGNO[p.signo])mod[MODALIDADE_SIGNO[p.signo]]++; });
-  return {
-    elemento: Object.entries(el).sort((a,b)=>b[1]-a[1])[0][0],
-    modalidade: Object.entries(mod).sort((a,b)=>b[1]-a[1])[0][0],
-    contagemElemento: el
-  };
-}
+const QUIRON = `QUÍRON — a ferida que vira vocação (a carreira que cura os outros passa pela própria ferida):
+POR SIGNO (natureza da ferida → dom): Áries iniciativa reprimida→empoderar ação; Touro recursos negados→criar abundância; Gêmeos voz silenciada→comunicar o que importa; Câncer cuidado negado→nutrir e curar; Leão brilho reprimido→inspirar criatividade; Virgem perfeição impossível→servir com excelência; Libra injustiça vivida→criar equilíbrio; Escorpião poder violado→transformar poder; Sagitário fé negada→transmitir sabedoria; Capricórnio autoridade abusiva→liderar com integridade; Aquário exclusão→criar comunidade e inovar; Peixes perda de sentido→curar espiritualmente.
+POR CASA (onde opera na carreira): 1 identidade→ajudar outros a se encontrarem; 2 valor próprio→ensinar valor e prosperidade; 3 comunicação→comunicar o que outros não conseguem; 4 família→criar pertencimento; 5 expressão→inspirar criatividade; 6 saúde→curar corpo e rotina; 7 relacional→mediação e orientação em parcerias; 8 transformação→acompanhar crises profundas; 9 fé→orientação espiritual e ensino; 10 reconhecimento→liderança autêntica e orientação vocacional; 11 pertencimento→construir comunidade; 12 espiritual→cura profunda e espiritualidade aplicada.`;
 
-// Modelo de trabalho (autônomo/equipe/bastidores/liderança) — conta indicadores do documento
-function detectarModeloTrabalho(mapaNatal){
-  const sol=mapaNatal.Sol, mc=mapaNatal.MC;
-  const angulares=[1,4,7,10], cadentes=[3,6,9,12], superiores=[7,8,9,10,11,12];
-  const planetas=Object.values(mapaNatal).filter(v=>v&&typeof v==='object'&&SIGNOS_ORDEM.includes(v.signo));
-  const nSup=planetas.filter(p=>superiores.includes(p.casa)).length;
-  const nAng=planetas.filter(p=>angulares.includes(p.casa)).length;
-  const nCad=planetas.filter(p=>cadentes.includes(p.casa)).length;
-  const nAr=planetas.filter(p=>ELEMENTO_SIGNO[p.signo]==="Ar").length;
-  const score={autonomia:0,equipe:0,bastidores:0,lideranca_publica:0};
-  if(sol&&[1,10].includes(sol.casa))score.autonomia+=2;
-  if(nSup>=5)score.autonomia++;
-  if(mc&&["Áries","Leão","Capricórnio"].includes(mc.signo))score.autonomia++;
-  if(sol&&[7,11].includes(sol.casa))score.equipe+=2;
-  if(nAr>=3)score.equipe++;
-  if(mc&&["Libra","Aquário"].includes(mc.signo))score.equipe++;
-  if(sol&&[6,12].includes(sol.casa))score.bastidores+=2;
-  if(nCad>=4)score.bastidores++;
-  if(sol&&sol.casa===10)score.lideranca_publica+=2;
-  if(mc&&mc.signo==="Leão")score.lideranca_publica++;
-  if(nAng>=4)score.lideranca_publica++;
-  const ordenado=Object.entries(score).sort((a,b)=>b[1]-a[1]);
-  const rotulos={autonomia:"Autônomo/Empreendedor",equipe:"Colaboração/Equipe",bastidores:"Bastidores/Especialização",lideranca_publica:"Liderança Pública"};
-  return ordenado.filter(([k,v])=>v>0).map(([k,v])=>`${rotulos[k]} (${v} indicadores)`);
-}
+const CASA6_SIGNO = `CASA 6 POR SIGNO — estilo de trabalho cotidiano (o que restaura e o que drena):
+Áries: rápida e direta, precisa de desafio — odeia rotina parada.  Touro: lenta e consistente, qualidade — precisa de estabilidade e conforto.
+Gêmeos: múltiplas frentes, aprende sempre — odeia monotonia.  Câncer: melhor em ambiente acolhedor — emoção no trabalho.
+Leão: precisa de reconhecimento e expressão.  Virgem: metódica, precisa, excelente no detalhe — ambiente organizado.
+Libra: melhor com parceiros, ambiente harmonioso.  Escorpião: profunda e focada, trabalha bem sozinha em temas intensos.
+Sagitário: precisa de liberdade e propósito — odeia trabalho sem sentido.  Capricórnio: disciplinada, foco em resultado, estruturas claras.
+Aquário: inovadora e independente, tecnologia, sem hierarquia rígida.  Peixes: intuitiva e adaptável, precisa de espaço criativo.`;
 
-// Tipo de liderança — sinais do documento
-function detectarLideranca(mapaNatal, aspectos){
-  const mc=mapaNatal.MC, tipos=[];
-  const mcSigno=mc?mc.signo:null;
-  const ocC10=ocupantesCasa(mapaNatal,10);
-  if(mcSigno==="Leão"||ocC10.includes("Sol")) tipos.push("Inspiração (lidera pelo exemplo, entusiasmo, brilho)");
-  if(mcSigno==="Capricórnio"||ocC10.includes("Saturno")) tipos.push("Expertise (lidera pelo conhecimento e autoridade construída)");
-  if(mcSigno==="Libra"||ocC10.includes("Vênus")) tipos.push("Relacionamento (lidera pela conexão e harmonia)");
-  if(mcSigno==="Escorpião"||ocC10.includes("Plutão")||temAspecto(aspectos,"Plutão","MC")) tipos.push("Transformação (lidera em crises)");
-  if(mcSigno==="Aquário"||mcSigno==="Sagitário"||ocC10.includes("Urano")) tipos.push("Visão (lidera pelo futuro que enxerga antes)");
-  return tipos.length?tipos:["(perfil de liderança a definir pelos aspectos com o MC)"];
-}
+const CASA2_SIGNO = `CASA 2 POR SIGNO — como o dinheiro chega naturalmente:
+Áries: pela iniciativa e ação direta.  Touro: pela qualidade e paciência.  Gêmeos: pela comunicação e multiplicidade (múltiplas fontes).
+Câncer: pelo cuidado e pela intuição.  Leão: pela expressão e pelo brilho.  Virgem: pelo serviço e pela excelência.
+Libra: pelas parcerias e pela estética.  Escorpião: pela profundidade e transformação (recursos externos, heranças).  Sagitário: pela expansão e pelo ensino.
+Capricórnio: pela estrutura e pelo legado (longo prazo).  Aquário: pela inovação e pelas redes.  Peixes: pela intuição e pela arte (serviço espiritual/criativo).`;
 
-// Bloqueios de carreira — detecta sinais dos 6 padrões
-function detectarBloqueios(mapaNatal, aspectos, nodoSulCasa){
-  const b=[], mc=mapaNatal.MC, emCasa=(p,c)=>mapaNatal[p]&&mapaNatal[p].casa===c;
-  const ocC10=ocupantesCasa(mapaNatal,10), ocC12=ocupantesCasa(mapaNatal,12);
-  if(ocC10.includes("Saturno")||ocC10.includes("Plutão")||nodoSulCasa===10)
-    b.push({nome:"SABOTAGEM NO SUCESSO", quebra:"terapia para medo de sucesso + estrutura de suporte consciente"});
-  if(nodoSulCasa===10||temAspecto(aspectos,"Saturno","MC",TENSOS)||ocC10.includes("Lua"))
-    b.push({nome:"ESCOLHA QUE AGRADA OS OUTROS", quebra:"identificar o que escolheria se ninguém estivesse assistindo"});
-  if(ocC12.length||temAspecto(aspectos,"Saturno","Sol",TENSOS))
-    b.push({nome:"MEDO DE VISIBILIDADE", quebra:"exposição gradual — provar que ser vista não destrói"});
-  if(ocC10.includes("Saturno")||temAspecto(aspectos,"Saturno","Sol",TENSOS)||(mc&&["Virgem","Escorpião"].includes(mc.signo)))
-    b.push({nome:"SUBESTIMAÇÃO DE TALENTOS", quebra:"lista de evidências reais de competência + mentor externo"});
-  if(mc&&["Gêmeos","Sagitário"].includes(mc.signo))
-    b.push({nome:"DISPERSÃO VOCACIONAL", quebra:"escolher o que mais serve ao Nodo Norte — uma coisa primeiro"});
-  return b;
-}
+const MARTE = `MARTE — estilo de ação e onde a ambição se direciona:
+POR SIGNO: Áries direta e impulsiva; Touro lenta e determinada; Gêmeos mental e versátil; Câncer intuitiva e protetora; Leão dramática e generosa; Virgem precisa e metódica; Libra diplomática e colaborativa; Escorpião estratégica e profunda; Sagitário expansiva e entusiasmada; Capricórnio estruturada e disciplinada; Aquário original e independente; Peixes intuitiva e adaptável.
+POR CASA: 1 na presença; 2 nos recursos; 3 na comunicação; 4 no lar; 5 na criatividade e no amor; 6 no trabalho e na saúde; 7 nas parcerias; 8 na transformação e na crise; 9 na expansão; 10 na carreira (ambição máxima, liderança); 11 nos grupos; 12 nos bastidores.`;
 
-function analisarVocacaoPro(mapaNatal, aspectos=[], nodoSulCasa=null){
-  const mc=mapaNatal.MC||null;
-  const regenteMC = mc ? REGENTE_SIGNO[mc.signo] : null;
-  const regenteMCMod = mc ? (REGENTE_MODERNO[mc.signo]||null) : null;
-  const regenteMCPos = regenteMC ? mapaNatal[regenteMC] : null;
-  const dom = elementoModalidadeDominante(mapaNatal, regenteMCPos);
-  return {
-    mc: mc ? `${mc.signo} ${mc.grau||''}°` : "?",
-    regenteMC: `${regenteMC||'?'}${regenteMCMod?` (moderno ${regenteMCMod})`:''}${regenteMCPos?` em ${regenteMCPos.signo} Casa ${regenteMCPos.casa}`:''}`,
-    ocupantesC10: ocupantesCasa(mapaNatal,10),
-    ocupantesC6: ocupantesCasa(mapaNatal,6),
-    cuspideC6: mapaNatal.cuspideCasa6||null,
-    sol: mapaNatal.Sol ? `${mapaNatal.Sol.signo} Casa ${mapaNatal.Sol.casa} (${avaliarDignidade("Sol",mapaNatal.Sol.signo)})` : "?",
-    quiron: mapaNatal["Quíron"] ? `${mapaNatal["Quíron"].signo} Casa ${mapaNatal["Quíron"].casa}` : "(não fornecido)",
-    nodoNorte: mapaNatal["Nodo Norte"] ? `${mapaNatal["Nodo Norte"].signo} Casa ${mapaNatal["Nodo Norte"].casa}` : "?",
-    elementoDominante: dom.elemento,
-    modalidadeDominante: dom.modalidade,
-    modeloTrabalho: detectarModeloTrabalho(mapaNatal),
-    lideranca: detectarLideranca(mapaNatal, aspectos),
-    bloqueios: detectarBloqueios(mapaNatal, aspectos, nodoSulCasa)
-  };
-}
+const JUPITER_CASA = `JÚPITER POR CASA — onde a sorte e a expansão profissional fluem:
+1 pela própria presença; 2 financeira; 3 pela comunicação/aprendizado; 4 pelo lar/família; 5 pelo prazer/criatividade; 6 pelo trabalho/saúde; 7 pelas parcerias; 8 pela transformação (investimentos, heranças); 9 A MAIOR SORTE (expansão, ensino, publicação, viagem); 10 profissional (reconhecimento, promoção); 11 pelas redes; 12 no invisível (arte, espiritualidade).`;
 
-// -------------------------------------------------------------------------------
-// CONSTANTE 1 — FUNDAMENTOS
-// -------------------------------------------------------------------------------
+const SATURNO_CASA = `SATURNO POR CASA — a lição e o amadurecimento vocacional (escola, não castigo):
+1 identidade profissional (demora, mas vai fundo); 2 financeira (dinheiro que exige construção); 3 comunicação (voz com esforço tem mais poder); 4 família×carreira; 5 talento que amadurece com o tempo; 6 trabalho/saúde (o corpo cobra); 7 parcerias que testam e constroem; 8 crises que criam competência; 9 fé testada vira sabedoria; 10 reconhecimento tardio mas sólido; 11 redes que exigem autenticidade; 12 o invisível como escola.`;
 
-const FUNDAMENTOS_PRO = `
-═══════════════════════════════════════════════════════════════════════════════
-MAPA PROFISSIONAL E VOCACIONAL — FUNDAMENTOS
-═══════════════════════════════════════════════════════════════════════════════
-VOCAÇÃO: o que você veio fazer (o sentido profundo). TALENTOS: habilidades naturais.
-CARREIRA: o caminho concreto que você constrói. TRABALHO: as atividades cotidianas.
-A maioria tem trabalho sem vocação; algumas têm vocação sem carreira estruturada; as
-mais realizadas alinham os quatro. Este mapa revela como alinhar os quatro para a pessoa.
+const NODO_NORTE = `NODO NORTE — direção evolutiva vocacional (caminho menos familiar, mais significativo):
+1 liderança autônoma; 2 construção material e valor; 3 comunicação e aprendizado; 4 cuidado e raízes; 5 criatividade e expressão; 6 serviço e excelência; 7 parcerias e equilíbrio; 8 transformação e profundidade; 9 filosofia, ensino, expansão; 10 autoridade e legado; 11 inovação e comunidade; 12 espiritualidade e compaixão. (O Nodo Sul é o já-pronto: tem dons reais, mas usar SÓ ele é a armadilha.)`;
 
-REVELA: vocação fundamental; talentos mais monetizáveis; estilo de trabalho ideal
-(solo/equipe/liderança/bastidores); ambientes onde floresce e onde murcha; bloqueios de
-carreira e sua origem; potencial de liderança; modelo de trabalho (autônomo/empregado/
-empreendedor); o que a carreira precisa para ser realizada E próspera.
+const ELEMENTO = `PERFIL POR ELEMENTO DOMINANTE (contagem dos 7 planetas pessoais):
+Fogo: liderança, iniciativa, inspiração, empreendedorismo, velocidade; monetiza por visibilidade e liderança; risco: projetos sem conclusão.
+Terra: construção, qualidade, execução, finanças, praticidade; monetiza por especialização técnica e qualidade premium; risco: resistência à inovação.
+Ar: comunicação, conexão, ideias, redes, estratégia, mediação; monetiza por comunicação, ensino e conexão; risco: dispersão, dificuldade de execução.
+Água: cuidado, intuição, empatia, profundidade, arte; monetiza por cuidado, criatividade e profundidade; risco: hipersensibilidade ao ambiente, fronteiras difíceis.
+Elemento ausente: área de desenvolvimento consciente. Modalidade: Cardinal=iniciar/liderar; Fixo=sustentar/especializar; Mutável=adaptar/transitar.`;
 
-NÃO FAZ: não diz "você deve ser médica" nem "largue o emprego amanhã". Diz "sua estrutura
-aponta para vocação em [X] em ambiente de [Y] — há múltiplas carreiras que atendem isso".
-A concretização é sempre escolha e ação da pessoa.
+const MODELO_TRABALHO = `MODELO DE TRABALHO IDEAL — indicadores (cruzar com o mapa real):
+Autonomia/empreendedorismo: Sol casa 1/10 ou aspecto ao ASC; Marte forte e em liderança; metade superior carregada; Urano/Saturno fortes na 10; MC Áries/Leão/Capricórnio; hemisfério Leste + Cardinal.
+Colaboração/equipe: Sol casa 7/11; muito Ar; Vênus forte na 10 ou aspecto MC; Libra/Aquário na 10.
+Bastidores/especialização: Sol casa 6/12; Mercúrio/Virgem fortes; muitos planetas em casas cadentes (3,6,9,12).
+Liderança pública: Sol casa 10; Leão na 10; Júpiter/Sol forte aspecto MC; muitos planetas angulares (1,4,7,10).`;
 
-ESPECIFICIDADE É RESPEITO. "Carreiras ideais" devem ser CONCRETAS (não "comunicação", mas
-"coach de liderança, podcast educativo, professora de [área]"). O medíocre diz "você tem
-vocação para cuidar e criar"; o bom diz "você tem estes talentos, aqui está um caminho concreto".
-`;
+const BLOQUEIOS = `BLOQUEIOS DE CARREIRA — citar APENAS os com evidência real no mapa, sempre com origem e quebra:
+1 Sabotagem no sucesso — Saturno na 10 tenso, Plutão na 10, Nodo Sul em casa de carreira → medo de ser vista/inveja temida → terapia + estrutura de suporte consciente.
+2 Escolha que agrada os outros — Nodo Sul na 10, Saturno na 4 em aspecto ao MC, Lua na 10 → lealdade familiar reprime a vocação → identificar o que escolheria se ninguém assistisse.
+3 Medo de visibilidade — planetas na 12 ativando o MC, Netuno na 10, Saturno×Sol tenso → rejeição/humilhação pública → exposição gradual.
+4 Subestimação de talentos — Saturno na 10 ou tenso com o Sol, Virgem/Escorpião no MC → inadequação herdada → lista de evidências reais + mentor externo.
+5 Dispersão vocacional — MC Gêmeos/Sagitário, Júpiter com muitos planetas, Urano forte → medo de escolher → priorizar o que serve ao Nodo Norte, uma coisa primeiro.
+6 Ambiente errado — signo da Casa 6 vs ambiente atual → não reconhecer o ambiente de que precisa → identificar o que ativa o MC vs onde está hoje.`;
 
-// -------------------------------------------------------------------------------
-// CONSTANTE 2 — MC POR SIGNO (identidade pública e vocação)
-// -------------------------------------------------------------------------------
+const LIDERANCA = `TIPOS DE LIDERANÇA — por indicadores:
+Inspiração: Leão na 10/MC, Sol forte, Júpiter na 1/10 → lidera pelo exemplo, entusiasmo e brilho.
+Expertise: Capricórnio na 10, Saturno forte, Virgem em liderança → lidera pelo conhecimento e autoridade construída.
+Relacionamento: Libra na 10, Vênus forte em posição pública → lidera pela conexão e por unir pessoas.
+Transformação: Escorpião na 10, Plutão forte em aspecto ao MC → lidera nas crises.
+Visão: Aquário na 10, Urano forte, Sagitário no MC → lidera pelo futuro que enxerga antes.`;
 
-const MC_POR_SIGNO = {
-  "Áries": "Identidade: pioneira, corajosa, assertiva, iniciadora. Vocação: liderança, empreendedorismo, esportes, ação direta. Visto como: ativo, corajoso, às vezes impaciente. Legado: abrir caminhos que outros seguirão. Ambiente ideal: autonomia total, projetos novos, sem burocracia.",
-  "Touro": "Identidade: confiável, estável, qualidade, construção. Vocação: finanças, artes, construção, culinária, música, luxo. Visto como: consistente, de qualidade, digno de confiança. Legado: construir algo que dura. Ambiente: estabilidade, qualidade valorizada, crescimento gradual.",
-  "Gêmeos": "Identidade: comunicadora, versátil, inteligente, conectora. Vocação: comunicação, jornalismo, ensino, tecnologia, escrita, vendas. Visto como: inteligente, comunicativo, às vezes inconstante. Legado: conectar pessoas e ideias. Ambiente: variedade, comunicação, múltiplos projetos.",
-  "Câncer": "Identidade: cuidadora, intuitiva, protetora, familiar. Vocação: saúde, educação, nutrição, cuidado, imóveis, história. Visto como: acolhedor, confiável emocionalmente, materno. Legado: criar lugares e culturas de pertencimento. Ambiente: cuidado com significado, ambiente familiar, missão.",
-  "Leão": "Identidade: liderança, criatividade, brilho, generosidade. Vocação: artes, entretenimento, educação inspiradora, liderança. Visto como: carismático, confiante, expressivo. Legado: inspirar gerações pelo exemplo e pela arte. Ambiente: visibilidade, criatividade, reconhecimento.",
-  "Virgem": "Identidade: especialista, analítica, prestativa, meticulosa. Vocação: saúde, tecnologia, análise, serviço especializado, pesquisa. Visto como: competente, preciso, confiável nos detalhes. Legado: excelência que melhora vidas concretamente. Ambiente: especialização, qualidade, impacto mensurável.",
-  "Libra": "Identidade: diplomática, estética, justa, equilibrada. Vocação: direito, arte, design, mediação, relações humanas, moda. Visto como: harmonioso, elegante, justo. Legado: criar beleza e equilíbrio onde havia conflito. Ambiente: parceria, estética, negociação, harmonia.",
-  "Escorpião": "Identidade: poderosa, transformadora, investigativa, profunda. Vocação: psicologia, pesquisa, medicina, finanças, transformação social. Visto como: intenso, misterioso, poderoso. Legado: transformar o que outros achavam impossível. Ambiente: profundidade, autonomia, poder real.",
-  "Sagitário": "Identidade: filosófica, expansiva, otimista, inspiradora. Vocação: educação, filosofia, espiritualidade, publicação, turismo, direito. Visto como: inspirador, otimista, referência de sabedoria. Legado: expandir a consciência coletiva. Ambiente: expansão, liberdade, visão de longo prazo.",
-  "Capricórnio": "Identidade: autoridade, estrutura, responsabilidade, legado. Vocação: gestão, governo, empreendedorismo de longo prazo, construção. Visto como: sério, confiável, autoritativo, experiente. Legado: construir instituições que duram. Ambiente: responsabilidade real, construção de longo prazo.",
-  "Aquário": "Identidade: inovadora, original, humanitária, visionária. Vocação: tecnologia, ciência, movimentos sociais, inovação. Visto como: diferente, inovador, à frente do tempo. Legado: transformar sistemas que afetam muitas vidas. Ambiente: inovação, autonomia, impacto coletivo.",
-  "Peixes": "Identidade: compassiva, artística, intuitiva, espiritual. Vocação: artes, espiritualidade, cura, serviço, ciências do invisível. Visto como: sensível, artístico, compassivo. Legado: arte ou serviço que toca o sagrado. Ambiente: criatividade, espiritualidade, serviço com propósito."
+// --------- ESTRUTURA (22 seções fundidas) ----------
+const ESTRUTURA_PROFISSIONAL = `ESTRUTURA — 22 seções, nesta ordem (níveis = PISOS mínimos a superar, SEM teto):
+1 · Carta inicial — vocação no seu mapa [N1]: vocação × trabalho × carreira × talentos; onde a pessoa está nessa escala; a fase de vida; a questão mais importante do contexto.
+2 · Perfil vocacional geral [N2]: síntese de MC + Sol + elemento dominante — o retrato profissional em uma visão integrada.
+3 · Identidade pública — o MC [N3]: signo (reputação, como o mundo vê, tipo de liderança, campos), decanato, regente (signo+casa: onde se concretiza), planetas conjuntos ao MC, dignidade e Força Direcional 🐱 do regente, grau especial.
+4 · Propósito central — o Sol [N3]: signo+casa; Sol×MC (alinhados/tensos?), Sol×Saturno, Sol×Júpiter; dignidade e Força Direcional 🐱 do Sol; o trabalho atual serve ao propósito?
+5 · A ferida que vira vocação — Quíron [N2]: casa (o dom) + signo (a natureza da ferida); Quíron×Nodo Norte; como aparece na carreira atual e o que muda quando integrada.
+6 · Talentos naturais [N2]: por elemento dominante e modalidade; o que monetiza melhor; o risco profissional do perfil.
+7 · Como você trabalha [N2]: Marte (signo+casa), Casa 6 (estilo cotidiano), hemisférios (público×bastidores | autônomo×relacional) — qual ambiente é o ideal.
+8 · Os campos vocacionais de afinidade [N4 — SEÇÃO CENTRAL]: liste TODOS os campos com gatilhos ativos, SEM hierarquia falsa; para cada um, os indicadores reais do mapa e o que essa pessoa faria nele com mais fluência. ESPECIFICIDADE é obrigatória: não "comunicação", mas "podcast de psicologia + escrita terapêutica". Se houver pluri-renda indicada, nomeie as fontes.
+9 · Como você ganha dinheiro [N3]: Casa 2 (signo+regente: como o dinheiro chega), Júpiter (onde a sorte flui), Saturno (onde exige disciplina), Casa 8 (recursos externos); múltiplas fontes se indicado.
+10 · Habilidades mentais — Mercúrio [N2]: como pensa e comunica; onde a mente gera impacto.
+11 · Valores no trabalho — Vênus [N1]: o que valoriza, talentos relacionais/criativos, o que atrai recursos.
+12 · Sua sorte profissional — Júpiter [N2]: a casa onde as portas abrem; Força Direcional 🐱; como usar.
+13 · Sua lição de carreira — Saturno [N2]: a casa da lição; retrógrado (o crítico interno); Retorno de Saturno (~29/58 anos) se aplicável; o que constrói quando aceita.
+14 · Sua reputação profissional [N2]: como chefes, clientes e colegas te percebem; o que pedem naturalmente; o que pode ser subestimado.
+15 · Modelo de trabalho ideal [N2]: autônomo / equipe / liderança / bastidores — com os indicadores reais que sustentam.
+16 · Bloqueios de carreira [N3]: apenas os com evidência no mapa — origem e quebra de cada um.
+17 · Potencial de liderança [N2]: o tipo (inspiração/expertise/relação/transformação/visão) e o que impede de exercê-lo plenamente agora.
+18 · Direção evolutiva — Nodo Norte [N2]: o que a alma veio construir profissionalmente; os dons já prontos do Nodo Sul e a armadilha de usar só eles.
+19 · Correlação com o momento de vida [N3]: nomeie a fase pela idade; para 15–24 anos, áreas acadêmicas/ENEM indicadas; gatilhos de mudança de carreira, se ativos.
+20 · Carreiras e ambientes — o que ativa × o que drena [N3]: 3–5 carreiras CONCRETAS que o mapa favorece + os ambientes onde floresce e onde murcha.
+21 · Próximos passos práticos [N2]: 3–5 ações concretas baseadas NESTE mapa (cada uma com o indicador que a sustenta + como implementar + timing).
+22 · Mensagem final + aviso legal [N1]: carta pessoal com 2 dados concretos deste mapa; o mapa aponta afinidades, a ação é sempre dela; aviso legal padrão Astralia; cross-sell condicionado — mudança de área→Previsão 18 Meses · teto invisível/karma vocacional→Mapa Kármico · prosperidade no centro→Mapa da Sorte · retrato completo→Mapa Astral · timing do ano→Revolução Solar.`;
+
+const SECOES_POR_PARTE_PROF = {
+  completo: [1, 22],
+  parte1: [1, 3],    // carta, perfil geral, MC
+  parte2: [4, 7],    // Sol, Quíron, talentos, como trabalha
+  parte3: [8, 9],    // campos vocacionais (N4) + dinheiro — os mais densos
+  parte4: [10, 14],  // Mercúrio, Vênus, Júpiter, Saturno, reputação
+  parte5: [15, 18],  // modelo de trabalho, bloqueios, liderança, Nodo
+  parte6: [19, 22]   // momento de vida, ambientes, próximos passos, final
 };
 
-// -------------------------------------------------------------------------------
-// CONSTANTE 3 — SOL NA CARREIRA POR CASA (propósito central)
-// -------------------------------------------------------------------------------
-
-const SOL_CARREIRA_CASA = {
-  1: "Você É sua carreira — presença que realiza.",
-  2: "Propósito ligado a recursos e valores tangíveis.",
-  3: "Propósito em comunicação, ensino, conexão de ideias.",
-  4: "Propósito em família, lar, raízes, ancestralidade.",
-  5: "Propósito em criatividade, expressão pessoal, amor.",
-  6: "Propósito no serviço cotidiano, saúde, excelência.",
-  7: "Propósito nas parcerias e no equilíbrio entre opostos.",
-  8: "Propósito na transformação, nas crises que revelam.",
-  9: "Propósito filosófico — expandir e transmitir sabedoria.",
-  10: "Excepcional — você nasceu para ter carreira pública.",
-  11: "Propósito no coletivo, em servir grupos e causas maiores.",
-  12: "Propósito espiritual — você trabalha nos bastidores do invisível."
+const CONHECIMENTO_POR_PARTE = {
+  parte1: [MC_SIGNO, REGENTE_MC_CASA, ELEMENTO],
+  parte2: [SOL_CASA, QUIRON, ELEMENTO, MARTE, CASA6_SIGNO],
+  parte3: [CASA2_SIGNO, JUPITER_CASA, SATURNO_CASA],
+  parte4: [JUPITER_CASA, SATURNO_CASA, MC_SIGNO],
+  parte5: [MODELO_TRABALHO, BLOQUEIOS, LIDERANCA, NODO_NORTE],
+  parte6: [],
+  completo: [MC_SIGNO, REGENTE_MC_CASA, SOL_CASA, QUIRON, CASA6_SIGNO, CASA2_SIGNO, MARTE, JUPITER_CASA, SATURNO_CASA, NODO_NORTE, ELEMENTO, MODELO_TRABALHO, BLOQUEIOS, LIDERANCA]
 };
 
-// -------------------------------------------------------------------------------
-// CONSTANTE 4 — QUÍRON VOCACIONAL (ferida → dom) por signo e por casa
-// -------------------------------------------------------------------------------
-
-const QUIRON_VOCACIONAL_SIGNO = {
-  "Áries":"ferida de iniciativa reprimida → vocação de empoderar ação.",
-  "Touro":"ferida de recursos negados → vocação de criar abundância.",
-  "Gêmeos":"ferida de voz silenciada → vocação de comunicar o que importa.",
-  "Câncer":"ferida de cuidado negado → vocação de nutrir e curar.",
-  "Leão":"ferida de brilho reprimido → vocação de inspirar criatividade.",
-  "Virgem":"ferida de perfeição impossível → vocação de servir com excelência.",
-  "Libra":"ferida de injustiça vivida → vocação de criar equilíbrio.",
-  "Escorpião":"ferida de poder violado → vocação de transformar poder.",
-  "Sagitário":"ferida de fé negada → vocação de transmitir sabedoria.",
-  "Capricórnio":"ferida de autoridade abusiva → vocação de liderar com integridade.",
-  "Aquário":"ferida de exclusão → vocação de criar comunidade e inovar.",
-  "Peixes":"ferida de perda de sentido → vocação de curar espiritualmente."
-};
-const QUIRON_VOCACIONAL_CASA = {
-  1:"ferida de identidade → dom de ajudar outros a se encontrarem.",
-  2:"ferida de valor próprio → dom de ajudar outros a perceber seu valor.",
-  3:"ferida de comunicação → dom de comunicar com precisão e cuidado.",
-  4:"ferida familiar → dom de criar pertencimento.",
-  5:"ferida criativa → dom de inspirar criatividade nos outros.",
-  6:"ferida de trabalho/saúde → dom em saúde e bem-estar.",
-  7:"ferida relacional → dom em relacionamentos e parceria.",
-  8:"ferida de transformação → dom em crise e regeneração.",
-  9:"ferida de filosofia → dom em expandir crenças.",
-  10:"ferida de carreira → dom em orientação vocacional e liderança.",
-  11:"ferida de grupo → dom em comunidade e movimentos sociais.",
-  12:"ferida espiritual → dom em cura profunda e espiritualidade."
-};
-
-// -------------------------------------------------------------------------------
-// CONSTANTE 5 — TALENTOS POR ELEMENTO DOMINANTE
-// -------------------------------------------------------------------------------
-
-const TALENTOS_ELEMENTO = {
-  "Fogo":"Talentos: liderança, inspiração, visão, energia, entusiasmo. Monetiza por: visibilidade, liderança, empreendedorismo. Risco: projetos sem conclusão, conflitos desnecessários. Ambientes: onde pode liderar, inspirar, agir com autonomia.",
-  "Terra":"Talentos: construção, qualidade, persistência, análise, praticidade. Monetiza por: especialização técnica, construção de longo prazo, qualidade premium. Risco: resistência à inovação, excesso de cautela. Ambientes: onde qualidade é valorizada e resultados tangíveis recompensados.",
-  "Ar":"Talentos: comunicação, conexão, análise, inovação, mediação. Monetiza por: comunicação, ensino, conexão entre pessoas/ideias. Risco: dispersão, dificuldade de execução. Ambientes: onde ideias circulam e comunicação é valorizada.",
-  "Água":"Talentos: intuição, empatia, profundidade, cuidado, criatividade. Monetiza por: cuidado, criatividade, profundidade, intuição. Risco: hipersensibilidade ao ambiente, fronteiras difíceis. Ambientes: onde profundidade e empatia são valorizadas."
-};
-
-// -------------------------------------------------------------------------------
-// CONSTANTE 6 — MODELO DE TRABALHO + ESTILO COTIDIANO (Casa 6 por signo)
-// -------------------------------------------------------------------------------
-
-const MODELO_TRABALHO = `
-## MODELO DE TRABALHO IDEAL (indicadores)
-AUTONOMIA/EMPREENDEDORISMO: Sol em Casa 1/10 ou aspecto com ASC; Marte forte/liderança; muitos planetas na metade superior; Urano/Saturno fortes em Casa 10; MC em Áries/Leão/Capricórnio.
-COLABORAÇÃO/EQUIPE: Sol em Casa 7/11; muitos planetas de ar; Vênus forte em Casa 10 ou aspecto com MC; Libra/Aquário em Casa 10.
-BASTIDORES/ESPECIALIZAÇÃO: Sol em Casa 6/12; Mercúrio/Virgem fortes; muitos planetas cadentes (3,6,9,12).
-LIDERANÇA PÚBLICA: Sol em Casa 10; Leão em Casa 10; Júpiter/Sol em aspecto com MC; muitos planetas angulares (1,4,7,10).
-`;
-
-const CASA6_ESTILO = {
-  "Áries":"trabalha rápido, precisa de desafio constante.",
-  "Touro":"trabalha com constância, precisa de conforto e estabilidade.",
-  "Gêmeos":"trabalha melhor em múltiplos projetos simultâneos.",
-  "Câncer":"trabalha melhor em ambiente familiar/acolhedor.",
-  "Leão":"trabalha melhor com reconhecimento e criatividade.",
-  "Virgem":"trabalha com excelência analítica e atenção a detalhes.",
-  "Libra":"trabalha melhor em parceria e ambiente harmonioso.",
-  "Escorpião":"trabalha com intensidade e profundidade.",
-  "Sagitário":"precisa de liberdade e propósito filosófico.",
-  "Capricórnio":"trabalha com disciplina e orientação a resultados.",
-  "Aquário":"trabalha melhor com inovação e sem hierarquia rígida.",
-  "Peixes":"trabalha melhor em ambiente criativo ou espiritual."
-};
-
-// -------------------------------------------------------------------------------
-// CONSTANTE 7 — BLOQUEIOS DE CARREIRA (6 padrões)
-// -------------------------------------------------------------------------------
-
-const BLOQUEIOS_CARREIRA = `
-## OS 6 BLOQUEIOS DE CARREIRA (identificar com evidência no mapa)
-1 SABOTAGEM NO SUCESSO ("quando começo a ter sucesso, algo interrompe") — Saturno C10 tenso, Plutão C10, Nodo Sul em carreira. Origem: medo de ser vista, inveja temida, "traição" do grupo de origem. Quebra: terapia para medo de sucesso + estrutura de suporte.
-2 ESCOLHA QUE AGRADA OS OUTROS ("escolhi por pressão familiar") — Nodo Sul C10, Saturno C4 em aspecto com MC, Lua C10. Origem: lealdade familiar que reprimiu a vocação. Quebra: identificar o que escolheria se ninguém assistisse.
-3 MEDO DE VISIBILIDADE ("tenho capacidade mas me escondo") — planetas C12 ativando MC, Netuno C10, Saturno×Sol tenso. Origem: rejeição/humilhação pública. Quebra: exposição gradual.
-4 SUBESTIMAÇÃO DE TALENTOS ("nunca sei o suficiente para cobrar mais") — Saturno C10 ou tenso com Sol, Virgem/Escorpião no MC. Origem: padrão de inadequação. Quebra: lista de evidências reais + mentor externo.
-5 DISPERSÃO VOCACIONAL ("tantos talentos que não sei por qual ir") — MC Gêmeos/Sagitário, Júpiter com múltiplos planetas, Urano forte. Origem: medo de comprometimento. Quebra: escolher o que mais serve ao Nodo Norte — uma coisa primeiro.
-6 AMBIENTE ERRADO ("tenho talento mas trabalho onde não me valorizam") — signo em Casa 6 vs. ambiente atual. Origem: não reconhecer o ambiente de que precisa. Quebra: identificar qual ambiente ativa o MC vs. onde está.
-`;
-
-// -------------------------------------------------------------------------------
-// CONSTANTE 8 — TIPOS DE LIDERANÇA
-// -------------------------------------------------------------------------------
-
-const TIPOS_LIDERANCA = `
-## POTENCIAL DE LIDERANÇA (5 tipos)
-INSPIRAÇÃO — Leão em C10/MC, Sol forte, Júpiter C1/C10: lidera pelo exemplo, entusiasmo, brilho.
-EXPERTISE — Capricórnio C10, Saturno forte, Virgem em liderança: lidera pelo conhecimento e autoridade construída.
-RELACIONAMENTO — Libra C10, Vênus forte público: lidera pela conexão, harmonia, união de pessoas.
-TRANSFORMAÇÃO — Escorpião C10, Plutão em aspecto com MC: lidera em crises; quando tudo cai, sabe o que fazer.
-VISÃO — Aquário C10, Urano forte, Sagitário MC: lidera pelo futuro que enxerga antes dos outros.
-`;
-
-// -------------------------------------------------------------------------------
-// CONSTANTE 9 — NODO NORTE VOCACIONAL
-// -------------------------------------------------------------------------------
-
-const NODO_NORTE_VOCACIONAL = {
-  "Áries":"evolução em liderança autônoma, iniciativa.",
-  "Touro":"evolução em construção material, valor.",
-  "Gêmeos":"evolução em comunicação e aprendizado.",
-  "Câncer":"evolução em cuidado e raízes.",
-  "Leão":"evolução em criatividade e expressão pessoal.",
-  "Virgem":"evolução em serviço e excelência.",
-  "Libra":"evolução em parcerias e equilíbrio.",
-  "Escorpião":"evolução em transformação e profundidade.",
-  "Sagitário":"evolução em filosofia, ensino, expansão.",
-  "Capricórnio":"evolução em autoridade e legado.",
-  "Aquário":"evolução em inovação e comunidade.",
-  "Peixes":"evolução em espiritualidade e compaixão."
-};
-
-// -------------------------------------------------------------------------------
-// CONSTANTE 10 — ESTRUTURA DO RELATÓRIO + UPSELL
-// -------------------------------------------------------------------------------
-
-const ESTRUTURA_PRO = `
-## ESTRUTURA DO RELATÓRIO (21 seções)
-1. Carta inicial — trabalho como expressão de quem você é (~300)
-2. Perfil vocacional geral (MC + Sol integrados) (~500)
-3. Identidade pública — o MC (análise profunda por signo) (~700)
-4. Propósito central — o Sol na carreira (~500)
-5. Sua ferida que virou vocação — Quíron (~500)
-6. Talentos naturais (elemento dominante + planetas) (~600)
-7. Habilidades comunicacionais e mentais — Mercúrio (~400)
-8. Valores no trabalho — Vênus (~300)
-9. Estilo de ação — Marte (~300)
-10. Sorte profissional — Júpiter (~400)
-11. Lição de carreira — Saturno (~400)
-12. Modelo de trabalho ideal (autônomo/equipe/liderança) (~500)
-13. Estilo cotidiano — Casa 6 (~300)
-14. Bloqueios de carreira (com origem e quebra) (~600)
-15. Potencial de liderança (~400)
-16. Direção evolutiva — Nodo Norte (~400)
-17. Carreiras e ambientes que ativam seu potencial (3-5 CONCRETAS) (~400)
-18. Carreiras e ambientes que drenam (~300)
-19. Próximos passos práticos (~400)
-20. Mensagem final (~200)
-21. Próximos passos Astralia (upsell individual)
-
-## TOM E REGRAS
-Carreiras ideais sempre CONCRETAS (cargo/área específica, não "comunicação"). Bloqueios com evidência no mapa. "Seu mapa indica" + o que fazer com isso. Integrar o contexto profissional do cliente. Tom: conselheiro vocacional que conhece a alma da pessoa. Nunca vago.
-
-## UPSELL (individual — NÃO combo; no gancho real)
-- Mapa da Sorte: revela COMO a prosperidade flui (modelo de renda, períodos, bloqueios financeiros).
-- Mapa Astral Personalizado: retrato completo de quem a pessoa é (personalidade, emoção, amor).
-- Mapa Kármico: quando há "teto invisível" / bloqueios com raiz profunda.
-- Revolução Solar: o que ESTE ano favorece profissionalmente (timing de mudanças/lançamentos).
-Oferecer 1-2 mais relevantes ao que a leitura revelou.
-`;
-
-// -------------------------------------------------------------------------------
-// FUNÇÃO BUILD
-// -------------------------------------------------------------------------------
-// dados: { nome, dataNascimento, horaNascimento, localNascimento, contexto? }
-// mapaNatal: { Sol, Lua, Mercúrio, Vênus, Marte, Júpiter, Saturno, Urano, Netuno,
-//   Plutão, "Quíron", "Nodo Norte", MC:{signo,grau}, ASC, cuspideCasa6, cuspideCasa10 }
-// aspectos: [{ planeta1, aspecto, planeta2, orbe }]
-// nodoSulCasa: opcional (casa do Nodo Sul, para detecção de bloqueios)
-
-function buildPromptMapaProfissional(dados, mapaNatal, aspectos = [], nodoSulCasa = null) {
+// --------- BUILDER ----------
+function buildPromptProfissional(dados, planetasInfo, casasInfo, aspectosInfo, parte = "completo") {
   const nome = dados.nome || '[NOME]';
-  const a = analisarVocacaoPro(mapaNatal, aspectos, nodoSulCasa);
+  const f = SECOES_POR_PARTE_PROF[parte] || SECOES_POR_PARTE_PROF.completo;
+  const ini = f[0], fim = f[1];
+  const conhecimento = (CONHECIMENTO_POR_PARTE[parte] || CONHECIMENTO_POR_PARTE.completo).join('\n\n');
 
-  const planetasInfo = Object.entries(mapaNatal)
-    .filter(([k,v]) => v && typeof v==='object' && SIGNOS_ORDEM.includes(v.signo))
-    .map(([p,d]) => `  - ${p}: ${d.signo} ${d.grau ?? '?'}°${d.retrogrado?' ℞':''} (Casa ${d.casa ?? '?'})`).join("\n");
+  const campos = (dados.camposAtivos || []).map(c => '• ' + c).join('\n') || '(derivar dos dados do mapa abaixo — não inventar)';
+  const fontes = (dados.multiplasFontes || []).length
+    ? 'INDICADORES DE MÚLTIPLAS FONTES DE RENDA ativos (' + dados.multiplasFontes.length + '): ' + dados.multiplasFontes.join('; ') + (dados.multiplasFontes.length >= 3 ? ' → o mapa INDICA pluri-renda como característica.' : '')
+    : '';
+  const mudanca = (dados.gatilhosMudanca || []).length
+    ? 'INDICADORES DE MUDANÇA DE CARREIRA ativos: ' + dados.gatilhosMudanca.join('; ')
+    : '';
 
-  const prompt = `Você é um astrólogo especializado em vocação e psicologia do trabalho. Revela talentos, vocação, bloqueios e o caminho para a realização profissional de ${nome}.
-OBJETIVO: revelar a vocação com clareza e ESPECIFICIDADE; talentos em linguagem concreta; modelo de carreira REAL (não vago); honesto sobre bloqueios sem desmotivar; empoderar para ação.
-Comprimento: 10.000-14.000 palavras.
+  const escopo = parte === "completo"
+    ? "Gere TODAS as 22 seções, na ordem, sem agrupar nem resumir."
+    : `ESCOPO DESTA GERAÇÃO (sobrepõe qualquer instrução de quantidade): esta é a ${parte}. Gere SOMENTE as seções ${ini} a ${fim} — NÃO gere as demais e NÃO tente cobrir as 22 de uma vez. Como você produz apenas parte do relatório, APROFUNDE AO MÁXIMO cada seção desta faixa: exceda os mínimos, traga mais exemplos concretos, mais correlações entre os indicadores reais e mais nuance. Não economize, não resuma.`;
 
-# DADOS DA CLIENTE
-Nome: ${nome} | Nascimento: ${dados.dataNascimento||'[DATA]'}, ${dados.horaNascimento||'[HORA]'}, ${dados.localNascimento||'[LOCAL]'}
-${dados.contexto ? `Situação profissional: ${dados.contexto}` : 'Situação profissional: (não fornecida — solicitar idealmente)'}
+  return `Você é um astrólogo brasileiro especializado em vocação e psicologia do trabalho, com 30 anos de experiência em como o mapa natal revela talentos, vocação, bloqueios de carreira e o caminho para a realização profissional. Escreve em PORTUGUÊS DO BRASIL, em segunda pessoa, com a calidez da Astralia: íntimo, revelador, prático — nunca vago.
 
-# MAPA NATAL
+TOM OBRIGATÓRIO — NÃO DETERMINISTA: nunca "você é jornalista" ou "sua profissão é X". Sempre "o mapa aponta forte afinidade com…", "há indicadores de fluência para…", "o campo que mais ressoa com esta configuração é…". Se há múltiplas afinidades, indique TODAS — sem hierarquia falsa, sem escolher pela pessoa. A concretização é sempre escolha e ação dela.
+
+ESPECIFICIDADE É RESPEITO: "vocação para comunicação" é fraco; "coach de liderança, podcast educativo, professora de [área]" é premium. Sempre que indicar um campo, aterrisse em carreiras concretas. Seja honesto sobre bloqueios SEM desmotivar — todo bloqueio vem com origem e caminho de quebra. Em saúde (Casa 6), fale de tendência e cuidado, nunca diagnóstico. Use "Força Direcional 🐱" (jamais o termo técnico sânscrito). Cruze SEMPRE com a idade e a fase de vida.
+
+NUNCA invente posições — use APENAS os dados reais abaixo.
+
+=== DADOS REAIS DE ${nome.toUpperCase()} ===
+Nascimento: ${dados.data || dados.dataNascimento || '[DATA]'}${dados.hora ? ' às ' + dados.hora : ''} · ${dados.cidade || dados.localNascimento || '[LOCAL]'}
+Idade: ${dados.idade || '[IDADE]'}${dados.fase ? ' · Fase de vida: ' + dados.fase : ''}${dados.escolaridade ? ' · Escolaridade: ' + dados.escolaridade : ''}
+${dados.contexto ? 'Contexto profissional do cliente: ' + dados.contexto : ''}
+
 ${planetasInfo}
-  - MC: ${mapaNatal.MC ? (mapaNatal.MC.signo+' '+(mapaNatal.MC.grau||'')+'°') : '?'} | ASC: ${mapaNatal.ASC || '?'}
 
-# DIAGNÓSTICO VOCACIONAL (já calculado — use como base)
-- MC: ${a.mc} | Regente do MC/Casa 10: ${a.regenteMC}
-- Ocupantes da Casa 10: ${a.ocupantesC10.join(", ")||"vazia"}
-- Sol na carreira: ${a.sol}
-- Quíron (ferida→vocação): ${a.quiron}
-- Nodo Norte (direção): ${a.nodoNorte}
-- Casa 6: cúspide ${a.cuspideC6||'?'}, ocupantes ${a.ocupantesC6.join(", ")||"vazia"}
-- Elemento dominante: ${a.elementoDominante} | Modalidade dominante: ${a.modalidadeDominante}
-- Modelo de trabalho provável: ${a.modeloTrabalho.join(" > ")||"a definir"}
-- Liderança: ${a.lideranca.join(" | ")}
-- Bloqueios com sinal no mapa: ${a.bloqueios.length?a.bloqueios.map(b=>b.nome).join(", "):"(nenhum sinal automático — investigar)"}
+${casasInfo}
 
-# ASPECTOS VOCACIONAIS (orbe ≤5°)
-${aspectos.length ? aspectos.map(x=>`  - ${x.planeta1} ${x.aspecto} ${x.planeta2} (orbe ${x.orbe ?? '?'}°)`).join("\n") : "(não fornecidos)"}
+${aspectosInfo}
 
-${FUNDAMENTOS_PRO}
+CAMPOS VOCACIONAIS COM GATILHOS ATIVOS (desenvolva todos na seção 8, sem hierarquia):
+${campos}
+${fontes ? '\n' + fontes : ''}${mudanca ? '\n' + mudanca : ''}
 
-## MC POR SIGNO (use o desta cliente: ${a.mc})
-${Object.entries(MC_POR_SIGNO).map(([s,t])=>`${s}: ${t}`).join("\n\n")}
+=== TABELAS DE REFERÊNCIA (cruze com os dados reais; não copie verbatim) ===
+${conhecimento}
 
-## SOL NA CARREIRA POR CASA
-${Object.entries(SOL_CARREIRA_CASA).map(([c,t])=>`Casa ${c}: ${t}`).join("\n")}
+${ESTRUTURA_PROFISSIONAL}
 
-## QUÍRON VOCACIONAL — POR SIGNO
-${Object.entries(QUIRON_VOCACIONAL_SIGNO).map(([s,t])=>`${s}: ${t}`).join("\n")}
-## QUÍRON VOCACIONAL — POR CASA
-${Object.entries(QUIRON_VOCACIONAL_CASA).map(([c,t])=>`Casa ${c}: ${t}`).join("\n")}
+=== INSTRUÇÕES DE SAÍDA ===
+${escopo}
 
-## TALENTOS POR ELEMENTO DOMINANTE (o desta cliente: ${a.elementoDominante})
-${Object.entries(TALENTOS_ELEMENTO).map(([e,t])=>`${e}: ${t}`).join("\n")}
+Escreva uma leitura profundamente personalizada do Mapa Profissional e Vocacional de ${nome}, em prosa rica e em segunda pessoa, citando SEMPRE o signo, a casa e o grau reais de cada indicador (MC, regente, Sol, Marte, Mercúrio, Júpiter, Saturno, Quíron, Nodo), as dignidades e a Força Direcional 🐱 quando couber, e os aspectos reais com o orbe — correlacionando os posicionamentos entre si. Conecte tudo ao contexto e à fase de vida da pessoa. Para clientes de 15–24 anos, inclua orientação de área acadêmica/ENEM na seção 19; caso contrário, omita esse tema. Nunca determinista, nunca genérico: afinidade, indicadores, fluência.
 
-${MODELO_TRABALHO}
-
-## ESTILO COTIDIANO — CASA 6 POR SIGNO
-${Object.entries(CASA6_ESTILO).map(([s,t])=>`${s}: ${t}`).join("\n")}
-
-${BLOQUEIOS_CARREIRA}
-${TIPOS_LIDERANCA}
-
-## NODO NORTE — DIREÇÃO VOCACIONAL
-${Object.entries(NODO_NORTE_VOCACIONAL).map(([s,t])=>`${s}: ${t}`).join("\n")}
-
-${ESTRUTURA_PRO}
-
-# FORMATO DE SAÍDA (OBRIGATÓRIO)
-Responda EXCLUSIVAMENTE com JSON válido, sem texto antes/depois, sem markdown:
-{ "secoes": [ { "numero": 1, "titulo": "Carta Inicial", "texto": "..." } ] }
-REGRAS: aspas duplas; escape quebras como \\n e aspas internas como \\"; sem blocos de código; "numero" exato (1-21); "texto" em PROSA corrida (segunda pessoa, não replicar bullets do template).
-
-# LEMBRETES
-1. NOME (${nome}) ao longo do documento
-2. ESPECIFICIDADE: cite signo, casa, grau, regente do MC, elemento dominante e Quíron desta cliente
-3. Carreiras ideais CONCRETAS (3-5 cargos/áreas específicas) — não "comunicação", mas "coach de liderança, professora de [área], podcast educativo"
-4. Quíron: ferida E o dom vocacional que ela contém
-5. Bloqueios: cada um com origem e caminho de quebra
-6. Modelo de trabalho e tipo de liderança baseados nos indicadores reais
-7. Integre o contexto profissional da cliente, se houver
-8. Tom prático, revelador, nunca vago; honesto sobre bloqueios sem desmotivar
-9. Upsell individual ao final (1-2: Sorte, Astral, Kármico ou Revolução) — sem combo
-10. Mínimo 10.000 palavras
-
-Gere agora o Mapa Profissional completo (seções 1-21). Retorne apenas o JSON.`;
-
-  return {
-    diagnostico: { cliente: nome, ...a },
-    prompt,
-    metadados: {
-      framework: "Mapa Profissional — MC + Sol + Quíron + 15 indicadores + elemento dominante + modelo de trabalho + bloqueios + liderança",
-      modeloRecomendado: "claude-opus-4-7",
-      modeloAlternativoAB: "claude-sonnet-4-6",
-      palavrasEsperadas: "10.000-14.000",
-      tipo: "premium_assincrono_48h",
-      saida: "JSON estruturado por seções (renderização de PDF é camada separada)",
-      versao: "3.0"
-    }
-  };
+Responda APENAS com JSON válido, sem markdown, sem texto fora do JSON:
+{
+  "secoes": [
+    {"titulo": "Título da seção (cite signo/casa/grau quando couber)", "texto": "vários parágrafos ricos e personalizados"}
+  ]
+}`;
 }
 
 module.exports = {
-  buildPromptMapaProfissional,
-  analisarVocacaoPro, detectarModeloTrabalho, detectarLideranca, detectarBloqueios,
-  elementoModalidadeDominante,
-  FUNDAMENTOS_PRO, MC_POR_SIGNO, SOL_CARREIRA_CASA,
-  QUIRON_VOCACIONAL_SIGNO, QUIRON_VOCACIONAL_CASA, TALENTOS_ELEMENTO,
-  MODELO_TRABALHO, CASA6_ESTILO, BLOQUEIOS_CARREIRA, TIPOS_LIDERANCA,
-  NODO_NORTE_VOCACIONAL, ESTRUTURA_PRO, REGENTE_SIGNO, ELEMENTO_SIGNO, MODALIDADE_SIGNO
+  buildPromptProfissional,
+  SECOES_POR_PARTE_PROF,
+  CONHECIMENTO_POR_PARTE,
+  ESTRUTURA_PROFISSIONAL,
+  MC_SIGNO, REGENTE_MC_CASA, SOL_CASA, QUIRON, CASA6_SIGNO, CASA2_SIGNO,
+  MARTE, JUPITER_CASA, SATURNO_CASA, NODO_NORTE, ELEMENTO,
+  MODELO_TRABALHO, BLOQUEIOS, LIDERANCA
 };
