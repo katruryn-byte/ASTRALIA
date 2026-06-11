@@ -1,378 +1,250 @@
-// ═══════════════════════════════════════════════════════════════════════════════
-// MAPA DE PREVISÕES 18 MESES — Astralia.online
-// Compilado INTEGRAL das Diretrizes Completas. Padrão premium.
-// Modelo recomendado: claude-opus-4-7
-// O prompt RECEBE os trânsitos do período como input (a coleta é do motor adaptado —
-// Previsões é uma das exceções que precisam de dados além do mapa natal único).
-// ═══════════════════════════════════════════════════════════════════════════════
+// =============================================================================
+// prompt-mapa-previsoes.js  —  Astralia · Mapa de Previsões 18 Meses (Super Premium)
+// v2 — AMPLIADO. Funde a diretriz Super Premium (8 camadas) + 9ª camada própria:
+//   PROFECÇÃO MENSAL (senhor do mês) — cada um dos 18 capítulos ganha um planeta
+//   regente que o colore (time-lord mensal helenístico, derivado da profecção anual).
+//   + rituais nos meses cruciais + guia de ação por mês + elucidação reforçada.
+//   Voz da Lilith adaptada às previsões: íntima, reveladora, premonitória, quase
+//   profética — nunca determinista, nunca catastrófica.
+// -----------------------------------------------------------------------------
+// MODELO ALVO: Claude Sonnet 4.6 (claude-sonnet-4-6).
+// -----------------------------------------------------------------------------
+// ORDEM DE OURO — gerar pelo OPERÁRIO, particionado, sem estourar o Vercel.
+//   O worker itera as 5 partes e concatena os arrays "secoes":
+//     for (const p of ["parte1","parte2","parte3","parte4","parte5"]) {
+//       const prompt = buildPromptPrevisoes(dados, planetasInfo, casasInfo, aspectosInfo, p);
+//       // chama a API (claude-sonnet-4-6), JSON.parse, empurra resp.secoes
+//     }
+//   parte1 = Panorama + As 9 Camadas · parte2 = meses 1–6 · parte3 = meses 7–12 ·
+//   parte4 = meses 13–18 · parte5 = Áreas de Vida + Momentos + Mensagem Final.
+//   NUNCA gerar "completo" em produção (18 capítulos numa invocação = estouro).
+// -----------------------------------------------------------------------------
+// SEM TETO DE PALAVRAS: os pisos são mínimos a SUPERAR, jamais tetos. Não resumir.
+// -----------------------------------------------------------------------------
+// COPYRIGHT: a técnica astrológica e os fatos astronômicos são de domínio comum —
+//   as fases da Lua, o significado de signos/planetas/aspectos, datas/graus de
+//   eclipses, retrógrados e lunações NÃO pertencem a ninguém. O que é protegido é
+//   o TEXTO de um autor. Por isso: nenhum texto de obra de terceiros entra aqui;
+//   todas as tabelas deste arquivo são interpretação astrológica geral redigida na
+//   voz da Astralia. Datas/graus devem chegar da etapa de cálculo com efeméride
+//   PRECISA (de fonte astronômica padrão), não das tabelas aproximadas da diretriz.
+// -----------------------------------------------------------------------------
+// `dados` esperado (a etapa de cálculo preenche):
+//   { nome, data|dataNascimento, hora, cidade|localNascimento, idade,
+//     periodoInicio, periodoFim, contexto,
+//     progressoes: { luaProgSigno, luaProgCasa, luaProgMuda, solProgSigno, solProgMuda,
+//                    solarArcInicio, solarArcFim, saAspectos:[ "SA MC conj Sol natal (mês 9)" ] },
+//     camadas: { transitosChave:[ "Saturno entra Casa 10 em mar/2027 (~2,5 anos)" ],
+//                eclipsesAtivos:[ "Eclipse Solar 20°01' Leão sobre MC natal (mês 3)" ],
+//                profeccaoCasa, senhorAno, senhorAnoPos, rsNoPeriodo, rsResumo, rsMesAniversario },
+//     picos: { positivo, desafiador, transformacao, janelaAmor, janelaCarreira, janelaFinanceira, recolhimento },
+//     momentos: [ "..." ],                    // 5 momentos mais importantes, cronológicos
+//     meses: [ { numero, mesAno, classificacao, pontuacao,
+//                profeccaoMensalCasa, senhorMes,       // <-- CAMADA 9 (vem do cálculo)
+//                aniversarioNoMes: false,              // marca o mês do aniversário (RS)
+//                transitos: "Júpiter Casa 9; Saturno Casa 6; Marte Casa 3",
+//                aspectos: "Júpiter trígono Sol natal (orbe 1,2°)",
+//                eclipse: "" , retrogrado: "Mercúrio Rx Casa 7 (12–30)",
+//                luaNova: "Lua Nova Áries Casa 1 — dia 16",
+//                luaCheia: "Lua Cheia Libra Casa 7 — dia 2 (Superlua)",
+//                luaProg: "Touro Casa 2", gatilhos:[ "[AMOR] Vênus trânsito Casa 7" ] }, ... 18 ] }
+// =============================================================================
 
-const SIGNOS_ORDEM = ["Áries","Touro","Gêmeos","Câncer","Leão","Virgem","Libra","Escorpião","Sagitário","Capricórnio","Aquário","Peixes"];
+// ---------------- TABELAS INTERPRETATIVAS (condensadas, por parte) -----------
 
-// ── CONSTANTE 1 — FUNDAMENTOS ──────────────────────────────────────────────────
-const FUNDAMENTOS_PREVISOES = `
-O QUE SÃO TRÂNSITOS
-Trânsitos são os movimentos dos planetas no céu agora, em relação à posição dos planetas
-no momento do nascimento. Quando um planeta em trânsito "toca" um planeta natal (aspecto),
-ele ativa a energia daquele ponto do mapa — como se o tempo pressionasse botões específicos
-do mapa natal. Cada botão ativa um tema, uma qualidade, uma possibilidade.
+const JUPITER_T = `JÚPITER EM TRÂNSITO POR CASA NATAL — o que o céu ABRE:
+1 presença magnética, novos começos, saúde radiante; 2 abundância, renda, valorização de talentos; 3 comunicação, cursos, publicações, viagens curtas; 4 lar que cresce, família, mudança de casa; 5 romance, criatividade, prazer, filhos; 6 novo emprego/função, melhora de saúde, rotina que flui; 7 parceria que se expande, novo amor, contratos; 8 recursos externos, investimento, transformação que liberta; 9 A MELHOR — expansão máxima, viagem, ensino, fé, publicação; 10 promoção, reconhecimento, carreira que decola; 11 redes que multiplicam, sonhos que se concretizam; 12 expansão espiritual, retiro fértil, arte.`;
 
-QUAIS TRÂNSITOS IMPORTAM (nem todos são iguais)
-- Planetas rápidos (Sol, Lua, Mercúrio, Vênus, Marte): passam rápido, efeito de dias.
-- Planetas lentos (Júpiter, Saturno, Urano, Netuno, Plutão): ficam meses/anos, efeito profundo.
-Para previsão de 18 meses, o foco são:
-  JÚPITER (1 ano/signo): cria oportunidades, abre portas, expande.
-  SATURNO (2,5 anos/signo): cria responsabilidades, desafios que ensinam.
-  URANO (7 anos/signo): cria rupturas e inovações.
-  NETUNO (14 anos/signo): cria dissolução e espiritualidade.
-  PLUTÃO (15-30 anos/signo): cria transformações profundas.
-  MARTE (1,5-2 meses/signo): ativa ação e possíveis conflitos.
-Trânsitos sobre casas angulares (1,4,7,10) são mais VISÍVEIS externamente.
-Trânsitos sobre planetas pessoais (Sol, Lua, Vênus, Marte) são mais SENTIDOS.
+const SATURNO_T = `SATURNO EM TRÂNSITO POR CASA NATAL — o que o céu COBRA (escola, não castigo):
+1 identidade em teste, o corpo pede cuidado; 2 disciplina financeira, corte de despesas; 3 comunicação com consequências, contratos com peso; 4 família para resolver, lar como responsabilidade; 5 amor/criação que exigem maturidade; 6 saúde e rotina que cobram, o corpo fala; 7 parcerias testadas — mostram solidez ou limite; 8 transformação inevitável, o que não dura é encerrado; 9 crenças testadas, expansão que pede fundação; 10 maior responsabilidade, reconhecimento tardio mas sólido; 11 redes que mostram autenticidade; 12 inconsciente que cobra, recolhimento necessário.`;
 
-O QUE ESTE MAPA REVELA
-Os temas centrais dos 18 meses; os meses de maior oportunidade por área; os períodos que
-pedem cuidado/estrutura; os eventos mais prováveis (linguagem de tendência, não certeza);
-as janelas ideais para decisões; o que cada fase está pedindo.`;
+const MARTE_T = `MARTE EM TRÂNSITO POR CASA NATAL — energia e ação (~2 meses):
+1 presença e impulso máximos, possível impaciência; 2 luta pelos recursos, conflito sobre dinheiro; 3 mente acelerada, disputas verbais; 4 reforma, conflito ou ação doméstica; 5 paixão, criatividade e romance intensos; 6 trabalho intenso, cuidado com excesso e inflamação; 7 conflito ou paixão na parceria; 8 desejo intenso, coragem para crises; 9 ambição de crescer, aventura, viagem; 10 ambição profissional no pico, liderança; 11 energia em grupos e causas; 12 ação nos bastidores, possível fadiga.`;
 
-// ── CONSTANTE 2 — COMO LER + MODO DO ASPECTO ───────────────────────────────────
-const COMO_LER_TRANSITOS = `
-Para cada trânsito relevante, três perguntas:
-1) QUAL planeta está em trânsito? → define a QUALIDADE da energia (Júpiter=expansão, Saturno=responsabilidade, Urano=ruptura, Netuno=dissolução, Plutão=transformação, Marte=ação).
-2) SOBRE QUAL ponto natal? → define a ÁREA ativada (Sol=identidade, Lua=emoção/família, MC=carreira, Casa 7=relacionamento, etc.).
-3) QUAL aspecto? → define o MODO de manifestação:
-   - Conjunção (0°): fusão intensa — máxima ativação.
-   - Trígono (120°): fluxo fácil — oportunidade.
-   - Sextil (60°): oportunidade que precisa de ação.
-   - Quadratura (90°): tensão — desafio que cresce.
-   - Oposição (180°): polarização — equilíbrio necessário.
+const ASPECTOS_T = `ASPECTOS CRÍTICOS DE TRÂNSITO — parâmetros:
+Júpiter conj Sol: expansão de identidade, o maior impulso pessoal (~3 sem). Júpiter conj Lua: abundância emocional. Júpiter conj Vênus: amor + dinheiro, o mês mais favorável. Júpiter conj MC: a carreira se abre. Júpiter conj ASC: o mês que mais brilha. Júpiter quad/op Sol: crescimento que exige esforço.
+Saturno conj Sol: o MAIOR teste de identidade — o que não é autêntico cai. Saturno conj Lua: emoção testada, possível isolamento. Saturno conj Vênus: amor que exige maturidade. Saturno quad Sol/Lua: crise produtiva, emoção que pede integração.
+Urano conj/quad/op natal: ruptura inesperada que liberta. Netuno conj Vênus: romance idealizado ou ilusório. Netuno conj Sol: identidade difusa, busca espiritual. Plutão conj Sol: morte e renascimento do eu. Plutão conj Lua: limpeza emocional. Plutão conj Vênus: amor que transforma tudo. Marte conj MC: mês de ação profissional. Marte conj ASC: início corajoso, energia máxima.`;
 
-Para trânsitos NÃO tabelados abaixo, interpretar pela combinação dos três eixos acima
-(qualidade do planeta em trânsito × ponto/área natal × modo do aspecto). Nunca omitir um
-trânsito significativo só por não estar na tabela.`;
+const ECLIPSE_T = `ECLIPSES — parâmetros (cada eclipse ativo merece parágrafo próprio):
+Solar sobre planeta natal: abertura, novo capítulo. Lunar sobre planeta natal: conclusão e revelação, o oculto vem à tona.
+Sobre ASC: novo ciclo de identidade. Sobre MC: novo ciclo de carreira (o mais importante para o profissional). Sobre Sol: renovação de propósito. Sobre Lua: novo capítulo emocional/familiar. Sobre Vênus: novo capítulo no amor.
+Eclipse em quadratura: tensão e ajuste. Em oposição: o outro lado pede integração. Efeito: até 6 meses antes e 6 depois.`;
 
-// ── CONSTANTE 3 — CRITÉRIOS DE PRIORIZAÇÃO (quais trânsitos destacar) ───────────
-const CRITERIOS_PRIORIZACAO = `
-CRITÉRIO 1: planeta lento + planeta pessoal natal → Júpiter/Saturno sobre Sol, Lua, Vênus, Marte = muito significativo.
-CRITÉRIO 2: planeta lento + ângulo natal → qualquer lento sobre ASC, MC, DESC ou IC = muito visível externamente.
-CRITÉRIO 3: planeta lento + ingresso em casa → Júpiter/Saturno entrando em nova casa = novo tema começa.
-CRITÉRIO 4: múltiplos trânsitos no mesmo período → 2+ planetas tocando a mesma área no mesmo mês = período de intensidade.
-CRITÉRIO 5: Retorno de Saturno / Saturno oposição (~29 e ~44 anos): marco de maturidade e reavaliação.
-CRITÉRIO 6: Retorno de Júpiter (~12 anos): renovação de ciclo, oportunidades concentradas.
-NÃO liste todos os trânsitos — apenas os significativos para ESTA pessoa.`;
+const MERCURIO_RX = `MERCÚRIO RETRÓGRADO POR CASA NATAL (revisar, não iniciar; evitar contratos/compras/lançamentos):
+1 revisão de identidade; 2 finanças, contas, valores; 3 e-mails, contratos, conversas; 4 família, lar; 5 romance, projetos criativos; 6 trabalho, saúde, rotina; 7 parcerias, contratos; 8 finanças compartilhadas, dívidas; 9 crenças, viagens; 10 carreira, reputação; 11 amizades, grupos; 12 o oculto.`;
 
-// ── CONSTANTE 4 — LINGUAGEM PREMONITÓRIA (regra de tom) ─────────────────────────
-const LINGUAGEM_PREMONITORIA = `
-Premonitório, NUNCA catastrófico. Tendências, não certezas. Cada previsão com ação prática.
-Use "existe tendência a...", "seu mapa indica...", "este período favorece..." — nunca afirmações absolutas.
+const LUA_PROG = `LUA PROGRESSADA POR SIGNO — humor emocional dominante do período:
+Áries urgência e impulso (age antes de sentir); Touro precisa de ancoragem e constância; Gêmeos processa pela palavra, instável; Câncer MÁXIMA sensibilidade, intuição no pico; Leão precisa de ser vista e amada, coração aberto; Virgem analisa e se autocritica, cuidado com a ruminação; Libra precisa do outro e da harmonia; Escorpião intensidade e transformação, cura profunda; Sagitário expansão e otimismo, quer liberdade; Capricórnio contém e amadurece pelo trabalho; Aquário distancia para processar com originalidade; Peixes hipersensível, intuição máxima, limites difusos (cuidado com o que absorve). Quando muda de signo no período: virada emocional — um dos eventos mais importantes.`;
 
-NUNCA: "Em março você vai perder o emprego."
-SEMPRE: "Março traz Saturno sobre seu MC. Existe forte tendência a que a carreira passe por
-reavaliação ou desafio que pede estruturação — pode se manifestar como mudança de função,
-revisão de contrato ou necessidade de assumir mais responsabilidade."
+// ---- CAMADA 9: SENHOR DO MÊS (profecção mensal) ----
+const SENHOR_MES = `SENHOR DO MÊS (Profecção Mensal — o regente que colore o capítulo):
+A casa do ano (profecção anual) é o mês 1; cada mês avança uma casa; o regente do signo na cúspide é o SENHOR DO MÊS. Esse planeta dá o tom de fundo do capítulo — e onde ele está no natal (casa) é a área da vida que o mês ilumina.
+Sol — mês de identidade, vitalidade, propósito e visibilidade; o eu no centro do palco.
+Lua — mês emocional, doméstico e familiar; marés de humor, cuidado, raízes, intuição.
+Mercúrio — mês de mente acelerada: comunicação, estudo, contratos, deslocamentos, decisões.
+Vênus — mês de amor, prazer, beleza, dinheiro e vínculos; harmonização e atração.
+Marte — mês de ação e coragem: iniciativa, desejo, disputa, energia alta (cuidado com o impulso).
+Júpiter — mês de expansão, oportunidade, fé, sorte e crescimento; a porta que se abre.
+Saturno — mês de responsabilidade, estrutura, teste e amadurecimento; o que se constrói com esforço.
+(Regentes tradicionais: Aquário→Saturno, Escorpião→Marte, Peixes→Júpiter. Cite o moderno — Urano/Plutão/Netuno — só como subtema, se o senhor do mês for um deles.)
+COMO USAR: nomeie o senhor do mês na abertura do capítulo, diga em que casa natal ele está e o que isso ilumina, e deixe-o reger o conselho final do mês.`;
 
-NUNCA: "Em julho você vai se apaixonar."
-SEMPRE: "Julho traz Vênus e Júpiter ativando sua Casa 7 e Vênus natal. Existe tendência
-favorável a encontros, reconexões ou aprofundamento de um relacionamento existente."`;
+const RITUAL_MES = `RITUAL DO MÊS (apenas em meses CRUCIAIS, 10+ pts) — derivado do signo da Lua Nova:
+Áries: escreva o que quer iniciar, leia em voz alta 3x, queime/enterre o papel — começos corajosos. Touro: segure uma moeda 5 min visualizando abundância, plante-a num pote com terra. Gêmeos: escreva uma carta ao que precisa entender e leia em voz alta. Câncer: prepare um chá, 10 min de silêncio, agradeça a quem te cuida. Leão: dance sozinha ao som que te faz poderosa e declare o que quer criar. Virgem: liste o que vai organizar e cumpra um item no mesmo dia. Libra: acenda duas velas (você e o outro) e escreva o que quer harmonizar. Escorpião: escreva o que precisa morrer, queime com intenção, fique no silêncio que se forma. Sagitário: abra a janela, olhe o horizonte e declare para onde vai. Capricórnio: escreva uma meta com prazo e o primeiro passo concreto. Aquário: escreva o que quer libertar e doe/desapegue de um objeto. Peixes: banho com sal e silêncio, deixe a intuição falar antes de dormir.`;
 
-// ── CONSTANTE 5 — TEMPLATE DA NARRATIVA MENSAL ─────────────────────────────────
-const ESTRUTURA_MENSAL = `
-Para CADA mês, usar a estrutura:
-MÊS [X] — [Nome]
-TEMA DO MÊS: [frase-síntese]
-ÁREA EM DESTAQUE: [qual área da vida]
-TRÂNSITO PRINCIPAL: [qual e o que ativa]
-TENDÊNCIA: [o que pode acontecer]
-OPORTUNIDADE: [onde agir]
-CUIDADO: [onde se proteger]
-MENSAGEM: [frase premonitória inspiradora]`;
+const MESES_POR_PARTE = { parte2: [1, 6], parte3: [7, 12], parte4: [13, 18] };
 
-// ── CONSTANTE 6 — JÚPITER EM TRÂNSITO (integral) ───────────────────────────────
-const JUPITER_TRANSITO = `
-JÚPITER EM TRÂNSITO — expansão, sorte, oportunidade (dá oportunidade, não resultado sem ação).
-SOBRE SOL: reconhecimento, expansão pessoal, visibilidade; oportunidades com menos esforço; projetos pessoais ganham impulso. Duração 1-3 meses.
-SOBRE LUA: expansão emocional; família pode crescer (nascimento, reencontro); bem-estar e gratidão; bom para decisões emocionais importantes.
-SOBRE MERCÚRIO: expansão da comunicação; oportunidades de escrita/ensino/publicação; mente em alta; contratos e negociações favoráveis.
-SOBRE VÊNUS: um dos melhores períodos para amor e prosperidade; relacionamentos florescem; tendência a ganhos financeiros, novos vínculos ou renovação.
-SOBRE MARTE: ação ampliada, ambição em alta, projetos parados avançam; cuidado com excesso de confiança e risco desnecessário; resultados rápidos no que iniciar agora.
-SOBRE MC: expansão de carreira; promoções, reconhecimento, oportunidades profissionais; um dos melhores trânsitos profissionais; tendência a ser vista/chamada/convidada para posições maiores.
-SOBRE ASC: expansão pessoal; apresentação mais magnética; oportunidades chegam à porta; bem-estar físico; novos começos em várias áreas.
-SOBRE SATURNO: expansão encontrando estrutura; ampliar o que se construiu; projetos de longo prazo ganham visibilidade; reconhecimento pelo trabalho consistente.
-ENTRANDO EM NOVA CASA (energiza os temas da casa por ~12 meses):
-  C1: expansão pessoal, novo ciclo de identidade · C2: expansão financeira, renda cresce ·
-  C3: comunicação prospera · C4: família/lar (mudança de casa, família cresce) ·
-  C5: criatividade e romance · C6: trabalho (mais projetos/clientes) ·
-  C7: parcerias (casamento, novas parcerias) · C8: recursos externos (herança, investimento) ·
-  C9: filosofia (viagem, estudo, publicação) · C10: carreira (promoção, reconhecimento) ·
-  C11: social (amizades, grupos, causas) · C12: espiritual (proteção invisível ativa).`;
-
-// ── CONSTANTE 7 — SATURNO EM TRÂNSITO (integral) ───────────────────────────────
-const SATURNO_TRANSITO = `
-SATURNO EM TRÂNSITO — não bloqueia: exige maturidade e estrutura. O sólido permanece, o resto cai.
-SOBRE SOL: avaliação e responsabilidade pessoal; chamada a uma versão mais madura; possível cansaço/peso; o que não era real na identidade se desfaz. Duração 1-2 anos.
-SOBRE LUA: responsabilidade emocional; relações passam por prova de realidade; possível distância/frieza que protege mas isola; curar padrões antigos via desafio; cuidado com desânimo — buscar apoio.
-SOBRE VÊNUS: amor em prova de maturidade; o que tem base sólida fica mais forte; o que não tinha base tende a encerrar; definir compromissos com seriedade.
-SOBRE MARTE: ação encontra estrutura e limite; trabalhar mais para o mesmo resultado, mas o que constrói é mais sólido; disciplina de ação, resultados duradouros se persistir.
-SOBRE MC: carreira em avaliação e possível reestruturação; responsabilidades aumentam; o construído com integridade permanece.
-ENTRANDO EM NOVA CASA:
-  C1: mais responsabilidade sobre a identidade · C2: disciplina financeira, construção sólida ·
-  C4: responsabilidades familiares aumentam · C7: parcerias testadas, maturidade relacional ·
-  C10: carreira exige mais, legado é construído agora.`;
-
-// ── CONSTANTE 8 — URANO / NETUNO / PLUTÃO / MARTE (integral) ────────────────────
-const LENTOS_E_MARTE_TRANSITO = `
-URANO EM TRÂNSITO — ruptura, inovação, libertação (transita 7 anos/signo; aspectos duram meses):
-  SOBRE SOL: mudança radical de identidade; imprevisível e libertador; o que precisava mudar muda, às vezes brutalmente.
-  SOBRE MC: mudança radical de carreira; caminho profissional inesperado; ruptura com estrutura que já não servia.
-  SOBRE VÊNUS: amor que rompe padrão; relacionamento inesperado ou ruptura inesperada; liberdade que não cabia na estrutura anterior.
-
-NETUNO EM TRÂNSITO — dissolução, espiritualidade (lento e sutil):
-  SOBRE SOL: identidade em dissolução; quem se achava ser fica nebuloso; espiritualidade profunda; confusão que antecede clareza (processo de anos).
-  SOBRE VÊNUS: amor idealizado, vínculo espiritual ou ilusão amorosa; compaixão; cuidado com relações que não são o que parecem.
-
-PLUTÃO EM TRÂNSITO — transformação irreversível:
-  SOBRE SOL: transformação radical de identidade; morte e renascimento do ego; pode levar anos; ao fim, fundamentalmente diferente.
-  SOBRE LUA: transformação emocional profunda; luto, crise, purificação; o reprimido emerge; crise que liberta.
-  SOBRE MC: transformação radical de carreira; poder que surge ou cai; há um "antes" e "depois"; liderança transformadora ou ruptura.
-
-MARTE EM TRÂNSITO — ação, energia, possível conflito (1,5-2 meses/signo):
-  SOBRE SOL: energia explosiva, ação acelerada, projetos avançam; cuidado com conflitos/acidentes.
-  SOBRE MC: ambição em alta, ação profissional intensa; conquista ou conflito no trabalho.`;
-
-// ── CONSTANTE 9 — RETRÓGRADOS (integral) ───────────────────────────────────────
-const RETROGRADOS = `
-Retrógrado = energia voltada para dentro: revisão, reavaliação.
-MERCÚRIO Rx (3x/ano, ~3 sem): comunicação mais lenta, mal-entendidos; atenção a contratos, eletrônicos, viagens. BOM para revisar/reler/reconectar/reformular. EVITAR assinar contratos importantes, comprar eletrônicos, lançar projetos.
-VÊNUS Rx (~40 dias, a cada 18 meses): amor e valores em revisão; exs reaparecem; relações são avaliadas. BOM para revisar o que valoriza no amor. EVITAR iniciar relacionamentos e cirurgias estéticas.
-MARTE Rx (~10 sem, a cada 2 anos): ação mais lenta/bloqueada, energia para dentro. BOM para revisar projetos e reestruturar estratégias. EVITAR grandes iniciativas e cirurgias eletivas.
-JÚPITER Rx (~4 meses/ano): crescimento para dentro; oportunidades externas diminuem, crescimento interno aumenta. BOM para revisão de filosofia de vida e aprendizado interno.
-SATURNO Rx (~5 meses/ano): revisão de estruturas e responsabilidades; karma de longo prazo à superfície. BOM para revisar o que se está construindo.`;
-
-// ── CONSTANTE 10 — PREVISÃO POR ÁREA + INTENSIDADE (integral) ───────────────────
-const PREVISAO_POR_AREA = `
-MAPEAMENTO DE CADA ÁREA (quais pontos analisar):
-AMOR/RELACIONAMENTOS: trânsitos sobre Vênus natal, Casa 7, Casa 5.
-CARREIRA: trânsitos sobre MC, Casa 10, Sol natal.
-SAÚDE: trânsitos sobre Casa 6, Casa 1, ASC natal.
-FAMÍLIA: trânsitos sobre Casa 4, Lua natal.
-FINANÇAS: trânsitos sobre Casa 2, Casa 8, Júpiter natal, Vênus natal.
-ESPIRITUALIDADE: trânsitos sobre Casa 9, Casa 12, Netuno natal.
-
-INTENSIDADE:
-3+ trânsitos significativos no mesmo período → mês de máxima intensidade, múltiplas áreas
-ativadas, pede atenção e consciência ampliada.
-Poucos trânsitos significativos → período de processamento/integração, menos eventos
-externos, mais trabalho interno, bom para planejamento e recuperação.`;
-
-// ── CONSTANTE 11 — ESTRUTURA DO RELATÓRIO (12 seções) ──────────────────────────
-const ESTRUTURA_RELATORIO = `
-1. CARTA INICIAL (300p) — o que é esta análise.
-2. PANORAMA GERAL DOS 18 MESES (500p) — tema central do período.
-3. OS TRÂNSITOS MAIS IMPORTANTES (600p) — os 4-6 mais significativos (use os critérios de priorização).
-4. PREVISÃO POR ÁREA DE VIDA (800p) — amor, carreira, saúde, família, finanças.
-5. MÊS A MÊS (6.000-8.000p) — os 18 meses, cada um com a estrutura mensal completa.
-6. PERÍODOS DE MÁXIMA OPORTUNIDADE (400p).
-7. PERÍODOS QUE PEDEM CUIDADO (400p).
-8. RETRÓGRADOS DO PERÍODO (400p).
-9. TIMING PARA DECISÕES IMPORTANTES (400p) — janelas ideais.
-10. PRÁTICAS PARA CADA FASE (400p).
-11. MENSAGEM FINAL (200p).
-12. CHAMADAS PARA OUTROS PRODUTOS (upsell).
-TOTAL: 10.000-14.000 palavras.`;
-
-// ── CONSTANTE 12 — UPSELL INDIVIDUAL (integral) ────────────────────────────────
-const UPSELL = `
-Encerrar com 2-3 chamadas naturais (combo desativado — sempre indicar produtos INDIVIDUAIS):
-REVOLUÇÃO SOLAR: "O Mapa de Previsões analisa seus trânsitos nos próximos 18 meses. A Revolução Solar complementa com a análise do seu ano solar específico — o tema central do ano, o que o ASC da RS revela sobre como você vai se apresentar ao mundo e as áreas mais ativas neste ciclo anual."
-MAPA KÁRMICO: "Os trânsitos revelam o QUANDO. O Mapa Kármico revela o POR QUÊ. Se certos temas aparecem repetidamente nas previsões, há provavelmente um padrão mais profundo — o Kármico revela esses ciclos e o caminho de libertação."
-MAPA DA SORTE: "Seu Mapa de Previsões mostra quando os melhores períodos financeiros chegam. Para saber como maximizar essas janelas — seu modelo de renda ideal e como estruturar prosperidade — o Mapa da Sorte e Prosperidade oferece o mapa completo."`;
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ENGENHARIA — priorização, intensidade, agrupamento
-// (acrescentado: NÃO inventa astrologia; só organiza os trânsitos recebidos)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const PESSOAIS = ["Sol","Lua","Mercúrio","Vênus","Marte"];
-const ANGULOS = ["ASC","MC","DESC","IC","Ascendente","Meio do Céu"];
-const LENTOS = ["Júpiter","Saturno","Urano","Netuno","Plutão"];
-
-function classificarAspecto(aspecto) {
-  const m = {
-    "conjunção": "fusão intensa — máxima ativação",
-    "trígono": "fluxo fácil — oportunidade",
-    "sextil": "oportunidade que precisa de ação",
-    "quadratura": "tensão — desafio que cresce",
-    "oposição": "polarização — equilíbrio necessário"
-  };
-  return m[aspecto] || aspecto;
-}
-
-// Pontua cada trânsito pelos 6 critérios e devolve só os significativos, ordenados
-function priorizarTransitos(transitos, idade) {
-  transitos = transitos || [];
-  const pont = transitos.map(function(t) {
-    const tr = t.transitando || t.planeta1;
-    const alvo = t.alvoNatal || t.planeta2;
-    const asp = (t.aspecto || "").toLowerCase();
-    let score = 0; const motivos = [];
-    if (LENTOS.indexOf(tr) > -1 && PESSOAIS.indexOf(alvo) > -1) { score += 3; motivos.push("C1: lento sobre pessoal"); }
-    if (LENTOS.indexOf(tr) > -1 && ANGULOS.indexOf(alvo) > -1) { score += 3; motivos.push("C2: lento sobre ângulo"); }
-    if ((tr === "Júpiter" || tr === "Saturno") && t.ingressoCasa) { score += 3; motivos.push("C3: ingresso em casa"); }
-    if (asp === "conjunção") score += 2;
-    if (asp === "oposição" || asp === "quadratura") score += 1;
-    if (typeof t.orbe === "number" && t.orbe <= 1) score += 1;
-    if (idade && (Math.abs(idade-29)<=1 || Math.abs(idade-44)<=1) && tr==="Saturno") { score += 2; motivos.push("C5: retorno/oposição de Saturno"); }
-    if (idade && (idade%12===0) && tr==="Júpiter") { score += 1; motivos.push("C6: retorno de Júpiter"); }
-    return Object.assign({}, t, { transitando: tr, alvoNatal: alvo, score: score, motivos: motivos });
-  });
-  return pont.filter(function(t){ return t.score >= 3; }).sort(function(a,b){ return b.score - a.score; });
-}
-
-// Detecta meses com 3+ trânsitos significativos (período de intensidade — Critério 4)
-function detectarIntensidade(transitosPriorizados) {
-  transitosPriorizados = transitosPriorizados || [];
-  const porMes = {};
-  transitosPriorizados.forEach(function(t){ const m = t.mes || t.periodo || "s/data"; (porMes[m] = porMes[m] || []).push(t); });
-  return Object.keys(porMes).map(function(mes){
-    const qtd = porMes[mes].length;
-    return { mes: mes, qtd: qtd, intensidade: qtd >= 3 ? "máxima" : qtd === 2 ? "moderada" : "leve" };
-  }).sort(function(a,b){ return b.qtd - a.qtd; });
-}
-
-function agruparPorMes(transitos) {
-  transitos = transitos || [];
-  const porMes = {};
-  transitos.forEach(function(t){ const m = t.mes || t.periodo || "s/data"; (porMes[m] = porMes[m] || []).push(t); });
-  return porMes;
-}
-
-function calcularIdade(dataNasc, dataInicio) {
-  try {
-    const n = new Date(dataNasc), i = new Date(dataInicio || Date.now());
-    let id = i.getFullYear() - n.getFullYear();
-    if (i.getMonth() < n.getMonth() || (i.getMonth()===n.getMonth() && i.getDate()<n.getDate())) id--;
-    return id;
-  } catch (e) { return null; }
-}
-
-function formatarMapaNatal(mapaNatal) {
-  mapaNatal = mapaNatal || {};
-  const ordem = ["Sol","Lua","ASC","MC","Mercúrio","Vênus","Marte","Júpiter","Saturno","Urano","Netuno","Plutão","Nodo Norte"];
-  return ordem.map(function(p){
-    const v = mapaNatal[p];
-    if (!v) return null;
-    if (typeof v === "string") return p + ": " + v;
-    return p + ": " + v.signo + (v.casa?(" Casa "+v.casa):"") + (v.grau!=null?(" "+v.grau+"°"):"") + (v.retrogrado?" ℞":"");
-  }).filter(Boolean).join("\n");
-}
-
-function formatarTransitos(porMes) {
-  return Object.keys(porMes).map(function(mes){
-    return mes + ":\n" + porMes[mes].map(function(t){
-      return "  • " + (t.transitando||t.planeta1) + " " + t.aspecto + " " + (t.alvoNatal||t.planeta2) +
-        (t.orbe!=null?(" (orbe "+t.orbe+"°)"):"") +
-        (t.retrogrado?" [Rx]":"") + (t.ingressoCasa?(" [ingresso Casa "+t.ingressoCasa+"]"):"");
-    }).join("\n");
-  }).join("\n\n");
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// BUILD — monta diagnóstico + prompt + metadados
-// dados: { nome, data, hora, cidade, dataInicio, dataFim, contexto? }
-// mapaNatal: objeto { Sol:{signo,casa,grau}, ... } (saída do adaptador)
-// transitos: [ { mes, transitando, aspecto, alvoNatal, orbe, retrogrado?, ingressoCasa? } ]
-// ═══════════════════════════════════════════════════════════════════════════════
-function buildPromptMapaPrevisoes(dados, mapaNatal, transitos, opcoes) {
-  dados = dados || {}; mapaNatal = mapaNatal || {}; transitos = transitos || []; opcoes = opcoes || {};
-  const idade = calcularIdade(dados.data, dados.dataInicio);
-  const priorizados = priorizarTransitos(transitos, idade);
-  const intensidade = detectarIntensidade(priorizados);
-  const porMes = agruparPorMes(transitos);
-  const picos = intensidade.filter(function(i){ return i.qtd >= 3; }).map(function(i){ return i.mes; });
-
-  const diagnostico = {
-    periodo: (dados.dataInicio || "?") + " a " + (dados.dataFim || "?"),
-    idadeNoInicio: idade,
-    totalTransitos: transitos.length,
-    transitosSignificativos: priorizados.length,
-    topTransitos: priorizados.slice(0, 6).map(function(t){ return t.transitando + " " + t.aspecto + " " + t.alvoNatal + " (" + (t.motivos.join("; ")||"relevante") + ")"; }),
-    periodosDeIntensidade: picos.length ? picos : ["nenhum mês com 3+ trânsitos — período de integração"]
-  };
-
-  const blocoContexto = dados.contexto
-    ? "CONTEXTO DO CLIENTE (integrar nas previsões):\n" + dados.contexto
-    : "CONTEXTO DO CLIENTE: não fornecido — manter previsões abrangentes pelas áreas de vida.";
-
-  const prompt = "Você é um astrólogo especializado em trânsitos e previsão astrológica, com profundo\n" +
-"conhecimento de como os ciclos planetários se manifestam na vida cotidiana. Sua análise é\n" +
-"premonitória mas NUNCA catastrófica: revela tendências, não certezas, e cada previsão traz\n" +
-"recomendação prática de ação.\n\n" +
-FUNDAMENTOS_PREVISOES + "\n\n" +
-COMO_LER_TRANSITOS + "\n\nCRITÉRIOS DE PRIORIZAÇÃO\n" +
-CRITERIOS_PRIORIZACAO + "\n\nLINGUAGEM\n" +
-LINGUAGEM_PREMONITORIA + "\n\nTABELAS DE INTERPRETAÇÃO (use integralmente; para combinações não tabeladas, interprete pelo método dos três eixos)\n" +
-JUPITER_TRANSITO + "\n" + SATURNO_TRANSITO + "\n" + LENTOS_E_MARTE_TRANSITO + "\n\nRETRÓGRADOS\n" +
-RETROGRADOS + "\n\nPREVISÃO POR ÁREA E INTENSIDADE\n" +
-PREVISAO_POR_AREA + "\n\nESTRUTURA DA NARRATIVA MENSAL\n" +
-ESTRUTURA_MENSAL + "\n\n" +
-"═══════════════════════════════════\n" +
-"DADOS DO MAPA NATAL — " + (dados.nome || "cliente") + "\n" +
-"Nascimento: " + (dados.data || "?") + " " + (dados.hora || "") + " — " + (dados.cidade || "?") + "\n" +
-formatarMapaNatal(mapaNatal) + "\n\n" +
-"PERÍODO ANALISADO: " + (dados.dataInicio || "?") + " a " + (dados.dataFim || "?") + (idade!=null?(" (idade no início: " + idade + ")"):"") + "\n\n" +
-"TRÂNSITOS DO PERÍODO (mês a mês):\n" +
-(formatarTransitos(porMes) || "(trânsitos não fornecidos — solicitar ao motor)") + "\n\n" +
-"TRÂNSITOS JÁ PRIORIZADOS PELO SISTEMA (destaque estes na seção 3):\n" +
-(diagnostico.topTransitos.map(function(t){ return "• " + t; }).join("\n") || "• (calcular a partir da lista acima)") + "\n\n" +
-"PERÍODOS DE MÁXIMA INTENSIDADE (3+ trânsitos): " + diagnostico.periodosDeIntensidade.join(", ") + "\n\n" +
-blocoContexto + "\n\n" +
-"═══════════════════════════════════\n" +
-"ESTRUTURA OBRIGATÓRIA DO RELATÓRIO\n" +
-ESTRUTURA_RELATORIO + "\n\nUPSELL\n" +
-UPSELL + "\n\n" +
-"═══════════════════════════════════\n" +
-"REGRAS FINAIS\n" +
-"- \"existe tendência a...\", \"seu mapa indica...\" — nunca afirmações absolutas.\n" +
-"- Cada mês tem ação concreta recomendada.\n" +
-"- NÃO liste todos os trânsitos — apenas os significativos (use a priorização acima).\n" +
-"- Cubra os 18 meses individualmente na seção 5.\n" +
-"- Integre o contexto do cliente quando fornecido.\n" +
-"- Tom: astrólogo experiente que orienta com sabedoria.\n" +
-"- Mínimo 10.000 palavras.\n\n" +
-"FORMATO DE SAÍDA — responda SOMENTE com JSON válido, sem texto fora dele:\n" +
-'{\n  "secoes": [\n' +
-'    { "id": 1, "titulo": "Carta Inicial", "conteudo": "..." },\n' +
-'    { "id": 2, "titulo": "Panorama Geral dos 18 Meses", "conteudo": "..." },\n' +
-'    { "id": 3, "titulo": "Os Trânsitos Mais Importantes", "conteudo": "..." },\n' +
-'    { "id": 4, "titulo": "Previsão por Área de Vida", "conteudo": "..." },\n' +
-'    { "id": 5, "titulo": "Mês a Mês", "conteudo": "..." },\n' +
-'    { "id": 6, "titulo": "Períodos de Máxima Oportunidade", "conteudo": "..." },\n' +
-'    { "id": 7, "titulo": "Períodos que Pedem Cuidado", "conteudo": "..." },\n' +
-'    { "id": 8, "titulo": "Retrógrados do Período", "conteudo": "..." },\n' +
-'    { "id": 9, "titulo": "Timing para Decisões", "conteudo": "..." },\n' +
-'    { "id": 10, "titulo": "Práticas para Cada Fase", "conteudo": "..." },\n' +
-'    { "id": 11, "titulo": "Mensagem Final", "conteudo": "..." },\n' +
-'    { "id": 12, "titulo": "Próximos Passos na Astralia", "conteudo": "..." }\n' +
-"  ]\n}";
-
-  return { diagnostico: diagnostico, prompt: prompt, metadados: Object.assign({}, METADADOS_MAPA_PREVISOES, { periodo: diagnostico.periodo }) };
-}
-
-const METADADOS_MAPA_PREVISOES = {
-  produto: "Mapa de Previsões 18 Meses",
-  framework: "Trânsitos dos lentos (Júpiter→Plutão) + Marte + retrógrados sobre o mapa natal, priorizados por 6 critérios, narrados mês a mês",
-  modeloRecomendado: "claude-opus-4-7",
-  palavrasEsperadas: "10.000-14.000",
-  formatoSaida: "JSON { secoes:[12] }",
-  recebeTransitos: true,
-  versao: "3.0"
+const CONHECIMENTO_POR_PARTE = {
+  parte1: [LUA_PROG, ASPECTOS_T, SENHOR_MES],
+  parte2: [JUPITER_T, SATURNO_T, MARTE_T, ASPECTOS_T, ECLIPSE_T, MERCURIO_RX, LUA_PROG, SENHOR_MES, RITUAL_MES],
+  parte3: [JUPITER_T, SATURNO_T, MARTE_T, ASPECTOS_T, ECLIPSE_T, MERCURIO_RX, LUA_PROG, SENHOR_MES, RITUAL_MES],
+  parte4: [JUPITER_T, SATURNO_T, MARTE_T, ASPECTOS_T, ECLIPSE_T, MERCURIO_RX, LUA_PROG, SENHOR_MES, RITUAL_MES],
+  parte5: [JUPITER_T, SATURNO_T, ECLIPSE_T],
+  completo: [JUPITER_T, SATURNO_T, MARTE_T, ASPECTOS_T, ECLIPSE_T, MERCURIO_RX, LUA_PROG, SENHOR_MES, RITUAL_MES]
 };
 
+const ESCOPO_POR_PARTE = {
+  parte1: 'Gere SOMENTE duas seções: (1) "Panorama dos 18 Meses" e (2) "As 9 Camadas do Céu" (as 8 da diretriz + a Profecção Mensal / senhor do mês). NÃO escreva nenhum capítulo mensal nesta parte.',
+  parte2: 'Gere SOMENTE os capítulos dos MESES 1 a 6 — uma seção por mês. NÃO escreva panorama, áreas de vida nem mensagem final.',
+  parte3: 'Gere SOMENTE os capítulos dos MESES 7 a 12 — uma seção por mês.',
+  parte4: 'Gere SOMENTE os capítulos dos MESES 13 a 18 — uma seção por mês.',
+  parte5: 'Gere SOMENTE: (1) "Revelações por Área de Vida" (amor, carreira, dinheiro, saúde, espiritualidade — com as janelas e os meses), (2) "Os Momentos Mais Significativos" (os 5 momentos, a janela mais poderosa, o maior desafio, a pergunta do período) e (3) "Mensagem Final" com aviso legal e cross-sells. NÃO reescreva os capítulos mensais.'
+};
+
+const TEMPLATE_MES = `TEMPLATE DE CADA CAPÍTULO MENSAL (preencher com os dados reais do mês — exceda os pisos):
+• TÍTULO poético e premonitório (ex.: "O Mês em que o Céu Respira Fundo", "Quando Júpiter Bate na Sua Porta", "A Tempestade que Limpa").
+• FRASE DE ABERTURA premonitória (1 frase): "Este mês, [o que o céu posiciona] — e isso sugere que [tendência]." Nunca "você vai".
+• O SENHOR DESTE MÊS (Camada 9): nomeie o planeta regente do mês, diga em que casa natal ele está e o que isso ilumina — ele é a moldura do capítulo.
+• EMOÇÃO DOMINANTE: Lua Progressada (humor de fundo) + Lua Cheia do mês (o que vem à tona) num parágrafo.
+• O QUE O CÉU MOVE: Júpiter/Saturno/Marte nas casas (o que abre/cobra/acelera); aspectos de trânsito ativos.
+• ECLIPSE (se houver): parágrafo próprio, impactante, ligado ao ponto natal ativado.
+• RETRÓGRADO (se ativo): o que revisar, o que evitar.
+• LUA NOVA: data + casa natal + a intenção que planta. LUA CHEIA: data + casa natal + o que revela/conclui (marcar Superlua).
+• O PICO DO MÊS: data aproximada de maior intensidade + o que tende a acontecer.
+• ÁREAS EM DESTAQUE: amor / carreira / finanças / saúde, conforme os gatilhos ativos do mês.
+• O CONSELHO DO CÉU (guia de ação, regido pelo senhor do mês): o que FAZER, o que EVITAR, o que OBSERVAR.
+• Se o mês marcar o ANIVERSÁRIO: anuncie que ali começa o novo ciclo da Revolução Solar e dê o tom do ano que se abre.
+Profundidade por intensidade (PISOS, sem teto): tranquilo (0–2) ≈ 400+; ativo (3–5) ≈ 650+; intenso (6–9) ≈ 950+; CRUCIAL (10+) ≈ 1400+ COM o ritual da Lua Nova do mês.`;
+
+function fmtMeses(meses, ini, fim) {
+  return (meses || [])
+    .filter(m => m.numero >= ini && m.numero <= fim)
+    .map(m => {
+      const linhas = [
+        `— MÊS ${m.numero} (${m.mesAno || '?'}) · intensidade: ${m.classificacao || '?'}${m.pontuacao != null ? ' (' + m.pontuacao + ' pts)' : ''}${m.aniversarioNoMes ? ' · ★ ANIVERSÁRIO (início da Revolução Solar)' : ''}`,
+        (m.senhorMes || m.profeccaoMensalCasa != null) && `   Senhor do mês (profecção mensal): ${m.senhorMes || '?'}${m.profeccaoMensalCasa != null ? ' — Casa ' + m.profeccaoMensalCasa + ' ativada' : ''}`,
+        m.luaProg && `   Lua Progressada: ${m.luaProg}`,
+        m.transitos && `   Trânsitos: ${m.transitos}`,
+        m.aspectos && `   Aspectos ativos: ${m.aspectos}`,
+        m.eclipse && `   ECLIPSE: ${m.eclipse}`,
+        m.retrogrado && `   Retrógrado: ${m.retrogrado}`,
+        m.luaNova && `   ${m.luaNova}`,
+        m.luaCheia && `   ${m.luaCheia}`,
+        (m.gatilhos && m.gatilhos.length) && `   Gatilhos: ${m.gatilhos.join('; ')}`
+      ].filter(Boolean);
+      return linhas.join('\n');
+    }).join('\n\n') || '(meses não informados nesta faixa)';
+}
+
+// ---------------- BUILDER ----------------
+function buildPromptPrevisoes(dados, planetasInfo, casasInfo, aspectosInfo, parte = "completo") {
+  const nome = dados.nome || '[NOME]';
+  const conhecimento = (CONHECIMENTO_POR_PARTE[parte] || CONHECIMENTO_POR_PARTE.completo).join('\n\n');
+  const escopo = ESCOPO_POR_PARTE[parte] || 'Gere TODAS as 5 partes na ordem (Panorama, 9 Camadas, os 18 capítulos mensais, Áreas de Vida, Momentos + Mensagem Final). Não resuma.';
+
+  const pr = dados.progressoes || {};
+  const cam = dados.camadas || {};
+  const pic = dados.picos || {};
+
+  const blocoProg = [
+    pr.luaProgSigno && `Lua Progressada: ${pr.luaProgSigno}${pr.luaProgCasa ? ' (Casa ' + pr.luaProgCasa + ' natal)' : ''}${pr.luaProgMuda ? ' — muda de signo: ' + pr.luaProgMuda : ''}`,
+    pr.solProgSigno && `Sol Progredido: ${pr.solProgSigno}${pr.solProgMuda ? ' — MUDA DE SIGNO: ' + pr.solProgMuda + ' (um dos maiores eventos do período)' : ''}`,
+    (pr.solarArcInicio != null) && `Solar Arc: ${pr.solarArcInicio}° → ${pr.solarArcFim}°`,
+    (pr.saAspectos && pr.saAspectos.length) && `Direções solares ativas: ${pr.saAspectos.join('; ')}`
+  ].filter(Boolean).join('\n') || '(progressões não informadas)';
+
+  const blocoCamadas = [
+    (cam.transitosChave && cam.transitosChave.length) && `Trânsitos lentos-chave: ${cam.transitosChave.join('; ')}`,
+    (cam.eclipsesAtivos && cam.eclipsesAtivos.length) && `Eclipses ativos sobre o natal: ${cam.eclipsesAtivos.join('; ')}`,
+    cam.profeccaoCasa && `Profecção anual: Casa ${cam.profeccaoCasa} ativada · Senhor do Ano: ${cam.senhorAno || '?'}${cam.senhorAnoPos ? ' (' + cam.senhorAnoPos + ')' : ''}`,
+    cam.rsNoPeriodo ? `Revolução Solar no período: SIM${cam.rsMesAniversario ? ' — aniversário no mês ' + cam.rsMesAniversario : ''} — ${cam.rsResumo || '(resumo da RS)'}` : 'Revolução Solar no período: não'
+  ].filter(Boolean).join('\n') || '(camadas não informadas)';
+
+  const blocoPicos = [
+    pic.positivo && `Maior intensidade positiva: ${pic.positivo}`,
+    pic.desafiador && `Maior desafio: ${pic.desafiador}`,
+    pic.transformacao && `Maior transformação: ${pic.transformacao}`,
+    pic.janelaAmor && `Janela de amor: ${pic.janelaAmor}`,
+    pic.janelaCarreira && `Janela de carreira: ${pic.janelaCarreira}`,
+    pic.janelaFinanceira && `Janela financeira: ${pic.janelaFinanceira}`,
+    pic.recolhimento && `Período de recolhimento: ${pic.recolhimento}`
+  ].filter(Boolean).join('\n') || '';
+
+  const momentos = (dados.momentos || []).map((m, i) => `${i + 1}. ${m}`).join('\n') || '(derivar dos picos e eclipses acima)';
+
+  // dados mensais relevantes à parte
+  let blocoMeses = '';
+  if (MESES_POR_PARTE[parte]) {
+    const [i, f] = MESES_POR_PARTE[parte];
+    blocoMeses = `\n=== DADOS CALCULADOS DOS MESES ${i} A ${f} (escreva um capítulo para cada) ===\n${fmtMeses(dados.meses, i, f)}\n`;
+  } else if (parte === "completo") {
+    blocoMeses = `\n=== DADOS CALCULADOS DOS 18 MESES ===\n${fmtMeses(dados.meses, 1, 18)}\n`;
+  }
+
+  // o template mensal só é necessário nas partes que escrevem meses
+  const templateMensal = (MESES_POR_PARTE[parte] || parte === 'completo')
+    ? `\n=== TEMPLATE DE CADA CAPÍTULO MENSAL ===\n${TEMPLATE_MES}\n`
+    : '';
+
+  return `Você é a astróloga da Astralia escrevendo o Mapa de Previsões de 18 Meses de ${nome}, para o período de ${dados.periodoInicio || '[INÍCIO]'} a ${dados.periodoFim || '[FIM]'}. Você tem trinta anos de prática preditiva e lê o céu por nove camadas ao mesmo tempo. Este é um dos produtos mais caros da casa: a entrega tem de ser generosa, profunda e específica — nada de frase pronta.
+
+═══ A VOZ ═══
+Você escreve na voz da Astralia, a mesma da Lilith — agora voltada ao tempo. Íntima, reveladora, premonitória, quase profética. Fala com ${nome} em segunda pessoa, como quem já viu o mapa do território e aponta as curvas antes delas. Nomeia o que a pessoa vai sentir antes de explicar a técnica. ELUCIDE sempre: traduza cada movimento do céu para a vida concreta dela — nada de jargão solto, todo termo vira experiência. Poética quando o céu pede poesia, direta quando pede um aviso.
+
+═══ TOM PREMONITÓRIO ═══
+Para o FUTURO: "existe forte tendência a…", "o campo se abre para…", "o céu sugere que…", "há uma janela significativa de…". Para períodos JÁ VIVIDOS do ciclo: determinista ("este período provavelmente trouxe…"). NUNCA "você vai" como certeza, nunca data fechada como sentença, nunca catástrofe — todo alerta vem com saída. Saúde, mente e perdas: tendência e cuidado, jamais diagnóstico ou anúncio de tragédia.
+
+═══ TRAVAS ═══
+1. SEM TETO de palavras: os pisos são mínimos a superar; jamais resuma. 2. Cada mês é um capítulo próprio — não agrupe meses. 3. Cite SEMPRE o dado real (planeta, casa, grau, aspecto, data, senhor do mês) e elucide o que significa para ${nome}. 4. Cross-sell só quando o mapa pedir. 5. Não reproduza textos de obras de terceiros — toda interpretação é sua, da Astralia.
+
+NUNCA invente posições — use APENAS os dados reais abaixo.
+
+=== DADOS REAIS DE ${nome.toUpperCase()} ===
+Nascimento: ${dados.data || dados.dataNascimento || '[DATA]'}${dados.hora ? ' às ' + dados.hora : ''} · ${dados.cidade || dados.localNascimento || '[LOCAL]'} · Idade: ${dados.idade || '[IDADE]'}
+${dados.contexto ? 'Contexto do cliente (12 perguntas): ' + dados.contexto : ''}
+
+${planetasInfo}
+
+${casasInfo}
+
+${aspectosInfo}
+
+=== PROGRESSÕES E DIREÇÕES (camadas 2,3,4) ===
+${blocoProg}
+
+=== CAMADAS 5,6,7 + 9 (RS, profecção anual, eclipses, senhor do mês) ===
+${blocoCamadas}
+${blocoPicos ? '\n=== PICOS DE INTENSIDADE ===\n' + blocoPicos + '\n' : ''}${parte === 'parte5' || parte === 'completo' ? '\n=== OS 5 MOMENTOS MAIS SIGNIFICATIVOS ===\n' + momentos + '\n' : ''}${blocoMeses}${templateMensal}
+=== TABELAS DE REFERÊNCIA (cruze com os dados reais; não copie verbatim) ===
+${conhecimento}
+
+=== INSTRUÇÕES DE SAÍDA ===
+ESCOPO DESTA GERAÇÃO (sobrepõe qualquer instrução de quantidade): ${escopo}
+Como você produz apenas parte do relatório, APROFUNDE AO MÁXIMO cada seção desta faixa — exceda os mínimos, mais elucidação, mais correlação entre as camadas, mais concretude, mais guia de ação. Não economize: este produto se vende pela densidade.
+
+Escreva em prosa rica e em segunda pessoa, premonitória e reveladora, sempre traduzindo a técnica em vida concreta de ${nome}.
+
+Responda APENAS com JSON válido, sem markdown, sem texto fora do JSON:
+{
+  "secoes": [
+    {"titulo": "Título da seção ou do mês (cite signo/casa/data/senhor do mês quando couber)", "texto": "vários parágrafos ricos e personalizados"}
+  ]
+}`;
+}
+
 module.exports = {
-  buildPromptMapaPrevisoes: buildPromptMapaPrevisoes,
-  priorizarTransitos: priorizarTransitos,
-  detectarIntensidade: detectarIntensidade,
-  agruparPorMes: agruparPorMes,
-  classificarAspecto: classificarAspecto,
-  calcularIdade: calcularIdade,
-  METADADOS_MAPA_PREVISOES: METADADOS_MAPA_PREVISOES
+  buildPromptPrevisoes,
+  MESES_POR_PARTE, CONHECIMENTO_POR_PARTE, ESCOPO_POR_PARTE,
+  JUPITER_T, SATURNO_T, MARTE_T, ASPECTOS_T, ECLIPSE_T, MERCURIO_RX, LUA_PROG, SENHOR_MES, RITUAL_MES, TEMPLATE_MES
 };
